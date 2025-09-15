@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFLIX</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: 
+                linear-gradient(135deg, #141414 0%, #0c0c0c 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(229, 9, 20, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(229, 9, 20, 0.08) 0%, transparent 40%),
+                repeating-linear-gradient(45deg, rgba(20, 20, 20, 0.1) 0px, rgba(20, 20, 20, 0.1) 1px, transparent 1px, transparent 11px),
+                repeating-linear-gradient(135deg, rgba(20, 20, 20, 0.1) 0px, rgba(20, 20, 20, 0.1) 1px, transparent 1px, transparent 11px);
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header and Title */
+        header {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .title {
+            font-size: 5rem;
+            font-weight: 800;
+            color: #e50914;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
+            margin-top: 20px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .title::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 4px;
+            background: #e50914;
+            border-radius: 3px;
+        }
+        
+        /* Selector Container */
+        .selector-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        
+        .selector {
+            background: #222;
+            border-radius: 50px;
+            padding: 6px;
+            display: flex;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .option {
+            padding: 12px 40px;
+            cursor: pointer;
+            z-index: 2;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            transition: color 0.3s ease;
+        }
+        
+        .slider {
+            position: absolute;
+            height: calc(100% - 12px);
+            width: calc(50% - 6px);
+            background: #e50914;
+            border-radius: 50px;
+            top: 6px;
+            left: 6px;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 2px 8px rgba(229, 9, 20, 0.4);
+        }
+        
+        .option.selected {
+            color: white;
+            font-weight: 800;
+        }
+        
+        .option:not(.selected) {
+            color: #888;
+        }
+        
+        /* Search Bar */
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+        
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: #222;
+            border-radius: 50px;
+            padding: 12px 25px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .search-bar:focus-within {
+            box-shadow: 0 4px 20px rgba(229, 9, 20, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .search-bar input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 1.1rem;
+            padding: 8px 15px;
+            outline: none;
+        }
+        
+        .search-icon {
+            color: #e50914;
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        
+        /* Server Selector */
+        .server-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-select {
+            background: #222;
+            color: white;
+            padding: 10px 20px 10px 20px;
+            width: 100px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .dropdown-select:hover {
+            background: #e50914;
+        }
+        
+        .dropdown-select i {
+            position: absolute;
+            right: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .dropdown.active .dropdown-select i {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-options {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #222;
+            border-radius: 10px;
+            width: 100%;
+            margin-top: 10px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+        
+        .dropdown.active .dropdown-options {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .dropdown-option {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            border-radius: 5px;
+        }
+        
+        .dropdown-option:hover {
+            background: #e50914;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .dropdown-option:first-child {
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        
+        .dropdown-option:last-child {
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+        
+        /* Content Placeholder */
+        .content {
+            text-align: center;
+            margin-top: 0px;
+            opacity: 0.7;
+        }
+        
+        .content i {
+            font-size: 5rem;
+            color: #e50914;
+            margin-bottom: 20px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 3rem;
+            }
+            
+            .option {
+                padding: 10px 30px;
+                font-size: 1rem;
+            }
+            
+            .search-bar {
+                max-width: 90%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .title {
+                font-size: 2.5rem;
+            }
+            
+            .option {
+                padding: 8px 20px;
+            }
+            
+            .server-selector {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin-bottom: 20px;
+                display: flex;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Server Selector (Top Right) -->
+        <div class="server-selector">
+            <div class="dropdown">
+                <div class="dropdown-select" onclick="toggleDropdown()">
+                    <span>Rakan</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="dropdown-options">
+                    <div class="dropdown-option" onclick="selectServer('Rakan')">Rakan</div>
+                    <div class="dropdown-option" onclick="selectServer('Bard')">Bard</div>
+                    <div class="dropdown-option" onclick="selectServer('Xayah')">Xayah</div>
+                    <div class="dropdown-option" onclick="selectServer('Ekko')">Ekko</div>
+                    <div class="dropdown-option" onclick="selectServer('Naafiri')">Naafiri</div>
+                    <div class="dropdown-option" onclick="selectServer('Ryze')">Ryze</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Title (Top Center) -->
+        <header>
+            <h1 class="title">TFLIX</h1>
+        </header>
+        
+        <!-- Selector (Movie/TV Show) -->
+        <div class="selector-container">
+            <div class="selector">
+                <div class="slider"></div>
+                <div class="option selected" onclick="selectOption('movie')">Movie</div>
+                <div class="option" onclick="selectOption('tv')">TV Show</div>
+            </div>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" placeholder="Search for movies, TV shows, and more...">
+            </div>
+        </div>
+        
+        <!-- Content Placeholder -->
+        <div class="content">
+            <i class="fas fa-film"></i>
+            <p>Select a category and start searching to see results</p>
+        </div>
+    </div>
+
+    <script>
+        // Selector functionality
+        function selectOption(type) {
+            const options = document.querySelectorAll('.option');
+            const slider = document.querySelector('.slider');
+            
+            options.forEach(option => option.classList.remove('selected'));
+            
+            if (type === 'movie') {
+                options[0].classList.add('selected');
+                slider.style.transform = 'translateX(0)';
+            } else {
+                options[1].classList.add('selected');
+                slider.style.transform = 'translateX(100%)';
+            }
+        }
+        
+        // Dropdown functionality
+        function toggleDropdown() {
+            document.querySelector('.dropdown').classList.toggle('active');
+        }
+        
+        function selectServer(server) {
+            document.querySelector('.dropdown-select span').textContent = server;
+            document.querySelector('.dropdown').classList.remove('active');
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.querySelector('.dropdown');
+            if (!dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
