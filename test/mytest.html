@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TFLIX</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+  </style>
+</head>
+<body>
+    <!-- Main Container -->
+  <div class="main-container">
+    <!-- Server Selector (Top Right) -->
+    <div class="server-selector">
+      <div class="dropdown">
+        <div class="dropdown-select" onclick="toggleDropdown()">
+          <span>Rakan</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="dropdown-options">
+          <div class="dropdown-option" onclick="selectServer('Rakan')">Rakan</div>
+          <div class="dropdown-option" onclick="selectServer('Bard')">Bard</div>
+          <div class="dropdown-option" onclick="selectServer('Xayah')">Xayah</div>
+          <div class="dropdown-option" onclick="selectServer('Ekko')">Ekko</div>
+          <div class="dropdown-option" onclick="selectServer('Naafiri')">Naafiri</div>
+          <div class="dropdown-option" onclick="selectServer('Ryze')">Ryze</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Title (Top Center) -->
+    <header>
+      <h1 class="title">TFLIX</h1>
+    </header>
+
+    <!-- Selector (Movie/TV Show) -->
+    <div class="selector-container">
+      <div class="selector">
+        <div class="slider"></div>
+        <div class="option selected" onclick="selectOption('movie')">Movie</div>
+        <div class="option" onclick="selectOption('tv')">TV Show</div>
+      </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+      <div class="search-bar">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" placeholder="Search for movies, TV shows, and more...">
+      </div>
+    </div>
+
+    <!-- Content Placeholder -->
+    <div class="content">
+      <i class="fas fa-film"></i>
+      <p>Select a category and start searching to see results</p>
+      <i class="fas fa-server"></i>
+      <p>Select a category and start searching to see results</p>
+    </div>
+  </div>
+
+  <!-- Result Container -->
+  <div class="results-container">
+
+  </div>
+
+  <script>
+  </script>
+</body>
+</html>
