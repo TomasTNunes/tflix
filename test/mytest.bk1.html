@@ -40,15 +40,16 @@
     }
 
     .main-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      margin: 0 auto;
+      position: relative;
     }
 
     /* Server Selector */
     .server-selector {
-      align-self: flex-end;
+      width: fit-content;
+      margin-left: auto;  /* pushes it to the right */
       transition: all 0.6s ease;
+      order: 1;
     }
 
     .dropdown {
@@ -128,6 +129,8 @@
 
     /* Header and Title */
     header {
+      display: flex;
+      justify-content: center;
       margin-bottom: 40px;
       position: relative;
     }
@@ -157,6 +160,8 @@
 
     /* Selector Container */
     .selector-container {
+      width: fit-content;
+      margin: 0 auto; 
       margin-bottom: 40px;
     }
 
@@ -200,9 +205,12 @@
 
     /* Search Bar */
     .search-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto;
       margin-bottom: 50px;
       max-width: 600px;
-      width: 100%;
     }
 
     .search-bar {
@@ -256,7 +264,7 @@
     }
 
     /* --- FOCUS STATE (when typing) --- */
-    /* .search-focused header,
+    .search-focused header,
     .search-focused .content {
       opacity: 0;
       pointer-events: none;
@@ -268,33 +276,6 @@
 
     .search-focused .selector-container {
         transform: translate(0px, -128.66px);
-    } */
-
-    .search-focused .main-container {
-      flex-direction: row;
-      position: relative;
-      justify-content: space-between;
-      align-items: flex-start; 
-      margin-bottom: 40px;
-      gap: 20px;
-    }
-
-    .search-focused header,
-    .search-focused .content {
-      display: none;
-    }
-
-    .search-focused .server-selector {
-      align-self: flex-start;
-      order: 1;
-    }
-
-    .search-focused .search-container {
-      margin-bottom: 0;
-    }
-
-    .search-focused .selector-container {
-      margin-bottom: 0;
     }
     
 
@@ -398,59 +379,13 @@
     // Search focus animation
     const searchInput = document.querySelector('.search-bar input');
     const body = document.body;
-    const container = document.querySelector(".main-container");
 
-    function animateLayoutChange(addClass) {
-      const children = Array.from(container.children);
-
-      // Record initial positions
-      const firstRects = children.map(el => el.getBoundingClientRect());
-
-      // Toggle class to change layout
-      if (addClass) {
-        document.body.classList.add('search-focused');
-      } else {
-        document.body.classList.remove('search-focused');
-      }
-
-      // Record final positions
-      const lastRects = children.map(el => el.getBoundingClientRect());
-
-      // Apply transform to go back to old position
-      children.forEach((el, i) => {
-        const dx = firstRects[i].left - lastRects[i].left;
-        const dy = firstRects[i].top - lastRects[i].top;
-        el.style.transform = `translate(${dx}px, ${dy}px)`;
-      });
-
-      // Animate to new position
-      requestAnimationFrame(() => {
-        children.forEach(el => {
-          el.style.transition = "transform 0.6s ease";
-          el.style.transform = "translate(0,0)";
-        });
-      });
-
-      // Reset transition after animation ends
-      setTimeout(() => {
-        children.forEach(el => {
-          el.style.transition = "";
-        });
-      }, 600);
-    }
-
-    let prevValue = '';
     searchInput.addEventListener('input', () => {
-      const currentValue = searchInput.value.trim();
-      // Only trigger when the first character is typed
-      if (prevValue === '' && currentValue !== '') {
-        animateLayoutChange(true);
+      if (searchInput.value.trim() !== '') {
+        body.classList.add('search-focused');
+      } else {
+        body.classList.remove('search-focused');
       }
-      // Trigger false if input is cleared
-      if (prevValue !== '' && currentValue === '') {
-        animateLayoutChange(false);
-      }
-      prevValue = currentValue;
     });
 
   </script>

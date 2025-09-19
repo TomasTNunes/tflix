@@ -2,598 +2,102 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TFLIX</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>FLIP Animation Example</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
     body {
-      background: linear-gradient(135deg, #141414 0%, #0c0c0c 100%);
-      color: #fff;
-      min-height: 100vh;
-      padding: 20px;
-      position: relative;
-      overflow-x: hidden;
-      transition: background 0.5s ease;
+      font-family: sans-serif;
     }
-
-    body::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background:
-        radial-gradient(circle at 20% 30%, rgba(229, 9, 20, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(229, 9, 20, 0.08) 0%, transparent 40%),
-        repeating-linear-gradient(45deg, rgba(20, 20, 20, 0.1) 0px, rgba(20, 20, 20, 0.1) 1px, transparent 1px, transparent 11px),
-        repeating-linear-gradient(135deg, rgba(20, 20, 20, 0.1) 0px, rgba(20, 20, 20, 0.1) 1px, transparent 1px, transparent 11px);
-      z-index: -1;
-    }
-
     .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    /* Header and Title */
-    header {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 40px;
-      position: relative;
-      transition: all 0.5s ease;
-      flex-shrink: 0;
-    }
-
-    .title {
-      font-size: 5rem;
-      font-weight: 800;
-      color: #e50914;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-      letter-spacing: 2px;
-      margin-top: 20px;
-      position: relative;
-      display: inline-block;
-      transition: all 0.5s ease;
-    }
-
-    .title::after {
-      content: "";
-      position: absolute;
-      bottom: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 50%;
-      height: 4px;
-      background: #e50914;
-      border-radius: 3px;
-      transition: all 0.5s ease;
-    }
-
-    /* Main content area */
-    .main-content {
       display: flex;
       flex-direction: column;
       align-items: center;
-      flex-grow: 1;
-      position: relative;
-      z-index: 10;
+      gap: 1rem;
+      padding: 1rem;
+      background: #f3f3f3;
     }
-
-    /* Selector Container */
-    .selector-container {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 40px;
-      transition: all 0.6s ease;
-      z-index: 20;
-      flex-shrink: 0;
-    }
-
-    .selector {
-      background: #222;
-      border-radius: 50px;
-      padding: 6px;
-      display: flex;
-      position: relative;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .option {
-      padding: 12px 40px;
-      cursor: pointer;
-      z-index: 2;
-      font-weight: 600;
-      font-size: 1.1rem;
-      border-radius: 50px;
-      transition: color 0.3s ease;
-    }
-
-    .slider {
-      position: absolute;
-      height: calc(100% - 12px);
-      width: calc(50% - 6px);
-      background: #e50914;
-      border-radius: 50px;
-      top: 6px;
-      left: 6px;
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 2px 8px rgba(229, 9, 20, 0.4);
-    }
-
-    .option.selected {
-      color: white;
-      font-weight: 800;
-    }
-
-    .option:not(.selected) {
-      color: #888;
-    }
-
-    /* Search Bar */
-    .search-container {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 50px;
-      transition: all 0.6s ease;
-      z-index: 30;
-      width: 100%;
-      flex-shrink: 0;
-    }
-
-    .search-bar {
-      display: flex;
+    body.search-focused .container {
+      flex-direction: row;
+      justify-content: space-between;
       align-items: center;
-      background: #222;
-      border-radius: 50px;
-      padding: 12px 25px;
-      width: 100%;
-      max-width: 600px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease;
     }
-
-    .search-bar:focus-within {
-      box-shadow: 0 4px 20px rgba(229, 9, 20, 0.3);
-      transform: translateY(-2px);
+    .container > * {
+      background: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-
     .search-bar input {
-      flex: 1;
-      border: none;
-      background: transparent;
-      color: white;
-      font-size: 1.1rem;
-      padding: 8px 15px;
-      outline: none;
-    }
-
-    .search-icon {
-      color: #e50914;
-      font-size: 1.5rem;
-      margin-right: 10px;
-    }
-
-    /* Server Selector */
-    .server-selector {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      transition: all 0.6s ease;
-      z-index: 40;
-    }
-
-    .dropdown {
-      position: relative;
-      display: inline-block;
-    }
-
-    .dropdown-select {
-      background: #222;
-      color: white;
-      padding: 10px 20px 10px 20px;
-      width: 100px;
-      border-radius: 30px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      font-weight: 600;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease;
-    }
-
-    .dropdown-select:hover {
-      background: #e50914;
-    }
-
-    .dropdown-select i {
-      position: absolute;
-      right: 20px;
-      transition: transform 0.3s ease;
-    }
-
-    .dropdown.active .dropdown-select i {
-      transform: rotate(180deg);
-    }
-
-    .dropdown-options {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      background: #222;
-      border-radius: 10px;
-      width: 100%;
-      margin-top: 10px;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-10px);
-      transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      z-index: 100;
-    }
-
-    .dropdown.active .dropdown-options {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-
-    .dropdown-option {
-      padding: 12px 20px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      border-radius: 5px;
-    }
-
-    .dropdown-option:hover {
-      background: #e50914;
-      color: white;
-      font-weight: 600;
-    }
-
-    /* Content Placeholder */
-    .content {
-      text-align: center;
-      margin-top: 0px;
-      opacity: 0.7;
-      transition: all 0.5s ease;
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      width: 100%;
-    }
-
-    .content i {
-      font-size: 5rem;
-      color: #e50914;
-      margin-bottom: 20px;
-    }
-
-    .content p {
-      margin-bottom: 40px;
-    }
-
-    /* --- FOCUS STATE (when typing) --- */
-    .search-focused header {
-      opacity: 0.3;
-      transform: translateY(-50px) scale(0.9);
-    }
-
-    .search-focused .content {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .search-focused .selector-container {
-      transform: translate(-500px, -180px);
-      margin-bottom: 0;
-    }
-
-    .search-focused .search-container {
-      transform: translateY(-180px);
-      margin-bottom: 20px;
-    }
-
-    .search-focused .title::after {
-      width: 20%;
-    }
-
-    /* Results container */
-    .results-container {
-      position: absolute;
-      top: 300px;
-      left: 0;
-      right: 0;
-      padding: 20px;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.5s ease;
-      z-index: 5;
-    }
-
-    .search-focused .results-container {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(-180px);
-    }
-
-    .result-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
-
-    .result-card {
-      background: #222;
-      border-radius: 10px;
-      overflow: hidden;
-      transition: transform 0.3s ease;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .result-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
-    }
-
-    .card-image {
-      height: 150px;
-      background: #333;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #888;
-    }
-
-    .card-content {
-      padding: 15px;
-    }
-
-    .card-content h3 {
-      margin-bottom: 10px;
-      color: #fff;
-    }
-
-    .card-content p {
-      color: #aaa;
-      font-size: 0.9rem;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .title {
-        font-size: 3rem;
-      }
-
-      .option {
-        padding: 10px 30px;
-        font-size: 1rem;
-      }
-
-      .search-bar {
-        max-width: 90%;
-      }
-      
-      .search-focused .selector-container,
-      .search-focused .search-container {
-        transform: translateY(-120px);
-      }
-      
-      .search-focused .results-container {
-        transform: translateY(-120px);
-      }
-    }
-
-    @media (max-width: 480px) {
-      .title {
-        font-size: 2.5rem;
-      }
-
-      .option {
-        padding: 8px 20px;
-      }
-
-      .server-selector {
-        position: relative;
-        top: 0;
-        right: 0;
-        margin-bottom: 20px;
-        display: flex;
-        justify-content: flex-end;
-      }
-      
-      .search-focused .selector-container,
-      .search-focused .search-container {
-        transform: translateY(-100px);
-      }
-      
-      .search-focused .results-container {
-        transform: translateY(-100px);
-      }
-      
-      .result-cards {
-        grid-template-columns: 1fr;
-      }
+      min-width: 120px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Server Selector (Top Right) -->
-    <div class="server-selector">
-      <div class="dropdown">
-        <div class="dropdown-select" onclick="toggleDropdown()">
-          <span>Rakan</span>
-          <i class="fas fa-chevron-down"></i>
-        </div>
-        <div class="dropdown-options">
-          <div class="dropdown-option" onclick="selectServer('Rakan')">Rakan</div>
-          <div class="dropdown-option" onclick="selectServer('Bard')">Bard</div>
-          <div class="dropdown-option" onclick="selectServer('Xayah')">Xayah</div>
-          <div class="dropdown-option" onclick="selectServer('Ekko')">Ekko</div>
-          <div class="dropdown-option" onclick="selectServer('Naafiri')">Naafiri</div>
-          <div class="dropdown-option" onclick="selectServer('Ryze')">Ryze</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Title (Top Center) -->
-    <header>
-      <h1 class="title">TFLIX</h1>
-    </header>
-
-    <div class="main-content">
-      <!-- Selector (Movie/TV Show) -->
-      <div class="selector-container">
-        <div class="selector">
-          <div class="slider"></div>
-          <div class="option selected" onclick="selectOption('movie')">Movie</div>
-          <div class="option" onclick="selectOption('tv')">TV Show</div>
-        </div>
-      </div>
-
-      <!-- Search Bar -->
-      <div class="search-container">
-        <div class="search-bar">
-          <i class="fas fa-search search-icon"></i>
-          <input type="text" placeholder="Search for movies, TV shows, and more...">
-        </div>
-      </div>
-
-      <!-- Content Placeholder -->
-      <div class="content">
-        <i class="fas fa-film"></i>
-        <p>Select a category and start searching to see results</p>
-      </div>
-    </div>
-    
-    <!-- Results Container -->
-    <div class="results-container">
-      <h2 style="text-align: center; margin-bottom: 20px;">Search Results</h2>
-      <div class="result-cards">
-        <div class="result-card">
-          <div class="card-image">
-            <i class="fas fa-film" style="font-size: 2rem;"></i>
-          </div>
-          <div class="card-content">
-            <h3>Sample Movie</h3>
-            <p>Action, Adventure • 2023</p>
-          </div>
-        </div>
-        <div class="result-card">
-          <div class="card-image">
-            <i class="fas fa-tv" style="font-size: 2rem;"></i>
-          </div>
-          <div class="card-content">
-            <h3>Sample TV Show</h3>
-            <p>Drama, Mystery • 2022</p>
-          </div>
-        </div>
-        <div class="result-card">
-          <div class="card-image">
-            <i class="fas fa-film" style="font-size: 2rem;"></i>
-          </div>
-          <div class="card-content">
-            <h3>Another Movie</h3>
-            <p>Comedy • 2023</p>
-          </div>
-        </div>
-        <div class="result-card">
-          <div class="card-image">
-            <i class="fas fa-tv" style="font-size: 2rem;"></i>
-          </div>
-          <div class="card-content">
-            <h3>Another TV Show</h3>
-            <p>Sci-Fi • 2021</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="logo">Logo</div>
+    <div class="search-bar"><input type="text" placeholder="Search..."></div>
+    <div class="menu">Menu</div>
   </div>
 
   <script>
-    // Selector functionality
-    function selectOption(type) {
-      const options = document.querySelectorAll('.option');
-      const slider = document.querySelector('.slider');
+    const search = document.querySelector(".search-bar input");
+    const container = document.querySelector(".container");
 
-      options.forEach(option => option.classList.remove('selected'));
+    function animateLayoutChange(addClass) {
+      const children = Array.from(container.children);
 
-      if (type === 'movie') {
-        options[0].classList.add('selected');
-        slider.style.transform = 'translateX(0)';
+      // 1. FIRST: record initial positions
+      const firstRects = children.map(el => el.getBoundingClientRect());
+
+      // 2. Toggle class to change layout
+      if (addClass) {
+        document.body.classList.add('search-focused');
       } else {
-        options[1].classList.add('selected');
-        slider.style.transform = 'translateX(100%)';
+        document.body.classList.remove('search-focused');
       }
-      
-      // Update search placeholder based on selection
-      const searchInput = document.querySelector('.search-bar input');
-      if (type === 'movie') {
-        searchInput.placeholder = 'Search for movies...';
-      } else {
-        searchInput.placeholder = 'Search for TV shows...';
-      }
+
+      // 3. LAST: record final positions
+      const lastRects = children.map(el => el.getBoundingClientRect());
+
+      // 4. INVERT: apply transform to go back to old position
+      children.forEach((el, i) => {
+        const dx = firstRects[i].left - lastRects[i].left;
+        const dy = firstRects[i].top - lastRects[i].top;
+        el.style.transform = `translate(${dx}px, ${dy}px)`;
+      });
+
+      // 5. PLAY: animate to new position
+      requestAnimationFrame(() => {
+        children.forEach(el => {
+          el.style.transition = "transform 0.6s ease";
+          el.style.transform = "translate(0,0)";
+        });
+      });
+
+      // Reset transition after animation ends
+      setTimeout(() => {
+        children.forEach(el => {
+          el.style.transition = "";
+        });
+      }, 600);
     }
 
-    // Dropdown functionality
-    function toggleDropdown() {
-      document.querySelector('.dropdown').classList.toggle('active');
-    }
+    // search.addEventListener("focus", animateLayoutChange);
+    // search.addEventListener("blur", animateLayoutChange);
+    let prevValue = '';
+    search.addEventListener('input', () => {
+      const currentValue = search.value.trim();
 
-    function selectServer(server) {
-      document.querySelector('.dropdown-select span').textContent = server;
-      document.querySelector('.dropdown').classList.remove('active');
-    }
-
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function (event) {
-      const dropdown = document.querySelector('.dropdown');
-      if (!dropdown.contains(event.target)) {
-        dropdown.classList.remove('active');
+      // Only trigger when the first character is typed
+      if (prevValue === '' && currentValue !== '') {
+        animateLayoutChange(true);
       }
-    });
 
-    // Search focus animation
-    const searchInput = document.querySelector('.search-bar input');
-    const body = document.body;
+      // Trigger false if input is cleared
+      if (prevValue !== '' && currentValue === '') {
+        animateLayoutChange(false);
+      }
 
-    searchInput.addEventListener('input', () => {
-      if (searchInput.value.trim() !== '') {
-        body.classList.add('search-focused');
-      } else {
-        body.classList.remove('search-focused');
-      }
-    });
-    
-    // Allow clicking on selector even when search is focused
-    document.querySelector('.selector').addEventListener('click', function(e) {
-      e.stopPropagation();
-    });
-    
-    // Add focus effect when search input is focused
-    searchInput.addEventListener('focus', () => {
-      body.classList.add('search-focused');
-    });
-    
-    searchInput.addEventListener('blur', () => {
-      if (searchInput.value.trim() === '') {
-        body.classList.remove('search-focused');
-      }
+      prevValue = currentValue;
     });
   </script>
 </body>
