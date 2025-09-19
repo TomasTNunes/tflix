@@ -160,7 +160,7 @@
     /* Selector Container */
     .selector-container {
       margin-bottom: 40px;
-      min-width: 296.1px;
+      min-width: 297.1px;
     }
 
     .selector {
@@ -355,12 +355,12 @@
           <i class="fas fa-chevron-down"></i>
         </div>
         <div class="dropdown-options">
-          <div class="dropdown-option" onclick="selectServer('Rakan')">Rakan</div>
-          <div class="dropdown-option" onclick="selectServer('Bard')">Bard</div>
-          <div class="dropdown-option" onclick="selectServer('Xayah')">Xayah</div>
-          <div class="dropdown-option" onclick="selectServer('Ekko')">Ekko</div>
-          <div class="dropdown-option" onclick="selectServer('Naafiri')">Naafiri</div>
-          <div class="dropdown-option" onclick="selectServer('Ryze')">Ryze</div>
+          <div class="dropdown-option" onclick="selectServer('Rakan',1)">Rakan</div>
+          <div class="dropdown-option" onclick="selectServer('Bard',2)">Bard</div>
+          <div class="dropdown-option" onclick="selectServer('Xayah',3)">Xayah</div>
+          <div class="dropdown-option" onclick="selectServer('Ekko',4)">Ekko</div>
+          <div class="dropdown-option" onclick="selectServer('Naafiri',5)">Naafiri</div>
+          <div class="dropdown-option" onclick="selectServer('Ryze',6)">Ryze</div>
         </div>
       </div>
     </div>
@@ -404,7 +404,7 @@
     <div class="result-cards">
 
       <!-- Result Card -->
-      <div class="result-card">
+      <!-- <div class="result-card">
           <div class="card-image">
             <i class="fas fa-film" style="font-size: 2rem;"></i>
           </div>
@@ -412,23 +412,36 @@
             <h3>Sample Movie</h3>
             <p>Action, Adventure • 2023</p>
           </div>
-      </div>
+      </div> -->
 
   </div>
 
   <script>
+
+    const API_BASE = "https://api.themoviedb.org/3/search";
+    const headers = {
+      'Authorization': `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYTk1NzRmZDcxMjRkNmI5ZTUyNjA4ZWEzNWQ2NzdiNCIsIm5iZiI6MTczNzU5MDQ2NC4zMjUsInN1YiI6IjY3OTE4NmMwZThiNjdmZjgzM2ZhNjM4OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.kWqK74FSN41PZO7_ENZelydTtX0u2g6dCkAW0vFs4jU`,
+      'accept': 'application/json'
+    };
+
+    let currentType = "movie";
+    let currentServer = 1;
+    let prevValue = '';
+
+    const searchInput = document.querySelector('.search-bar input');
+    const resultsContainer = document.querySelector(".result-cards");
 
     // Dropdown functionality
     function toggleDropdown() {
       document.querySelector('.dropdown').classList.toggle('active');
     }
 
-    function selectServer(server) {
+    function selectServer(server, id) {
       document.querySelector('.dropdown-select span').textContent = server;
       document.querySelector('.dropdown').classList.remove('active');
+      currentServer = id;
     }
 
-    // Close dropdown when clicking outside
     document.addEventListener('click', function (event) {
       const dropdown = document.querySelector('.dropdown');
       if (!dropdown.contains(event.target)) {
@@ -450,37 +463,35 @@
         options[1].classList.add('selected');
         slider.style.transform = 'translateX(100%)';
       }
+
+      currentType = type;
+
+      // Run search again if there’s a query
+      if (searchInput.value.trim() !== '') {
+        searchTMDB(searchInput.value.trim());
+      }
     }
 
-    // Search focus animation
-    const searchInput = document.querySelector('.search-bar input');
-    const body = document.body;
+    // Layout animation
     const container = document.querySelector(".main-container");
-
     function animateLayoutChange(addClass) {
       const children = Array.from(container.children);
-
-      // Record initial positions
       const firstRects = children.map(el => el.getBoundingClientRect());
 
-      // Toggle class to change layout
       if (addClass) {
         document.body.classList.add('search-focused');
       } else {
         document.body.classList.remove('search-focused');
       }
 
-      // Record final positions
       const lastRects = children.map(el => el.getBoundingClientRect());
 
-      // Apply transform to go back to old position
       children.forEach((el, i) => {
         const dx = firstRects[i].left - lastRects[i].left;
         const dy = firstRects[i].top - lastRects[i].top;
         el.style.transform = `translate(${dx}px, ${dy}px)`;
       });
 
-      // Animate to new position
       requestAnimationFrame(() => {
         children.forEach(el => {
           el.style.transition = "transform 0.6s ease";
@@ -488,7 +499,6 @@
         });
       });
 
-      // Reset transition after animation ends
       setTimeout(() => {
         children.forEach(el => {
           el.style.transition = "";
@@ -496,19 +506,69 @@
       }, 600);
     }
 
-    let prevValue = '';
+    // Search input
     searchInput.addEventListener('input', () => {
       const currentValue = searchInput.value.trim();
-      // Only trigger when the first character is typed
       if (prevValue === '' && currentValue !== '') {
         animateLayoutChange(true);
       }
-      // Trigger false if input is cleared
       if (prevValue !== '' && currentValue === '') {
         animateLayoutChange(false);
+        resultsContainer.innerHTML = "";
+      }
+      if (currentValue !== '') {
+        searchTMDB(currentValue);
       }
       prevValue = currentValue;
     });
+
+    // Search TMDB API
+    async function searchTMDB(query) {
+      try {
+        const res = await fetch(`${API_BASE}/${currentType}?query=${encodeURIComponent(query)}`, {
+          method: 'GET',
+          headers: headers
+        });
+        const data = await res.json();
+        displayResults(data.results || []);
+      } catch (err) {
+        console.error("TMDB Fetch Error:", err);
+      }
+    }
+
+    // Display results
+    function displayResults(results) {
+      resultsContainer.innerHTML = "";
+      if (results.length === 0) {
+        resultsContainer.innerHTML = "<p>No results found.</p>";
+        return;
+      }
+
+      results.forEach(item => {
+        const title = currentType === "movie" ? item.title : item.name;
+        const year = (currentType === "movie" ? item.release_date : item.first_air_date) || "";
+        const poster = item.poster_path 
+          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+          : null;
+
+        const card = document.createElement("div");
+        card.className = "result-card";
+        card.onclick = () => {
+          window.open(`https://tmdbplayer.nunesnetwork.com/?type=${currentType}&id=${item.id}&server=${currentServer}`, "_blank");
+        };
+
+        card.innerHTML = `
+          <div class="card-image" style="${poster ? `background-image: url('${poster}'); background-size: cover; background-position: center;` : ""}">
+            ${!poster ? `<i class="fas fa-film" style="font-size: 2rem;"></i>` : ""}
+          </div>
+          <div class="card-content">
+            <h3>${title}</h3>
+            <p>${year ? year.split("-")[0] : "Unknown Year"}</p>
+          </div>
+        `;
+        resultsContainer.appendChild(card);
+      });
+    }
 
   </script>
 </body>
