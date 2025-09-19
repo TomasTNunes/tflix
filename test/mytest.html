@@ -15,6 +15,8 @@
     }
 
     body {
+      display: flex;
+      flex-direction: column;
       background: linear-gradient(135deg, #141414 0%, #0c0c0c 100%);
       color: #fff;
       min-height: 100vh;
@@ -158,6 +160,7 @@
     /* Selector Container */
     .selector-container {
       margin-bottom: 40px;
+      min-width: 296.1px;
     }
 
     .selector {
@@ -203,6 +206,7 @@
       margin-bottom: 50px;
       max-width: 600px;
       width: 100%;
+      min-width: 70px;
     }
 
     .search-bar {
@@ -255,26 +259,15 @@
       margin-bottom: 40px;
     }
 
+    .results-container {
+      display: none;
+    }
+
     /* --- FOCUS STATE (when typing) --- */
-    /* .search-focused header,
-    .search-focused .content {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .search-focused .search-container {
-      transform: translateY(-308.66px);
-    }
-
-    .search-focused .selector-container {
-        transform: translate(0px, -128.66px);
-    } */
-
     .search-focused .main-container {
       flex-direction: row;
-      position: relative;
       justify-content: space-between;
-      align-items: flex-start; 
+      align-items: center; 
       margin-bottom: 40px;
       gap: 20px;
     }
@@ -295,6 +288,56 @@
 
     .search-focused .selector-container {
       margin-bottom: 0;
+    }
+
+    /* Results Container */
+    .search-focused .results-container {
+      display: block;
+      flex: 1;
+    }
+
+    /* Result Cards */
+    .result-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .result-card {
+      background: #222;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+    }
+
+    .result-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
+    }
+
+    .card-image {
+      height: 150px;
+      background: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+    }
+
+    .card-content {
+      padding: 15px;
+    }
+
+    .card-content h3 {
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .card-content p {
+      color: #aaa;
+      font-size: 0.9rem;
     }
     
 
@@ -356,6 +399,20 @@
 
   <!-- Result Container -->
   <div class="results-container">
+
+    <!-- Result Cards -->
+    <div class="result-cards">
+
+      <!-- Result Card -->
+      <div class="result-card">
+          <div class="card-image">
+            <i class="fas fa-film" style="font-size: 2rem;"></i>
+          </div>
+          <div class="card-content">
+            <h3>Sample Movie</h3>
+            <p>Action, Adventure • 2023</p>
+          </div>
+      </div>
 
   </div>
 
