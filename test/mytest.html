@@ -260,12 +260,14 @@
       margin-bottom: 40px;
     }
 
+    /* Results Container */
     .results-container {
       opacity: 0;
       transition: opacity 0.6s ease;
     }
 
-    /* --- FOCUS STATE (when typing) --- */
+    /* ------- FOCUS STATE (when typing) ------- */
+
     .search-focused .main-container {
       flex-direction: row;
       justify-content: space-between;
@@ -274,20 +276,24 @@
       gap: 20px;
     }
 
+    /* Header and Content */
     .search-focused header,
     .search-focused .content {
       display: none;
     }
 
+    /* Server-Selector */
     .search-focused .server-selector {
       align-self: flex-start;
       order: 1;
     }
 
+    /* Search-Container */
     .search-focused .search-container {
       margin-bottom: 0;
     }
 
+    /* Selector-Container */
     .search-focused .selector-container {
       margin-bottom: 0;
     }
@@ -332,6 +338,11 @@
       padding: 10px 15px;
     }
 
+    .card-content p {
+      color: #aaa;
+      font-size: 0.8rem;
+    }
+
     .card-content h3 {
       overflow: hidden;
       margin-bottom: 10px;
@@ -355,11 +366,6 @@
       to {
         transform: translateX(-100%);
       }
-    }
-
-    .card-content p {
-      color: #aaa;
-      font-size: 0.8rem;
     }
     
 
@@ -414,7 +420,7 @@
       <i class="fas fa-film"></i>
       <p>Select a category and start searching to see results</p>
       <i class="fas fa-server"></i>
-      <p>Select a category and start searching to see results</p>
+      <p>Choose your preferred server as the default.</p>
     </div>
 
   </div>
@@ -437,6 +443,16 @@
       </div> -->
 
   </div>
+
+  <!-- Popover Container -->
+   <div class="popover-container">
+    
+    <div class="popover">
+
+    </div>
+
+   </div>
+
 
   <script>
 
@@ -608,7 +624,7 @@
 
       results.forEach(item => {
         const title = currentType === "movie" ? item.title : item.name;
-        const year = (currentType === "movie" ? item.release_date : item.first_air_date) || "";
+        const year = (currentType === "movie" ? item.release_date : item.first_air_date) || "Unknown Year";
         const poster = item.poster_path 
           ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
           : null;
@@ -617,15 +633,15 @@
         card.className = "result-card";
 
         // Movies Click Handler
-        if (currentType === "movie") {
-          card.onclick = () => {
-            window.open(`${DOMAIN}/?type=movie&id=${item.id}&server=${currentServer}`, "_blank");
-          };
-        }
-        // TV Shows Click Handler
-        if (currentType === "tv") {
-          console.log("TV Show clicked:\n", item);
-        };
+        // if (currentType === "movie") {
+        //   card.onclick = () => {
+        //     window.open(`${DOMAIN}/?type=movie&id=${item.id}&server=${currentServer}`, "_blank");
+        //   };
+        // }
+        // // TV Shows Click Handler
+        // if (currentType === "tv") {
+        //   console.log("TV Show clicked:\n", item);
+        // };
 
         card.innerHTML = `
           <div class="card-image" style="${poster ? `background-image: url('${poster}'); background-size: cover; background-position: center;` : ""}">
@@ -633,7 +649,7 @@
           </div>
           <div class="card-content">
             <h3><span>${title}</span></h3>
-            <p>${year ? year.split("-")[0] : "Unknown Year"}</p>
+            <p>${year}</p>
           </div>
         `;
         resultsContainer.appendChild(card);
