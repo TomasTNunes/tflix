@@ -445,13 +445,13 @@
   </div>
 
   <!-- Popover Container -->
-   <div class="popover-container">
-    
+  <!-- <div class="popover-container">
+  
     <div class="popover">
 
     </div>
 
-   </div>
+  </div> -->
 
 
   <script>
@@ -632,16 +632,16 @@
         const card = document.createElement("div");
         card.className = "result-card";
 
-        // Movies Click Handler
-        // if (currentType === "movie") {
-        //   card.onclick = () => {
-        //     window.open(`${DOMAIN}/?type=movie&id=${item.id}&server=${currentServer}`, "_blank");
-        //   };
-        // }
-        // // TV Shows Click Handler
-        // if (currentType === "tv") {
-        //   console.log("TV Show clicked:\n", item);
-        // };
+        // Click Handler
+        card.onclick = () => {
+          // Movie
+          if (currentType === "movie") {
+            window.open(`${DOMAIN}/?type=movie&id=${item.id}&server=${currentServer}`, "_blank");
+          // TV Show
+          } else {
+            window.open(`${DOMAIN}/?type=tv&id=${item.id}&server=${currentServer}&s=1&e=1`, "_blank");
+          }
+        };
 
         card.innerHTML = `
           <div class="card-image" style="${poster ? `background-image: url('${poster}'); background-size: cover; background-position: center;` : ""}">
