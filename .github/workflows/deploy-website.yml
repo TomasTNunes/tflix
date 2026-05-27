@@ -12,7 +12,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare Pages artifact
-        run: mkdir -p public && mv index.html styles.css script.js assets public/
+        run: mkdir -p public && mv index.html public/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
