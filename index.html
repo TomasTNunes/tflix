@@ -869,7 +869,11 @@ const SERVERS = [
 ];
 
 /* ─── STATE ─── */
-let currentServer = 1;
+const STORAGE_KEY = 'tflix_server';
+let currentServer = (() => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  return saved ? parseInt(saved, 10) : 1;
+})();
 let currentFilter = 'all';
 let searchResults = [];
 let heroItem = null;
@@ -901,11 +905,13 @@ const serverLabel = $('server-label');
 
 SERVERS.forEach(s => {
   const el = document.createElement('div');
-  el.className = 'server-item' + (s.id === 1 ? ' active' : '');
+  // Mark the saved server as active on page load
+  el.className = 'server-item' + (s.id === currentServer ? ' active' : '');
   el.dataset.id = s.id;
   el.innerHTML = `<div class="s-dot"></div><span>${s.name}</span>`;
   el.addEventListener('click', () => {
     currentServer = s.id;
+    localStorage.setItem(STORAGE_KEY, s.id);
     serverLabel.textContent = s.name;
     document.querySelectorAll('.server-item').forEach(i => i.classList.remove('active'));
     el.classList.add('active');
@@ -914,6 +920,10 @@ SERVERS.forEach(s => {
   });
   serverMenu.appendChild(el);
 });
+
+// Set label to saved server name on load
+const savedServer = SERVERS.find(s => s.id === currentServer) || SERVERS[0];
+serverLabel.textContent = savedServer.name;
 
 serverBtn.addEventListener('click', e => {
   e.stopPropagation();
