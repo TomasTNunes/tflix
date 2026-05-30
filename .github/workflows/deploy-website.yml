@@ -11,6 +11,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Inject TMDB token
+        run: sed -i "s|__TMDB_TOKEN__|${{ secrets.TMDB_TOKEN }}|g" script.js
+
       - name: Prepare Pages artifact
         run: mkdir -p public && mv index.html styles.css script.js assets public/
 
