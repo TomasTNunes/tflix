@@ -1,8 +1,8 @@
 const DOMAIN = "https://tmdbplayer.nunesnetwork.com";
 const API_BASE = "https://api.themoviedb.org/3/search";
-const headers = {
-    'Authorization': `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYTk1NzRmZDcxMjRkNmI5ZTUyNjA4ZWEzNWQ2NzdiNCIsIm5iZiI6MTczNzU5MDQ2NC4zMjUsInN1YiI6IjY3OTE4NmMwZThiNjdmZjgzM2ZhNjM4OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.kWqK74FSN41PZO7_ENZelydTtX0u2g6dCkAW0vFs4jU`,
-    'accept': 'application/json'
+const HEADERS = {
+  'Authorization': 'Bearer __TMDB_TOKEN__',
+  'accept': 'application/json'
 };
 
 let currentType = "movie";
