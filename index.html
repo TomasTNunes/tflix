@@ -548,15 +548,7 @@
     #toast .s-live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
 
     /* ─────────────── FOOTER ─────────────── */
-    footer {
-      border-top: 1px solid var(--line); padding: 3rem var(--gutter) 4rem;
-      color: var(--muted); font-size: 0.85rem; position: relative; z-index: 2;
-    }
-    .footer-logo { font-family: 'Bricolage Grotesque'; font-weight: 800; font-size: 1.4rem; color: var(--accent); margin-bottom: 1.2rem; letter-spacing: -0.04em; }
-    .footer-links { display: flex; flex-wrap: wrap; gap: 0.8rem 2rem; margin-bottom: 1.5rem; }
-    .footer-links a { color: var(--muted); transition: color .2s; }
-    .footer-links a:hover { color: var(--text); }
-    .footer-note { font-size: 0.78rem; opacity: 0.7; line-height: 1.6; max-width: 640px; }
+
 
     /* ─────────────── RESPONSIVE ─────────────── */
     @media (max-width: 860px) {
@@ -642,17 +634,7 @@
 </section>
 
 <!-- ─────────────── FOOTER ─────────────── -->
-<footer>
-  <div class="footer-logo">TFLIX</div>
-  <div class="footer-links">
-    <a href="#">Browse</a><a href="#">Movies</a><a href="#">TV Shows</a>
-    <a href="#">My List</a><a href="#">Help Center</a><a href="#">Terms</a><a href="#">Privacy</a>
-  </div>
-  <div class="footer-note">
-    TFLIX is a personal media front-end. Metadata and artwork are provided by The Movie Database (TMDB).
-    This product uses the TMDB API but is not endorsed or certified by TMDB.
-  </div>
-</footer>
+
 
 <!-- ─────────────── MODAL ─────────────── -->
 <div class="modal-backdrop" id="modal-backdrop">
@@ -713,8 +695,10 @@ const SERVERS = [
 ];
 
 /* Content rows shown on the home page */
+const CURRENT_YEAR = new Date().getFullYear();
 const CATEGORY_ROWS = [
-  { title: 'Popular Movies',   endpoint: '/movie/popular', media: 'movie', anchor: 'movies' },
+  { title: 'Popular Movies',    endpoint: '/movie/popular', media: 'movie', anchor: 'movies' },
+  { title: 'Top Rated This Year', endpoint: `/discover/movie?sort_by=vote_average.desc&vote_count.gte=500&primary_release_year=${CURRENT_YEAR}`, media: 'movie' },
   { title: 'Popular TV Shows', endpoint: '/tv/popular',    media: 'tv',    anchor: 'tv' },
   { title: 'Airing Today',     endpoint: '/tv/airing_today', media: 'tv',  anchor: 'airing' },
 ];
