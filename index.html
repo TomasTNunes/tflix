@@ -716,6 +716,7 @@ const SERVERS = [
 const CATEGORY_ROWS = [
   { title: 'Popular Movies',   endpoint: '/movie/popular', media: 'movie', anchor: 'movies' },
   { title: 'Popular TV Shows', endpoint: '/tv/popular',    media: 'tv',    anchor: 'tv' },
+  { title: 'Airing Today',     endpoint: '/tv/airing_today', media: 'tv',  anchor: 'airing' },
 ];
 
 /* ─── STATE ─── */
@@ -934,11 +935,16 @@ function buildRow(cfg, { top10 = false } = {}) {
 async function loadRow(cfg) {
   const scroller = buildRow(cfg);
   try {
-    const data = await tmdb(cfg.endpoint);
-    const items = (data.results || [])
+    // TMDB returns 20 results per page; fetch 2 pages to get 25
+    const sep = cfg.endpoint.includes('?') ? '&' : '?';
+    const [p1, p2] = await Promise.all([
+      tmdb(cfg.endpoint),
+      tmdb(`${cfg.endpoint}${sep}page=2`),
+    ]);
+    const items = [...(p1.results || []), ...(p2.results || [])]
       .filter(r => r.poster_path)
       .map(r => ({ ...r, media_type: cfg.media || r.media_type }))
-      .slice(0, 18);
+      .slice(0, 25);
     scroller.innerHTML = '';
     if (!items.length) { scroller.closest('.row').remove(); return; }
     items.forEach(item => scroller.appendChild(makeCard(item)));
@@ -1232,7 +1238,11 @@ const searchInput = $('search');
 const clearBtn    = $('search-clear');
 
 // Search is open by default; the toggle icon is kept as a visual anchor only
-$('search-toggle').addEventListener('click', () => searchInput.focus());
+$('search-toggle').addEventListener('click', () => {
+  const q = searchInput.value.trim();
+  if (q) { clearTimeout(searchTimer); doSearch(q); }
+  else searchInput.focus();
+});
 
 searchInput.addEventListener('input', () => {
   const q = searchInput.value.trim();
