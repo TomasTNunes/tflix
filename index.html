@@ -38,8 +38,13 @@
 
     html {
       scroll-behavior: smooth;
+<<<<<<< HEAD
+      overflow-x: hidden;
+      overscroll-behavior-x: none;
+=======
       overflow-x: hidden; /* body alone isn't enough — html element can still scroll */
       overscroll-behavior-x: none; /* no horizontal bounce at the page level */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     }
 
     body {
@@ -49,19 +54,30 @@
       font-weight: 400;
       min-height: 100vh;
       overflow-x: hidden;
+<<<<<<< HEAD
+      max-width: 100%;
+=======
       max-width: 100%;  /* belt-and-suspenders: nothing breaks out of viewport width */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
       -webkit-font-smoothing: antialiased;
     }
 
     ::selection { background: var(--accent); color: #fff; }
 
+<<<<<<< HEAD
+=======
     /* subtle film-grain atmosphere */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     body::after {
       content: '';
       position: fixed; inset: 0;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
       pointer-events: none; z-index: 9999; opacity: .18;
+<<<<<<< HEAD
+      transform: translateZ(0);
+=======
       transform: translateZ(0); /* isolate to own GPU layer — no blend compositing */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     }
 
     a { color: inherit; text-decoration: none; }
@@ -77,7 +93,11 @@
       background: linear-gradient(to bottom, rgba(8,8,11,0.92) 0%, rgba(8,8,11,0) 100%);
       transition: background .35s var(--ease), border-color .35s;
       border-bottom: 1px solid transparent;
+<<<<<<< HEAD
+      transform: translateZ(0);
+=======
       transform: translateZ(0); /* own compositing layer */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     }
     header.scrolled {
       background: rgba(9,9,12,0.86);
@@ -110,7 +130,10 @@
 
     .nav-right { margin-left: auto; display: flex; align-items: center; gap: 0.9rem; flex-shrink: 0; }
 
+<<<<<<< HEAD
+=======
     /* search */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     .search-wrap { position: relative; display: flex; align-items: center; }
     .search-toggle {
       width: 38px; height: 38px; display: grid; place-items: center;
@@ -138,7 +161,10 @@
     }
     .search-wrap.open #search-clear.visible { display: block; }
 
+<<<<<<< HEAD
+=======
     /* server picker */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     .server-wrap { position: relative; flex-shrink: 0; }
     .server-btn {
       display: flex; align-items: center; gap: 0.5rem;
@@ -174,10 +200,15 @@
     .server-item.active .s-dot { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
     .s-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: .15s; }
 
+<<<<<<< HEAD
+    @keyframes pop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+
+=======
 
 
     @keyframes pop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
 
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     /* ─────────────── HERO BILLBOARD ─────────────── */
     #hero {
       position: relative; width: 100%;
@@ -194,8 +225,13 @@
       position: absolute; inset: 0;
       background-size: cover; background-position: center 18%;
       transform: scale(1.05); animation: heroZoom 12s ease forwards;
+<<<<<<< HEAD
+      will-change: transform;
+      backface-visibility: hidden;
+=======
       will-change: transform;          /* pre-allocate high-quality GPU texture */
       backface-visibility: hidden;     /* force own compositing layer at full resolution */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
       -webkit-backface-visibility: hidden;
     }
     .hero-slide.active .hero-bg { animation: heroZoom 12s ease forwards; }
@@ -278,10 +314,29 @@
       color: var(--text);
     }
 
+<<<<<<< HEAD
+    /* ── Row subtitle/description ── */
+    .row-subtitle {
+      font-size: 0.78rem; font-weight: 500; color: var(--muted);
+      margin-left: 0.2rem; letter-spacing: 0.01em;
+    }
+=======
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 
     .scroller-wrap { position: relative; overflow-y: clip; }
     .scroller {
       display: flex; gap: 0.7rem;
+<<<<<<< HEAD
+      overflow-x: hidden;
+      overflow-y: clip;
+      padding: 20px var(--gutter) 20px 0;
+      scrollbar-width: none;
+      overscroll-behavior-x: contain;
+    }
+    .scroller::-webkit-scrollbar { display: none; }
+    @media (hover: none) { .scroller { overflow-x: auto; } }
+
+=======
       overflow-x: hidden; /* desktop: arrows only; JS scrollBy still works */
       overflow-y: clip;   /* KEY: 'clip' is exempt from the CSS spec rule that forces
                              overflow-y:visible → overflow-y:auto when overflow-x is non-visible.
@@ -296,6 +351,7 @@
     @media (hover: none) { .scroller { overflow-x: auto; } }
 
     /* arrows — z-index 20 so they always stay above hovered cards (z-index 6) */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     .arrow {
       position: absolute; top: 0; bottom: 20px; width: clamp(2.5rem, var(--gutter), 5rem);
       display: grid; place-items: center;
@@ -319,7 +375,10 @@
       background: var(--card);
       transition: transform .3s var(--ease), box-shadow .3s var(--ease);
     }
+<<<<<<< HEAD
+=======
     /* Promote only the card being hovered, not all 150+ at once */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     .card:hover { will-change: transform; }
     .card:hover {
       transform: scale(1.09) translateY(-4px);
@@ -340,7 +399,10 @@
       opacity: 0; transform: translate3d(0, 8px, 0);
       transition: opacity .25s, transform .25s var(--ease);
     }
+<<<<<<< HEAD
+=======
     /* translate3d(0,0,0) keeps the element on its own compositor layer → no text blur */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     .card:hover .card-info { opacity: 1; transform: translate3d(0, 0, 0); }
     .card-info-top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
     .mini-play {
@@ -359,6 +421,26 @@
       font-size: 0.58rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
       padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.78);
       color: #fff; border: 1px solid rgba(255,255,255,0.18);
+<<<<<<< HEAD
+    }
+    .card-badge.movie { color: #fff; }
+    .card-badge.tv { color: #ffd0d0; }
+
+    /* Digital release badge on card */
+    .card-dr-badge {
+      position: absolute; top: 8px; right: 8px;
+      font-size: 0.52rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 2px 6px; border-radius: 4px;
+      background: rgba(34,197,94,0.18); border: 1px solid rgba(74,209,126,0.4);
+      color: #4ade80;
+      display: flex; align-items: center; gap: 3px;
+    }
+    .card-dr-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: #4ade80;
+      box-shadow: 0 0 5px #4ade80; flex-shrink: 0;
+      animation: drpulse 2s ease-in-out infinite;
+=======
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     }
     .card-badge.movie { color: #fff; }
     .card-badge.tv { color: #ffd0d0; }
@@ -384,7 +466,10 @@
       text-shadow: 0 0 40px rgba(229,9,20,0.35);
     }
     .rank-card .card { width: clamp(120px, 12vw, 165px); }
+<<<<<<< HEAD
+=======
     /* Hovering the number OR the poster activates the full card hover state */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     .rank-card:hover .card {
       transform: scale(1.09) translateY(-4px);
       box-shadow: 0 22px 48px rgba(0,0,0,0.7);
@@ -392,7 +477,10 @@
     }
     .rank-card:hover .card .card-info { opacity: 1; transform: translate3d(0,0,0); }
 
+<<<<<<< HEAD
+=======
     /* skeleton shimmer — transform-based (GPU-only, no paint) */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     .skeleton {
       flex: 0 0 auto; width: clamp(135px, 14vw, 200px);
       aspect-ratio: 2/3; border-radius: var(--radius);
@@ -485,7 +573,12 @@
     .modal-meta .chip { padding: 1px 8px; border: 1px solid rgba(255,255,255,0.25); border-radius: 4px; font-size: 0.72rem; }
     .modal-genres { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
     .genre-chip { font-size: 0.74rem; font-weight: 600; padding: 0.3rem 0.8rem; border-radius: 99px; background: var(--card); border: 1px solid var(--line); color: var(--muted); }
+<<<<<<< HEAD
+
+    /* ── Digital release badge (modal) ── */
+=======
     /* ── Digital release badge ── */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     #modal-digital-release {
       display: inline-flex; align-items: center; gap: 0.5rem;
       padding: 0.38rem 0.9rem 0.38rem 0.7rem;
@@ -514,6 +607,10 @@
     .dr-future .dr-dot  { background: #fbbf24; box-shadow: 0 0 7px #fbbf24; }
     .dr-available .dr-dot { background: #4ade80; box-shadow: 0 0 7px #4ade80; animation: drpulse 2s ease-in-out infinite; }
     @keyframes drpulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+<<<<<<< HEAD
+
+=======
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     .modal-overview {
       font-size: 0.96rem; line-height: 1.6; color: rgba(255,255,255,0.78);
       margin-bottom: 1.6rem;
@@ -547,9 +644,12 @@
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     #toast .s-live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
 
+<<<<<<< HEAD
+=======
     /* ─────────────── FOOTER ─────────────── */
 
 
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     /* ─────────────── RESPONSIVE ─────────────── */
     @media (max-width: 860px) {
       .nav-links { display: none; }
@@ -633,9 +733,12 @@
   </div>
 </section>
 
+<<<<<<< HEAD
+=======
 <!-- ─────────────── FOOTER ─────────────── -->
 
 
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 <!-- ─────────────── MODAL ─────────────── -->
 <div class="modal-backdrop" id="modal-backdrop">
   <div class="modal" id="modal">
@@ -694,6 +797,15 @@ const SERVERS = [
   { name: 'Ryze',    id: 6 },
 ];
 
+<<<<<<< HEAD
+const CURRENT_YEAR = new Date().getFullYear();
+const CATEGORY_ROWS = [
+  { title: 'Popular Movies',      endpoint: '/movie/popular',   media: 'movie', anchor: 'movies' },
+  { title: 'Recently Digitally Released', endpoint: null,       media: 'movie', anchor: 'digital', isDigitalRow: true },
+  { title: 'Top Rated This Year', endpoint: `/discover/movie?sort_by=vote_average.desc&vote_count.gte=500&primary_release_year=${CURRENT_YEAR}`, media: 'movie' },
+  { title: 'Popular TV Shows',    endpoint: '/tv/popular',      media: 'tv',    anchor: 'tv' },
+  { title: 'Airing Today',        endpoint: '/tv/airing_today', media: 'tv',    anchor: 'airing' },
+=======
 /* Content rows shown on the home page */
 const CURRENT_YEAR = new Date().getFullYear();
 const CATEGORY_ROWS = [
@@ -701,6 +813,7 @@ const CATEGORY_ROWS = [
   { title: 'Top Rated This Year', endpoint: `/discover/movie?sort_by=vote_average.desc&vote_count.gte=500&primary_release_year=${CURRENT_YEAR}`, media: 'movie' },
   { title: 'Popular TV Shows', endpoint: '/tv/popular',    media: 'tv',    anchor: 'tv' },
   { title: 'Airing Today',     endpoint: '/tv/airing_today', media: 'tv',  anchor: 'airing' },
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 ];
 
 /* ─── STATE ─── */
@@ -719,6 +832,12 @@ let genreMap = {};
 let heroSlides = [];
 let heroIndex = 0;
 let heroTimer = null;
+<<<<<<< HEAD
+
+/* digital release cache — keyed by movie id */
+const digitalCache = {};
+=======
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 
 /* ─── UTILS ─── */
 const $ = id => document.getElementById(id);
@@ -733,6 +852,16 @@ const rating = v => v ? v.toFixed(1) : '—';
 const matchPct = v => v ? Math.min(99, Math.round(v * 10)) : null;
 const mediaOf = item => item.media_type || (item.title ? 'movie' : 'tv');
 
+<<<<<<< HEAD
+function fmtShortDate(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  if (isNaN(dt)) return '';
+  return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+=======
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 function esc(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 function toast(msg) {
@@ -745,8 +874,13 @@ function toast(msg) {
 
 /* ─── NAVBAR SCROLL ─── */
 const header = $('header');
+<<<<<<< HEAD
+const HEADER_H = 70;
+const NAV_OFFSET = HEADER_H + 24;
+=======
 const HEADER_H = 70; // px — fixed header height
 const NAV_OFFSET = HEADER_H + 24; // extra 24px breathing room below header
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 
 const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 30);
 window.addEventListener('scroll', onScroll, { passive: true });
@@ -754,7 +888,10 @@ onScroll();
 
 $('logo').addEventListener('click', () => { resetSearch(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
+<<<<<<< HEAD
+=======
 /* Scroll to a section with offset so the title shows below the fixed header */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 function scrollToSection(anchor) {
   const target = document.querySelector(`[data-anchor="${anchor}"]`);
   if (!target) return;
@@ -762,7 +899,10 @@ function scrollToSection(anchor) {
   window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
 }
 
+<<<<<<< HEAD
+=======
 /* Nav click handler */
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 document.querySelectorAll('.nav-link').forEach(link => {
   link.addEventListener('click', () => {
     resetSearch();
@@ -775,27 +915,40 @@ document.querySelectorAll('.nav-link').forEach(link => {
   });
 });
 
+<<<<<<< HEAD
+const NAV_SECTIONS = ['trending', 'movies', 'tv'];
+=======
 /* ─── SCROLL-BASED NAV ACTIVE STATE ─── */
 // Updates the active nav link based on which section is currently scrolled past.
 // Uses rAF-throttling for smooth perf — only runs once per frame at most.
 const NAV_SECTIONS = ['trending', 'movies', 'tv']; // in page order
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 let rafNav = null;
 
 function updateActiveNav() {
   if (rafNav) return;
   rafNav = requestAnimationFrame(() => {
     rafNav = null;
+<<<<<<< HEAD
+    if ($('search-results-section').classList.contains('visible')) return;
+=======
     // Don't override nav during search
     if ($('search-results-section').classList.contains('visible')) return;
 
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     let active = 'home';
     for (const anchor of NAV_SECTIONS) {
       const el = document.querySelector(`[data-anchor="${anchor}"]`);
       if (!el) continue;
+<<<<<<< HEAD
+      if (el.getBoundingClientRect().top <= NAV_OFFSET + 40) active = anchor;
+    }
+=======
       // Section is considered "active" once its top has scrolled past the header
       if (el.getBoundingClientRect().top <= NAV_OFFSET + 40) active = anchor;
     }
     // Map anchor → nav key (same names here, but kept explicit for clarity)
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     const navKey = { trending: 'trending', movies: 'movies', tv: 'tv' }[active] || 'home';
     document.querySelectorAll('.nav-link').forEach(l =>
       l.classList.toggle('active', l.dataset.nav === navKey)
@@ -846,19 +999,53 @@ function playerUrl(item, season = 1, episode = 1) {
   return `${PLAYER}?${p.toString()}`;
 }
 
+/* ─── DIGITAL RELEASE FETCH (shared) ─── */
+const DIGITAL_TYPE = 4;
+
+async function fetchDigitalData(movieId) {
+  if (digitalCache[movieId]) return digitalCache[movieId];
+  const data = await tmdb(`/movie/${movieId}/release_dates`);
+  // Find earliest type-4 (Digital) date across all regions
+  let found = null;
+  for (const entry of (data.results || [])) {
+    for (const rd of entry.release_dates) {
+      if (rd.type === DIGITAL_TYPE && rd.release_date) {
+        if (!found || rd.release_date < found) found = rd.release_date;
+      }
+    }
+  }
+  digitalCache[movieId] = found || null;
+  return digitalCache[movieId];
+}
+
 /* ─── CARD ─── */
+<<<<<<< HEAD
+// drDate: optional ISO date string — if provided and in the past, shows green badge on card
+function makeCard(item, { drDate = null } = {}) {
+=======
 function makeCard(item) {
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
   const type    = mediaOf(item);
   const isMovie = type === 'movie';
   const title   = item.title || item.name || 'Untitled';
   const date    = item.release_date || item.first_air_date;
   const imgSrc  = poster(item.poster_path);
   const m       = matchPct(item.vote_average);
+<<<<<<< HEAD
+
+  // Show DR badge on card if a valid past digital date is supplied
+  const showDrBadge = drDate && new Date(drDate) <= new Date();
+=======
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 
   const card = document.createElement('div');
   card.className = 'card';
   card.innerHTML = `
     <span class="card-badge ${isMovie ? 'movie' : 'tv'}">${isMovie ? 'Film' : 'Series'}</span>
+<<<<<<< HEAD
+    ${showDrBadge ? `<span class="card-dr-badge"><span class="card-dr-dot"></span>Digital</span>` : ''}
+=======
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     ${imgSrc
       ? `<img class="card-poster" src="${imgSrc}" alt="${esc(title)}" loading="lazy" onerror="this.parentNode.replaceChild(makePlaceholder('${esc(title).replace(/'/g,"")}'),this)">`
       : `<div class="card-poster-placeholder"><span style="font-size:2rem">🎬</span><span>${esc(title)}</span></div>`}
@@ -891,6 +1078,10 @@ function buildRow(cfg, { top10 = false } = {}) {
   row.innerHTML = `
     <div class="row-head">
       <h2 class="row-title">${esc(cfg.title)}</h2>
+<<<<<<< HEAD
+      ${cfg.subtitle ? `<span class="row-subtitle">${esc(cfg.subtitle)}</span>` : ''}
+=======
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     </div>
     <div class="scroller-wrap">
       <button class="arrow left" aria-label="Scroll left"><svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -900,14 +1091,20 @@ function buildRow(cfg, { top10 = false } = {}) {
 
   const scroller = row.querySelector('.scroller');
 
+<<<<<<< HEAD
+=======
   // skeletons while loading
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
   for (let i = 0; i < 8; i++) {
     const sk = document.createElement('div');
     sk.className = 'skeleton';
     scroller.appendChild(sk);
   }
 
+<<<<<<< HEAD
+=======
   // arrow scrolling
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
   const step = () => Math.max(scroller.clientWidth * 0.82, 320);
   row.querySelector('.arrow.left').addEventListener('click', () => scroller.scrollBy({ left: -step(), behavior: 'smooth' }));
   row.querySelector('.arrow.right').addEventListener('click', () => scroller.scrollBy({ left:  step(), behavior: 'smooth' }));
@@ -917,9 +1114,16 @@ function buildRow(cfg, { top10 = false } = {}) {
 }
 
 async function loadRow(cfg) {
+<<<<<<< HEAD
+  if (cfg.isDigitalRow) { await loadDigitalRow(cfg); return; }
+
+  const scroller = buildRow(cfg);
+  try {
+=======
   const scroller = buildRow(cfg);
   try {
     // TMDB returns 20 results per page; fetch 2 pages to get 25
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     const sep = cfg.endpoint.includes('?') ? '&' : '?';
     const [p1, p2] = await Promise.all([
       tmdb(cfg.endpoint),
@@ -937,6 +1141,71 @@ async function loadRow(cfg) {
   }
 }
 
+<<<<<<< HEAD
+/* ─── RECENTLY ON DIGITAL ROW ─── */
+async function loadDigitalRow(cfg) {
+  // Use local date parts so we don't lose "today" due to UTC offset
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const localDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+  const dateTo   = localDate(now);
+  const dateFrom = localDate(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90));
+
+  // Two complementary endpoints: one surfaces newest releases, one surfaces popular ones
+  const endpointRecent  = `/discover/movie?with_release_type=4&release_date.gte=${dateFrom}&release_date.lte=${dateTo}&sort_by=primary_release_date.desc&vote_count.gte=40`;
+  const endpointPopular = `/discover/movie?with_release_type=4&release_date.gte=${dateFrom}&release_date.lte=${dateTo}&sort_by=popularity.desc`;
+
+  const rowCfg = { ...cfg };
+  const scroller = buildRow(rowCfg);
+
+  try {
+    const [r1, r2, p1, p2] = await Promise.all([
+      tmdb(endpointRecent),
+      tmdb(`${endpointRecent}&page=2`),
+      tmdb(endpointPopular),
+      tmdb(`${endpointPopular}&page=2`),
+    ]);
+
+    // Merge both result sets, deduplicate by id
+    const seen = new Set();
+    const items = [...(r1.results || []), ...(r2.results || []), ...(p1.results || []), ...(p2.results || [])]
+      .filter(r => {
+        if (!r.poster_path || seen.has(r.id)) return false;
+        seen.add(r.id);
+        return true;
+      })
+      .map(r => ({ ...r, media_type: 'movie' }));
+
+    if (!items.length) { scroller.closest('.row').remove(); return; }
+
+    // Fetch the actual digital release date for every movie in parallel
+    const drDates = await Promise.all(items.map(async item => {
+      try {
+        const drDate = await fetchDigitalData(item.id);
+        return { item, drDate };
+      } catch {
+        return { item, drDate: null };
+      }
+    }));
+
+    // Sort by digital release date — newest first; nulls go to end
+    drDates.sort((a, b) => {
+      if (!a.drDate && !b.drDate) return 0;
+      if (!a.drDate) return 1;
+      if (!b.drDate) return -1;
+      return new Date(b.drDate) - new Date(a.drDate);
+    });
+
+    scroller.innerHTML = '';
+    drDates.slice(0, 25).forEach(({ item }) => scroller.appendChild(makeCard(item)));
+  } catch (e) {
+    scroller.closest('.row').remove();
+  }
+}
+
+=======
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 async function loadTop10() {
   const scroller = buildRow({ title: 'Top 10 This Week', anchor: 'trending' }, { top10: true });
   try {
@@ -953,7 +1222,10 @@ async function loadTop10() {
       num.textContent = i + 1;
       wrap.appendChild(num);
       wrap.appendChild(makeCard(item));
+<<<<<<< HEAD
+=======
       // Clicking the number (or anywhere on the wrap outside the card) also opens modal
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
       num.addEventListener('click', () => openModal(item));
       scroller.appendChild(wrap);
     });
@@ -1007,7 +1279,10 @@ async function loadHero() {
       hero.appendChild(slide);
     });
 
+<<<<<<< HEAD
+=======
     // dots
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
     const dots = document.createElement('div');
     dots.className = 'hero-dots';
     items.forEach((_, i) => {
@@ -1031,7 +1306,10 @@ function goToHero(i) {
   heroIndex = (i + heroSlides.length) % heroSlides.length;
   slides[heroIndex]?.classList.add('active');
   dots[heroIndex]?.classList.add('active');
+<<<<<<< HEAD
+=======
   // restart zoom animation on the now-active bg (double-rAF avoids forced sync reflow)
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
   const bg = slides[heroIndex]?.querySelector('.hero-bg');
   if (bg) {
     bg.style.animation = 'none';
@@ -1085,7 +1363,11 @@ async function openModal(item) {
   if (isMovie) {
     tvSel.style.display = 'none';
     drEl.style.display = 'inline-flex';
+<<<<<<< HEAD
+    fetchDigitalReleaseBadge(item.id);
+=======
     fetchDigitalRelease(item.id); // async — fills in badge independently
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
   } else {
     tvSel.style.display = 'block';
     drEl.style.display = 'none';
@@ -1096,6 +1378,14 @@ async function openModal(item) {
   document.body.style.overflow = 'hidden';
 }
 
+<<<<<<< HEAD
+/* ─── DIGITAL RELEASE BADGE (modal) ─── */
+async function fetchDigitalReleaseBadge(movieId) {
+  const el = $('modal-digital-release');
+  el.className = 'dr-loading'; el.innerHTML = '';
+  try {
+    const found = await fetchDigitalData(movieId);
+=======
 /* ─── DIGITAL RELEASE BADGE ─── */
 const digitalCache = {};
 
@@ -1117,6 +1407,7 @@ async function fetchDigitalRelease(movieId) {
         }
       }
     }
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 
     if (!found) {
       el.className = 'dr-none';
@@ -1126,17 +1417,29 @@ async function fetchDigitalRelease(movieId) {
 
     const releaseDate = new Date(found);
     const now = new Date();
+<<<<<<< HEAD
+    const label = fmtShortDate(found);
+=======
     const label = releaseDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 
     if (releaseDate > now) {
       el.className = 'dr-future';
       el.innerHTML = `<span class="dr-dot"></span>Digital release · ${label}`;
     } else {
       el.className = 'dr-available';
+<<<<<<< HEAD
+      // CHANGE 1: show the date even when already released
+      el.innerHTML = `<span class="dr-dot"></span>Digitally Released · ${label}`;
+    }
+  } catch {
+    el.className = ''; el.innerHTML = '';
+=======
       el.innerHTML = `<span class="dr-dot"></span>Digitally Released`;
     }
   } catch {
     el.className = ''; el.innerHTML = ''; // silently hide on error
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
   }
 }
 
@@ -1221,7 +1524,10 @@ const searchWrap  = $('search-wrap');
 const searchInput = $('search');
 const clearBtn    = $('search-clear');
 
+<<<<<<< HEAD
+=======
 // Search is open by default; the toggle icon is kept as a visual anchor only
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 $('search-toggle').addEventListener('click', () => {
   const q = searchInput.value.trim();
   if (q) { clearTimeout(searchTimer); doSearch(q); }
@@ -1236,7 +1542,10 @@ searchInput.addEventListener('input', () => {
   searchTimer = setTimeout(() => doSearch(q), 280);
 });
 
+<<<<<<< HEAD
+=======
 // Enter key: immediately re-run the search (no debounce delay)
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 searchInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
     clearTimeout(searchTimer);
@@ -1245,7 +1554,10 @@ searchInput.addEventListener('keydown', e => {
   }
 });
 
+<<<<<<< HEAD
+=======
 // When re-focusing after nav away: show the clear ✕ if old text is still there
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
 searchInput.addEventListener('focus', () => {
   clearBtn.classList.toggle('visible', searchInput.value.trim().length > 0);
 });
@@ -1270,13 +1582,20 @@ async function doSearch(q) {
   $('search-results-section').classList.add('visible');
   $('main').style.display = 'none';
   $('hero').style.display = 'none';
+<<<<<<< HEAD
+  $('search-term').textContent = `"${q}"`;
+=======
   $('search-term').textContent = `“${q}”`;
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
   $('search-spinner').style.display = 'flex';
   $('search-grid').innerHTML = '';
   $('search-empty').style.display = 'none';
   $('search-count').textContent = '';
   window.scrollTo({ top: 0 });
+<<<<<<< HEAD
+=======
   // Home stays active while in search mode
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
   document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.nav === 'home'));
 
   try {
@@ -1326,7 +1645,11 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
 
 /* ─── INIT ─── */
 (async function init() {
+<<<<<<< HEAD
+  loadGenres();
+=======
   loadGenres();          // fire-and-forget; powers modal genre chips
+>>>>>>> 18770c2c111eaf7c3d22561f2ec37432315feb92
   await loadHero();
   loadTop10();
   for (const cfg of CATEGORY_ROWS) loadRow(cfg);
