@@ -681,7 +681,7 @@
 /* ─── CONFIG ─── */
 const API_BASE = "https://api.themoviedb.org/3";
 const IMG_BASE = "https://image.tmdb.org/t/p/";
-const PLAYER   = "https://tmdbplayer.nunesnetwork.com/";
+const PLAYER   = "/stream";
 const HEADERS = {
   'Authorization': 'Bearer __TMDB_TOKEN__',
   'accept': 'application/json'
@@ -1274,7 +1274,7 @@ $('modal-watch-btn').addEventListener('click', () => {
   if (!currentModalItem) return;
   const s = parseInt($('season-select')?.value  || 1);
   const e = parseInt($('episode-select')?.value || 1);
-  window.open(playerUrl(currentModalItem, s, e), '_blank');
+  window.location.href = playerUrl(currentModalItem, s, e);
 });
 
 $('modal-close').addEventListener('click', closeModal);
@@ -1398,6 +1398,29 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   await loadHero();
   loadTop10();
   for (const cfg of CATEGORY_ROWS) loadRow(cfg);
+  
+  // Auto-open modal when coming back from the stream page via the back button.
+  // The stream page sends: /?openModal=movie:123  or  /?openModal=tv:456
+  (function checkOpenModal() {
+    const params = new URLSearchParams(location.search);
+    const raw = params.get('openModal');
+    if (!raw) return;
+  
+    // Clean the ?openModal= param from the URL immediately (no page reload)
+    const cleanUrl = location.pathname + location.hash;
+    history.replaceState(null, '', cleanUrl);
+  
+    const [type, id] = raw.split(':');
+    if (!type || !id) return;
+  
+    // Fetch the item from TMDB and open its modal
+    const endpoint = type === 'movie' ? `/movie/${id}` : `/tv/${id}`;
+    tmdb(endpoint).then(data => {
+      data.media_type = type;          // openModal() needs media_type
+      openModal(data);
+    }).catch(() => {});                // silently ignore if fetch fails
+  })();
+  
 })();
 </script>
 </body>

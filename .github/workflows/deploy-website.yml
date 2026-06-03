@@ -15,7 +15,7 @@ jobs:
         run: sed -i "s|__TMDB_TOKEN__|${{ secrets.TMDB_TOKEN }}|g" index.html
 
       - name: Prepare Pages artifact
-        run: mkdir -p public && mv index.html assets public/
+        run: mkdir -p public && mv index.html assets stream public/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
