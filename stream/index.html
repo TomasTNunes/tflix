@@ -199,19 +199,8 @@
 
     /* ─── RESPONSIVE ─── */
     @media (max-width: 1000px) {
-      main {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto;
-      }
-      /* sidebar becomes display:contents so its children join the grid directly.
-         Order: tv-panel(1) → player-col(2) → servers-panel(3) */
-      .player-col { order: 2; }
-      .sidebar { order: 1; display: contents; }
-      #tv-panel      { order: 1; }
-      .servers-panel { order: 3; }
-      /* Restore gap that sidebar's display:contents removes */
-      #tv-panel:not([hidden]) { margin-bottom: clamp(1rem, 2.5vw, 1.8rem); }
-      .player-col              { margin-bottom: clamp(1rem, 2.5vw, 1.8rem); }
+      main { grid-template-columns: 1fr; }
+      .sidebar { order: 2; }
     }
     @media (max-width: 560px) {
       .logo { font-size: 1.3rem; }
@@ -256,7 +245,7 @@
         </button>
       </div>
 
-      <div class="panel servers-panel">
+      <div class="panel">
         <div class="panel-title">Streaming Servers</div>
         <div class="server-grid" id="server-grid"></div>
       </div>
@@ -289,7 +278,6 @@ const SERVERS = [
 
 /* Exact streaming source resolvers (ported from the original player) */
 const serverUrlResolvers = {
-  //1: (p) => p.type === 'movie' ? `https://vidsrc.cc/v2/embed/movie/${p.id}?autoPlay=false` : `https://vidsrc.cc/v2/embed/tv/${p.id}/${p.season}/${p.episode}?autoPlay=false`, // Rakan (vidsrc.cc)
   1: (p) => p.type === 'movie' ? `https://vixsrc.to/movie/${p.id}?autoPlay=true&lang=en` : `https://vixsrc.to/tv/${p.id}/${p.season}/${p.episode}?autoPlay=true&lang=en`,                                   // Rakan
   2: (p) => p.type === 'movie' ? `https://moviesapi.to/movie/${p.id}` : `https://moviesapi.to/tv/${p.id}-${p.season}-${p.episode}`,                                                                            // Bard
   3: (p) => p.type === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${p.id}&autoplay=1` : `https://vidsrc.me/embed/tv?tmdb=${p.id}&season=${p.season}&episode=${p.episode}&autoplay=1`,                        // Xayah
@@ -394,13 +382,9 @@ async function setupTv() {
   const episodeSel = $('episode-select');
 
   try {
-    if (!tvData) {
-      tvData = await tmdb(`/tv/${state.id}`);
-      state.title = tvData.name;
-      updateTitleBar();
-    } else {
-      updateTitleBar();
-    }
+    tvData = await tmdb(`/tv/${state.id}`);
+    state.title = tvData.name;
+    updateTitleBar();
 
     const seasons = (tvData.seasons || []).filter(s => s.season_number > 0);
     seasonSel.innerHTML = (seasons.length ? seasons : [{ season_number: 1, episode_count: 1 }])
@@ -494,12 +478,10 @@ async function goNextEpisode() {
 
 /* ─── MOVIE TITLE ─── */
 async function setupMovie() {
-  if (!state.title) {
-    try {
-      const data = await tmdb(`/movie/${state.id}`);
-      state.title = data.title || data.original_title;
-    } catch { state.title = 'Movie'; }
-  }
+  try {
+    const data = await tmdb(`/movie/${state.id}`);
+    state.title = data.title || data.original_title;
+  } catch { state.title = 'Movie'; }
   updateTitleBar();
 }
 
@@ -522,56 +504,30 @@ function toast(msg){
 /* ─── NAV ─── */
 $('logo').addEventListener('click', () => { location.href = '/'; });
 $('back-btn').addEventListener('click', () => {
-  // Go home and re-open the modal for the title we were watching
-  if (state && state.id && state.type) {
-    location.href = `/?openModal=${state.type}:${state.id}`;
-  } else {
-    location.href = '/';
-  }
+  if (history.length > 1 && document.referrer.includes(location.host)) history.back();
+  else location.href = '/';
 });
 
 /* ─── INIT ─── */
 (async function init() {
   state = readParams();
   if (!state) {
-    showFatal('Nothing to play', 'This link is missing the title information.');
-    return;
-  }
-
-  // Validate the TMDB ID exists before doing anything
-  try {
-    const endpoint = state.type === 'movie' ? `/movie/${state.id}` : `/tv/${state.id}`;
-    const r = await fetch(`${API_BASE}${endpoint}`, { headers: HEADERS });
-    if (!r.ok) throw new Error('not found');
-    const data = await r.json();
-    // Pre-cache so setupMovie/setupTv don't re-fetch
-    if (state.type === 'movie') {
-      state.title = data.title || data.original_title;
-    } else {
-      tvData = data;
-      state.title = data.name;
-    }
-  } catch {
-    showFatal('Nothing to play', 'This link is missing the title information.');
+    $('main').innerHTML = `
+      <div class="fatal">
+        <h2>Nothing to play</h2>
+        <p>This link is missing the title information.</p>
+        <a href="/">Back to TFLIX</a>
+      </div>`;
+    document.title = 'TFLIX';
     return;
   }
 
   buildServers();
-  loadPlayer();
+  loadPlayer();              // start streaming immediately
 
   if (state.type === 'tv') await setupTv();
-  else setupMovie();
+  else await setupMovie();
 })();
-
-function showFatal(heading, message) {
-  $('main').innerHTML = `
-    <div class="fatal">
-      <h2>${esc(heading)}</h2>
-      <p>${esc(message)}</p>
-      <a href="/">Back to TFLIX</a>
-    </div>`;
-  document.title = 'TFLIX';
-}
 </script>
 </body>
 </html>

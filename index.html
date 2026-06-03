@@ -1398,29 +1398,6 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   await loadHero();
   loadTop10();
   for (const cfg of CATEGORY_ROWS) loadRow(cfg);
-  
-  // Auto-open modal when coming back from the stream page via the back button.
-  // The stream page sends: /?openModal=movie:123  or  /?openModal=tv:456
-  (function checkOpenModal() {
-    const params = new URLSearchParams(location.search);
-    const raw = params.get('openModal');
-    if (!raw) return;
-  
-    // Clean the ?openModal= param from the URL immediately (no page reload)
-    const cleanUrl = location.pathname + location.hash;
-    history.replaceState(null, '', cleanUrl);
-  
-    const [type, id] = raw.split(':');
-    if (!type || !id) return;
-  
-    // Fetch the item from TMDB and open its modal
-    const endpoint = type === 'movie' ? `/movie/${id}` : `/tv/${id}`;
-    tmdb(endpoint).then(data => {
-      data.media_type = type;          // openModal() needs media_type
-      openModal(data);
-    }).catch(() => {});                // silently ignore if fetch fails
-  })();
-  
 })();
 </script>
 </body>
