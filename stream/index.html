@@ -202,6 +202,13 @@
       main { grid-template-columns: 1fr; }
       .sidebar { order: 2; }
     }
+    @media (max-width: 768px) {
+      main { grid-template-columns: 1fr; }
+      .player-col { order: 2; }
+      .sidebar { order: 1; display: flex; flex-direction: column; }
+      #tv-panel { order: 1; }
+      .panel:not(#tv-panel) { order: 3; }
+    }
     @media (max-width: 560px) {
       .logo { font-size: 1.3rem; }
       .now-title { font-size: 0.85rem; }
@@ -261,7 +268,7 @@ const HEADERS = {
   // Same TMDB token placeholder as the main TFLIX index.html.
   // Make sure your deploy step injects __TMDB_TOKEN__ into this file too,
   // or paste your read token here directly.
-  'Authorization': 'Bearer __TMDB_TOKEN__',
+  'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYTk1NzRmZDcxMjRkNmI5ZTUyNjA4ZWEzNWQ2NzdiNCIsIm5iZiI6MTczNzU5MDQ2NC4zMjUsInN1YiI6IjY3OTE4NmMwZThiNjdmZjgzM2ZhNjM4OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.kWqK74FSN41PZO7_ENZelydTtX0u2g6dCkAW0vFs4jU',
   'accept': 'application/json'
 };
 
@@ -339,7 +346,7 @@ function loadPlayer() {
   frame.onload = () => loader.classList.add('hide');
   setTimeout(() => loader.classList.add('hide'), 4000); // fail-safe
   syncUrl();
-  updateTitleBar();
+  if (state.title) updateTitleBar();
 }
 
 function updateTitleBar() {
@@ -384,7 +391,8 @@ async function setupTv() {
 
   try {
     tvData = await tmdb(`/tv/${state.id}`);
-    state.title = tvData.name;
+    if (!tvData || (!tvData.name && !tvData.original_name)) throw new Error('not found');
+    state.title = tvData.name || tvData.original_name;
     updateTitleBar();
 
     const seasons = (tvData.seasons || []).filter(s => s.season_number > 0);
@@ -394,7 +402,8 @@ async function setupTv() {
     seasonSel.value = state.season;
     if (!seasonSel.value) { state.season = parseInt(seasonSel.options[0].value); seasonSel.value = state.season; }
   } catch {
-    seasonSel.innerHTML = `<option value="${state.season}">Season ${state.season}</option>`;
+    showFatal();
+    return;
   }
 
   await populateEpisodes(true);
@@ -481,12 +490,25 @@ async function goNextEpisode() {
 async function setupMovie() {
   try {
     const data = await tmdb(`/movie/${state.id}`);
+    if (!data || (!data.title && !data.original_title)) throw new Error('not found');
     state.title = data.title || data.original_title;
-  } catch { state.title = 'Movie'; }
+  } catch {
+    showFatal();
+    return;
+  }
   updateTitleBar();
 }
 
 /* ─── UTILS ─── */
+function showFatal() {
+  $('main').innerHTML = `
+    <div class="fatal">
+      <h2>Title not found</h2>
+      <p>This title does not exist or could not be loaded.</p>
+      <a href="/">Back to TFLIX</a>
+    </div>`;
+  document.title = 'TFLIX';
+}
 function esc(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmtDate(d){
   if (!d) return '';
