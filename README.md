@@ -21,3 +21,4 @@ It lets users discover movies and TV shows and stream them directly within the w
 
 - HTML, CSS, JavaScript
 - [TMDB API](https://developers.themoviedb.org/)
+- [GitHub Pages](https://pages.github.com/)
