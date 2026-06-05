@@ -5,7 +5,7 @@
 <br/>
 
 [TFLIX](https://tflix.nunesnetwork.com/) is a simple movie and TV show search website powered by the TMDB API.
-It lets users discover movies and TV shows, and integrates with [TMDB-Player](https://github.com/TomasTNunes/TMDB-Player) streaming webpage to provide the streaming functionality.
+It lets users discover movies and TV shows and stream them directly within the website.
 
 🌐 Live demo: [tflix.nunesnetwork.com](https://tflix.nunesnetwork.com/)
 
@@ -13,7 +13,9 @@ It lets users discover movies and TV shows, and integrates with [TMDB-Player](ht
 
 - 🔍 Search movies and TV shows from TMDB
 - 📄 View details such as title, release date, and poster
-- ▶️ Streaming handled by [TMDB-Player](https://github.com/TomasTNunes/TMDB-Player) streaming webpage
+- ▶️ Stream directly within TFLIX
+
+> Alternative: [TMDB-Player](https://github.com/TomasTNunes/TMDB-Player) — an open-source browser extension that lets you stream your favorite movies and TV shows directly through the TMDB website.
 
 ## Tech Stack
 
