@@ -681,7 +681,7 @@
 /* ─── CONFIG ─── */
 const API_BASE = "https://api.themoviedb.org/3";
 const IMG_BASE = "https://image.tmdb.org/t/p/";
-const PLAYER   = "https://tmdbplayer.nunesnetwork.com/";
+const PLAYER   = "/stream";
 const HEADERS = {
   'Authorization': 'Bearer __TMDB_TOKEN__',
   'accept': 'application/json'
@@ -1274,7 +1274,7 @@ $('modal-watch-btn').addEventListener('click', () => {
   if (!currentModalItem) return;
   const s = parseInt($('season-select')?.value  || 1);
   const e = parseInt($('episode-select')?.value || 1);
-  window.open(playerUrl(currentModalItem, s, e), '_blank');
+  window.location.href = playerUrl(currentModalItem, s, e);
 });
 
 $('modal-close').addEventListener('click', closeModal);

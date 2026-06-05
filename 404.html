@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TFLIX — Not Found</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="./assets/icons/icon_32.png" sizes="32x32">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0d; --bg-elev: #111116; --line: rgba(255,255,255,0.08);
+      --accent: #e50914; --text: #f4f4f7; --muted: #9a9aa6;
+    }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Hanken Grotesk', system-ui, sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; -webkit-font-smoothing: antialiased;
+    }
+    body::after {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999; opacity: .18;
+    }
+    .wrap { text-align: center; padding: 2rem; }
+    .logo {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1.65rem; font-weight: 800; letter-spacing: -0.04em;
+      color: var(--accent); text-shadow: 0 0 26px rgba(229,9,20,0.55);
+      margin-bottom: 3rem; cursor: pointer;
+    }
+    h2 {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1.6rem; color: var(--text); margin-bottom: 0.6rem;
+    }
+    p { color: var(--muted); font-size: 0.95rem; }
+    a {
+      display: inline-block; margin-top: 1.4rem; padding: 0.7rem 1.6rem;
+      background: #fff; color: #0a0a0d; border-radius: 7px;
+      font-weight: 700; font-size: 0.95rem; text-decoration: none;
+      transition: opacity .2s;
+    }
+    a:hover { opacity: 0.85; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo" onclick="location.href='/'">TFLIX</div>
+    <h2>Page not found</h2>
+    <p>This page doesn't exist or could not be loaded.</p>
+    <a href="/">Back to TFLIX</a>
+  </div>
+</body>
+</html>
