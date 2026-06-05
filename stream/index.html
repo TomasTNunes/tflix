@@ -340,9 +340,14 @@ function loadPlayer() {
   const loader = $('player-loading');
   loader.classList.remove('hide');
   const frame = $('player');
-  frame.src = src;
   frame.onload = () => loader.classList.add('hide');
   setTimeout(() => loader.classList.add('hide'), 4000); // fail-safe
+  // Use replace() so iframe navigations don't pollute the browser history stack
+  if (frame.src && frame.contentWindow) {
+    try { frame.contentWindow.location.replace(src); } catch { frame.src = src; }
+  } else {
+    frame.src = src;
+  }
   syncUrl();
   if (state.title) updateTitleBar();
 }
