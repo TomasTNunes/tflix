@@ -29,10 +29,22 @@
       "package.json"
     ],
     "extraResources": [
-      { "from": "../index.html", "to": "site/index.html" },
-      { "from": "../404.html", "to": "site/404.html" },
-      { "from": "../assets", "to": "site/assets" },
-      { "from": "../stream", "to": "site/stream" }
+      {
+        "from": "../index.html",
+        "to": "site/index.html"
+      },
+      {
+        "from": "../404.html",
+        "to": "site/404.html"
+      },
+      {
+        "from": "../assets",
+        "to": "site/assets"
+      },
+      {
+        "from": "../stream",
+        "to": "site/stream"
+      }
     ],
     "win": {
       "target": "nsis",

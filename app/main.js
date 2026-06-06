@@ -133,6 +133,14 @@ function openSetupWindow() {
     });
 
     setup.setMenuBarVisibility(false);
+
+    // The only legitimate external link (the TMDB token page) opens in the
+    // user's real browser; no new Electron windows are spawned.
+    setup.webContents.setWindowOpenHandler(({ url }) => {
+      if (/^https?:\/\//i.test(url)) shell.openExternal(url);
+      return { action: 'deny' };
+    });
+
     setup.loadFile(path.join(__dirname, 'setup.html'));
 
     let saved = false;
@@ -176,14 +184,20 @@ function createMainWindow() {
     },
   });
 
-  mainWindow.loadURL(`http://127.0.0.1:${serverPort}/`);
+  const localOrigin = `http://127.0.0.1:${serverPort}`;
 
-  // Open external links (none expected, but be safe) in the system browser
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('http://127.0.0.1')) return { action: 'allow' };
-    shell.openExternal(url);
-    return { action: 'deny' };
-  });
+  // Block ALL pop-ups / new windows. The third-party stream embeds fire
+  // popunder ads via window.open / target=_blank — denying them here means
+  // no browser tab and no ad ever opens. (Sub-frames route through here too.)
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+
+  // Keep the top frame pinned to our local app: ad scripts sometimes try to
+  // hijack the whole page via top.location = adURL. Allow only local nav.
+  const blockNav = (e, url) => { if (!url.startsWith(localOrigin)) e.preventDefault(); };
+  mainWindow.webContents.on('will-navigate', blockNav);
+  mainWindow.webContents.on('will-redirect', blockNav);
+
+  mainWindow.loadURL(`${localOrigin}/`);
 
   mainWindow.on('closed', () => { mainWindow = null; });
 }
