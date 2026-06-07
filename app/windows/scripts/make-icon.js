@@ -1,4 +1,4 @@
-/* Generates build/icon.ico from the existing PNG icon set in ../assets/icons.
+/* Generates build/icon.ico from the existing PNG icon set in ../../assets/icons.
    electron-builder uses this for the Windows executable + installer, and the
    Electron main process uses it for the window icon (in dev). */
 
@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const pngToIco = require('png-to-ico');
 
-const ASSETS = path.join(__dirname, '..', '..', 'assets', 'icons');
+const ASSETS = path.join(__dirname, '..', '..', '..', 'assets', 'icons');
 const OUT_DIR = path.join(__dirname, '..', 'build');
 const OUT = path.join(OUT_DIR, 'icon.ico');
 

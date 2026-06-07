@@ -30,19 +30,19 @@
     ],
     "extraResources": [
       {
-        "from": "../index.html",
+        "from": "../../index.html",
         "to": "site/index.html"
       },
       {
-        "from": "../404.html",
+        "from": "../../404.html",
         "to": "site/404.html"
       },
       {
-        "from": "../assets",
+        "from": "../../assets",
         "to": "site/assets"
       },
       {
-        "from": "../stream",
+        "from": "../../stream",
         "to": "site/stream"
       }
     ],

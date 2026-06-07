@@ -1,8 +1,8 @@
 /* ───────────────────────────────────────────────────────────────
    TFLIX Desktop — Electron main process
 
-   Wraps the existing TFLIX static website (../index.html, ../stream,
-   ../assets) in a desktop window. A tiny local HTTP server serves the
+   Wraps the existing TFLIX static website (../../index.html, ../../stream,
+   ../../assets) in a desktop window. A tiny local HTTP server serves the
    site so that absolute paths (e.g. the "/stream" player route) and the
    __TMDB_TOKEN__ injection behave exactly like the deployed site.
 
@@ -18,7 +18,7 @@ const http = require('http');
 /* ─── Site root (where index.html / stream / assets live) ─── */
 const SITE_ROOT = app.isPackaged
   ? path.join(process.resourcesPath, 'site')   // copied via extraResources
-  : path.join(__dirname, '..');                // dev: the repo root
+  : path.join(__dirname, '..', '..');          // dev: the repo root
 
 /* ─── Token storage ─── */
 const configPath = () => path.join(app.getPath('userData'), 'tflix.config.json');

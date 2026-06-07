@@ -1,8 +1,8 @@
 # TFLIX Desktop (Windows)
 
 Wraps the TFLIX website in a native Windows app using [Electron](https://www.electronjs.org/).
-It runs a tiny local HTTP server that serves the site files in the parent folder
-(`../index.html`, `../stream`, `../assets`), so the player route (`/stream`) and the
+It runs a tiny local HTTP server that serves the site files in the repo root
+(`../../index.html`, `../../stream`, `../../assets`), so the player route (`/stream`) and the
 `__TMDB_TOKEN__` injection behave exactly like the deployed site.
 
 ## How the TMDB token works
@@ -17,7 +17,7 @@ Get a free token at <https://www.themoviedb.org/settings/api> (the *API Read Acc
 ## Run in development
 
 ```powershell
-cd app
+cd app/windows
 npm install
 npm start
 ```
@@ -25,12 +25,12 @@ npm start
 ## Build the Windows installer
 
 ```powershell
-cd app
+cd app/windows
 npm install
 npm run build
 ```
 
-The installer (`TFLIX Setup <version>.exe`) is written to `app/dist/`.
+The installer (`TFLIX Setup <version>.exe`) is written to `app/windows/dist/`.
 
 ## Project layout
 
@@ -39,4 +39,4 @@ The installer (`TFLIX Setup <version>.exe`) is written to `app/dist/`.
 | `main.js` | Electron main process — local server, token storage, windows, menu |
 | `setup.html` | First-run / change-token screen |
 | `preload-setup.js` | Secure IPC bridge for the setup screen |
-| `scripts/make-icon.js` | Builds `build/icon.ico` from `../assets/icons/*.png` |
+| `scripts/make-icon.js` | Builds `build/icon.ico` from `../../assets/icons/*.png` |
