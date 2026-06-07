@@ -11,8 +11,8 @@
     "build": "node scripts/make-icon.js && electron-builder --win"
   },
   "devDependencies": {
-    "electron": "^33.2.1",
-    "electron-builder": "^25.1.8",
+    "electron": "^42.3.3",
+    "electron-builder": "^26.15.0",
     "png-to-ico": "^2.1.8"
   },
   "build": {
