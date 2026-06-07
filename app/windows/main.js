@@ -115,6 +115,8 @@ function windowIcon() {
 }
 
 /* ─── First-run / change-token setup window ─── */
+let setupOpen = false;
+
 function openSetupWindow() {
   return new Promise((resolve) => {
     const setup = new BrowserWindow({
@@ -167,6 +169,18 @@ function openSetupWindow() {
   });
 }
 
+/* Open setup from anywhere (menu / in-app gear button), then reload. */
+async function changeTokenFlow() {
+  if (setupOpen) return;
+  setupOpen = true;
+  try {
+    const changed = await openSetupWindow();
+    if (changed && mainWindow) mainWindow.reload();
+  } finally {
+    setupOpen = false;
+  }
+}
+
 /* ─── Main app window ─── */
 function createMainWindow() {
   mainWindow = new BrowserWindow({
@@ -179,6 +193,7 @@ function createMainWindow() {
     title: 'TFLIX',
     icon: windowIcon(),
     webPreferences: {
+      preload: path.join(__dirname, 'preload-main.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
@@ -210,10 +225,8 @@ function buildMenu() {
       submenu: [
         {
           label: 'Change TMDB Token…',
-          click: async () => {
-            const changed = await openSetupWindow();
-            if (changed && mainWindow) mainWindow.reload();
-          },
+          accelerator: 'CmdOrCtrl+T',
+          click: () => changeTokenFlow(),
         },
         { type: 'separator' },
         { role: 'reload' },
@@ -240,6 +253,10 @@ function buildMenu() {
 /* ─── Bootstrap ─── */
 app.whenReady().then(async () => {
   buildMenu();
+
+  // In-app gear button (preload-main.js) asks to open the token setup.
+  ipcMain.on('tflix:open-settings', () => changeTokenFlow());
+
   tmdbToken = readToken();
   await startServer();
 

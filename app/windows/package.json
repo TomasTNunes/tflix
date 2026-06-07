@@ -25,6 +25,7 @@
     "files": [
       "main.js",
       "preload-setup.js",
+      "preload-main.js",
       "setup.html",
       "package.json"
     ],
