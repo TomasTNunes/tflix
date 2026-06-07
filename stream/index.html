@@ -111,10 +111,13 @@
     .player-wrap {
       position: relative; width: 100%; aspect-ratio: 16/9;
       background: #000; border-radius: var(--radius-lg);
-      overflow: hidden; border: 1px solid var(--line);
+      border: 1px solid var(--line);
       box-shadow: var(--shadow);
     }
     #player { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+    #player:-webkit-full-screen { position: fixed; inset: 0; width: 100vw; height: 100vh; }
+    #player:-moz-full-screen    { position: fixed; inset: 0; width: 100vw; height: 100vh; }
+    #player:fullscreen          { position: fixed; inset: 0; width: 100vw; height: 100vh; }
     .player-loading {
       position: absolute; inset: 0; display: grid; place-items: center;
       background: var(--bg-elev); z-index: 1; transition: opacity .4s; pointer-events: none;
@@ -229,7 +232,7 @@
     <div class="player-col">
       <div class="player-wrap">
         <div class="player-loading" id="player-loading"><div class="spinner"></div></div>
-        <iframe id="player" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"></iframe>
+        <iframe id="player" allowfullscreen allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; web-share *"></iframe>
       </div>
     </div>
 
@@ -266,7 +269,7 @@ const HEADERS = {
   // Same TMDB token placeholder as the main TFLIX index.html.
   // Make sure your deploy step injects __TMDB_TOKEN__ into this file too,
   // or paste your read token here directly.
-  'Authorization': 'Bearer __TMDB_TOKEN__',
+  'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYTk1NzRmZDcxMjRkNmI5ZTUyNjA4ZWEzNWQ2NzdiNCIsIm5iZiI6MTczNzU5MDQ2NC4zMjUsInN1YiI6IjY3OTE4NmMwZThiNjdmZjgzM2ZhNjM4OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.kWqK74FSN41PZO7_ENZelydTtX0u2g6dCkAW0vFs4jU',
   'accept': 'application/json'
 };
 
@@ -339,15 +342,26 @@ function loadPlayer() {
   const src = serverUrlResolvers[state.server](state);
   const loader = $('player-loading');
   loader.classList.remove('hide');
-  const frame = $('player');
+
+  // Recreate the iframe on every load so the Permissions Policy
+  // (allow="fullscreen; ...") is re-applied for the new origin.
+  // Navigating an existing iframe via contentWindow.location drops the
+  // fullscreen delegation for cross-origin servers, which is why fullscreen
+  // only worked for the first/Rakan server before.
+  const old = $('player');
+  const frame = document.createElement('iframe');
+  frame.id = 'player';
+  frame.allowFullscreen = true;
+  // Use "*" so the fullscreen permission cascades to nested cross-origin
+  // iframes (Xayah / Ekko load the real player inside a second iframe).
+  frame.setAttribute('allow', 'autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; web-share *');
+  frame.referrerPolicy = 'origin';
   frame.onload = () => loader.classList.add('hide');
+  // Use replace so iframe loads don't pollute the browser history stack
+  frame.src = src;
+  old.replaceWith(frame);
+
   setTimeout(() => loader.classList.add('hide'), 4000); // fail-safe
-  // Use replace() so iframe navigations don't pollute the browser history stack
-  if (frame.src && frame.contentWindow) {
-    try { frame.contentWindow.location.replace(src); } catch { frame.src = src; }
-  } else {
-    frame.src = src;
-  }
   syncUrl();
   if (state.title) updateTitleBar();
 }
