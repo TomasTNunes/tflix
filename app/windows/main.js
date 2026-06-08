@@ -208,7 +208,14 @@ function createMainWindow() {
 
   // Keep the top frame pinned to our local app: ad scripts sometimes try to
   // hijack the whole page via top.location = adURL. Allow only local nav.
-  const blockNav = (e, url) => { if (!url.startsWith(localOrigin)) e.preventDefault(); };
+  //
+  // IMPORTANT: only guard the MAIN frame. These events also fire for the
+  // third-party stream <iframe>s, which legitimately navigate and (server-side)
+  // redirect cross-origin to load their players. Blocking those left the embeds
+  // black (Xayah/Ekko) or on the host's own 500 page (Naafiri).
+  const blockNav = (e, url, _isInPlace, isMainFrame) => {
+    if (isMainFrame && !url.startsWith(localOrigin)) e.preventDefault();
+  };
   mainWindow.webContents.on('will-navigate', blockNav);
   mainWindow.webContents.on('will-redirect', blockNav);
 
