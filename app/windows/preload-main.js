@@ -83,9 +83,117 @@ if (window.top === window.self) {
     document.body.appendChild(btn);
   }
 
-  if (document.readyState === 'loading') {
-    window.addEventListener('DOMContentLoaded', injectButton);
-  } else {
+  /* ─── Back-navigation state restore (desktop app only) ───
+     On the website the browser's bfcache restores the browse page (scroll
+     position + open poster) when you press Back from the player. Electron
+     ships with the bfcache disabled, so history.back() does a fresh reload
+     and that state is lost.
+
+     Rather than edit the shared site files, we inject a tiny classic <script>
+     into the page's MAIN world. Running there (not the isolated preload world)
+     lets it reuse the site's own globals — currentModalItem, openModal,
+     mediaOf, updateEpisodes — to save state on "Watch" and rebuild it on the
+     reload that Back triggers. The deployed website never gets this script, so
+     its native bfcache behaviour is unchanged. */
+  const HISTORY_INJECT = `
+(function () {
+  var KEY = 'tflix_return';
+  var onStream = /^\\/stream(\\/|$)/.test(location.pathname);
+
+  if (onStream) {
+    // Logo = fresh home: discard any saved poster/scroll so it won't reopen.
+    document.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('#logo')) {
+        try { sessionStorage.removeItem(KEY); } catch (err) {}
+      }
+    }, true);
+    return;
+  }
+
+  // Browse page: capture scroll + the open poster when the user hits Watch
+  // (capture phase, so it runs before the page's handler navigates away).
+  document.addEventListener('click', function (e) {
+    if (!(e.target.closest && e.target.closest('#modal-watch-btn'))) return;
+    try {
+      var item = (typeof currentModalItem !== 'undefined') ? currentModalItem : null;
+      if (!item) return;
+      var ss = document.getElementById('season-select');
+      var es = document.getElementById('episode-select');
+      sessionStorage.setItem(KEY, JSON.stringify({
+        scrollY: window.scrollY,
+        item: item,
+        season: ss ? parseInt(ss.value || 1, 10) : 1,
+        episode: es ? parseInt(es.value || 1, 10) : 1
+      }));
+    } catch (err) {}
+  }, true);
+
+  // If the bfcache ever does restore the page intact, drop the stale marker.
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) { try { sessionStorage.removeItem(KEY); } catch (err) {} }
+  });
+
+  // Rows load lazily, so the page may be too short at first — keep nudging the
+  // scroll to the saved spot as content streams in, until reached or timeout.
+  function restoreScroll(targetY) {
+    if (!targetY) return;
+    var deadline = Date.now() + 6000;
+    (function step() {
+      window.scrollTo(0, targetY);
+      if (window.scrollY < targetY - 2 && Date.now() < deadline) requestAnimationFrame(step);
+    })();
+  }
+
+  function restore() {
+    var saved = null;
+    try { saved = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch (err) {}
+    try { sessionStorage.removeItem(KEY); } catch (err) {}
+    if (!saved || !saved.item || typeof openModal !== 'function') return;
+
+    restoreScroll(saved.scrollY);
+
+    Promise.resolve(openModal(saved.item)).then(function () {
+      var type = (typeof mediaOf === 'function') ? mediaOf(saved.item) : saved.item.media_type;
+      var es = document.getElementById('episode-select');
+      if (type !== 'tv') return;
+      var ss = document.getElementById('season-select');
+      if (ss && saved.season != null) {
+        ss.value = saved.season;
+        if (typeof updateEpisodes === 'function') {
+          Promise.resolve(updateEpisodes(saved.item.id)).then(function () {
+            var e2 = document.getElementById('episode-select');
+            if (e2 && saved.episode != null) e2.value = saved.episode;
+          });
+          return;
+        }
+      }
+      if (es && saved.episode != null) es.value = saved.episode;
+    });
+  }
+
+  restore();
+})();
+`;
+
+  function injectHistoryRestore() {
+    if (document.getElementById('tflix-history-inject')) return;
+    const root = document.documentElement;
+    if (!root) return;
+    const s = document.createElement('script');
+    s.id = 'tflix-history-inject';
+    s.textContent = HISTORY_INJECT;
+    root.appendChild(s);   // classic script → runs in the page's main world
+    s.remove();
+  }
+
+  function injectAll() {
     injectButton();
+    injectHistoryRestore();
+  }
+
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', injectAll);
+  } else {
+    injectAll();
   }
 }
