@@ -13,11 +13,23 @@ open, so browsing and playback stay inside the app window — no stray browser t
 📥 Download the latest installer (`TFLIX Setup <version>.exe`) from the
 [latest release](https://github.com/TomasTNunes/tflix/releases/latest), then run it.
 
+## Update
+
+TFLIX doesn't auto-update — you update it by downloading the newest installer and
+running it. Grab the latest `TFLIX Setup <version>.exe` from the
+[latest release](https://github.com/TomasTNunes/tflix/releases/latest) and run it;
+there's **no need to uninstall the old version first**.
+
+The installer detects your existing install and upgrades it in place: it replaces the
+old version, keeps your desktop/Start-menu shortcuts, and **preserves your saved TMDB
+token and settings** (`%APPDATA%\tflix-app`). Just click through the wizard
+(**Next → Install**).
+
 ## The TMDB token
 
 On first launch the app shows a setup screen asking for your **TMDB API Read Access Token**
 (v4 auth). It verifies the token against the TMDB API and stores it in your per-user
-app-data folder (`%APPDATA%/TFLIX/tflix.config.json`). After a successful save the app
+app-data folder (`%APPDATA%\tflix-app\tflix.config.json`). After a successful save the app
 relaunches the main window so the new token takes effect immediately.
 
 Get a free token at <https://www.themoviedb.org/settings/api> (the *API Read Access Token*).

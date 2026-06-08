@@ -28,6 +28,8 @@ Prefer a real app over a browser tab? TFLIX is also available as a native **Wind
 
 📥 Download it from the [latest release](https://github.com/TomasTNunes/tflix/releases/latest).
 
+🔄 Already installed? Download the newest installer from that same page and run it to update — no uninstall needed. See [Updating](app/windows/README.md#update) for details.
+
 👉 See the [Windows app guide](app/windows/README.md) for more info.
 
 ## Tech Stack
