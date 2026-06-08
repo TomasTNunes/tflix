@@ -392,7 +392,6 @@ function buildServers() {
     el.addEventListener('click', () => {
       if (s.id === state.server) return;
       state.server = s.id;
-      localStorage.setItem(STORAGE_KEY, s.id);
       document.querySelectorAll('.server-card').forEach(c => c.classList.toggle('selected', c === el));
       loadPlayer();
       toast(`Now streaming from ${s.name}`);
