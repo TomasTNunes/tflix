@@ -13,9 +13,15 @@
 
 const { ipcRenderer } = require('electron');
 
+// App version. The preload is sandboxed (can't require package.json directly),
+// so ask the main process for it synchronously.
+let APP_VERSION = '';
+try { APP_VERSION = ipcRenderer.sendSync('tflix:get-version') || ''; } catch {}
+
 // Don't inject inside iframes (stream embeds, ad frames, etc.)
 if (window.top === window.self) {
   const BTN_ID = 'tflix-settings-btn';
+  const VER_ID = 'tflix-version-label';
 
   // The stream/player route has its own (often fullscreen) UI — keep the
   // gear out of the way there. The button only belongs on the browse pages.
@@ -81,6 +87,78 @@ if (window.top === window.self) {
     });
 
     document.body.appendChild(btn);
+  }
+
+  /* ─── Version label (lower-left corner of the main page) ─── */
+  function injectVersion() {
+    if (onStreamPage()) return;
+    if (!APP_VERSION) return;
+    if (document.getElementById(VER_ID)) return;        // already injected
+    if (!document.body) return;
+
+    const label = document.createElement('div');
+    label.id = VER_ID;
+    label.textContent = 'v' + APP_VERSION;
+
+    Object.assign(label.style, {
+      position: 'fixed',
+      left: '14px',
+      bottom: '12px',
+      fontSize: '11px',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      letterSpacing: '0.3px',
+      color: 'rgba(244,244,247,0.35)',
+      pointerEvents: 'none',
+      userSelect: 'none',
+      zIndex: '2147483646',
+      opacity: '0',                       // hidden until scrolled to the bottom
+      transition: 'opacity .25s',
+    });
+
+    document.body.appendChild(label);
+
+    const atBottom = () => {
+      const scrolled = window.scrollY + window.innerHeight;
+      return scrolled >= document.documentElement.scrollHeight - 2;
+    };
+    const isScrollable = () =>
+      document.documentElement.scrollHeight > window.innerHeight + 2;
+    const modalOpen = () => !!document.querySelector('#modal-backdrop.open');
+    const searchOpen = () =>
+      !!document.querySelector('#search-results-section.visible');
+
+    // Until the page has finished loading its content, treat a non-scrollable
+    // page as "still loading" rather than "everything fits" — otherwise the
+    // label flashes on open while the home rows are still being fetched.
+    let settled = false;
+
+    const update = () => {
+      const show =
+        !modalOpen() &&                       // hidden over an open poster
+        !searchOpen() &&                      // hidden over search results
+        atBottom() &&                         // only at the very bottom
+        (isScrollable() || settled);          // suppress "fits" case until loaded
+      label.style.opacity = show ? '1' : '0';
+    };
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+
+    // Modal open/close and search show/hide only toggle CSS classes — no scroll
+    // event — so watch the DOM to re-evaluate visibility.
+    const mo = new MutationObserver(update);
+    mo.observe(document.body, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['class', 'style'],
+    });
+
+    const settle = () => { settled = true; update(); };
+    if (document.readyState === 'complete') setTimeout(settle, 1200);
+    else window.addEventListener('load', () => setTimeout(settle, 1200));
+
+    update();
   }
 
   /* ─── Back-navigation state restore (desktop app only) ───
@@ -237,6 +315,7 @@ if (window.top === window.self) {
 
   function injectAll() {
     injectButton();
+    injectVersion();
     injectHistoryRestore();
   }
 

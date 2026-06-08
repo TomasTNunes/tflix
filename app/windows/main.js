@@ -288,6 +288,9 @@ app.whenReady().then(async () => {
   // In-app gear button (preload-main.js) asks to open the token setup.
   ipcMain.on('tflix:open-settings', () => changeTokenFlow());
 
+  // Version label (preload-main.js) asks for the app version synchronously.
+  ipcMain.on('tflix:get-version', (e) => { e.returnValue = app.getVersion(); });
+
   tmdbToken = readToken();
   await startServer();
 
