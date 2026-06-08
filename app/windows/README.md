@@ -8,6 +8,11 @@ It runs a tiny local HTTP server that serves the site files in the repo root
 It also blocks all pop-ups and ad redirects that the third-party stream embeds try to
 open, so browsing and playback stay inside the app window — no stray browser tabs.
 
+## Install
+
+📥 Download the latest installer (`TFLIX Setup <version>.exe`) from the
+[latest release](https://github.com/TomasTNunes/tflix/releases/latest), then run it.
+
 ## The TMDB token
 
 On first launch the app shows a setup screen asking for your **TMDB API Read Access Token**

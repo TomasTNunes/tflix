@@ -26,7 +26,9 @@ Prefer a real app over a browser tab? TFLIX is also available as a native **Wind
 - 🚫 Blocks the pop-ups and ad redirects (No Ads)
 - 🔑 Asks once for your free [TMDB API token](https://www.themoviedb.org/settings/api) and remembers it; change it anytime with the ⚙ button or `Ctrl+T`
 
-👉 See the [Windows app guide](app/windows/README.md) for setup and how to install it.
+📥 Download it from the [latest release](https://github.com/TomasTNunes/tflix/releases/latest).
+
+👉 See the [Windows app guide](app/windows/README.md) for more info.
 
 ## Tech Stack
 
