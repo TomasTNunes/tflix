@@ -276,11 +276,11 @@ function buildMenu() {
 /* ─── Bootstrap ─── */
 app.whenReady().then(async () => {
   // Present a plain-Chrome User-Agent to every request. Electron's default UA
-  // carries "tflix-desktop/1.0.0 … Electron/42.x" tokens, and some embed hosts
+  // carries "tflix-app/1.0.0 … Electron/42.x" tokens, and some embed hosts
   // reject non-browser clients on that basis (vidfast.pro / "Naafiri" returned
   // HTTP 500 from a same-origin POST until these tokens were stripped).
   app.userAgentFallback = app.userAgentFallback
-    .replace(/\s*tflix-desktop\/[\d.]+/i, '')
+    .replace(/\s*tflix-app\/[\d.]+/i, '')
     .replace(/\s*Electron\/[\d.]+/i, '');
 
   buildMenu();

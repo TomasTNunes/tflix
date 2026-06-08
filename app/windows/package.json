@@ -1,5 +1,5 @@
 {
-  "name": "tflix-desktop",
+  "name": "tflix-app",
   "version": "1.0.0",
   "description": "TFLIX — Watch Movies & TV, as a Windows desktop app.",
   "author": "Tomas Nunes",
@@ -52,7 +52,7 @@
       "icon": "build/icon.ico"
     },
     "nsis": {
-      "artifactName": "tflix-windows setup ${version}.${ext}",
+      "artifactName": "tflix-windows.setup.${version}.${ext}",
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
