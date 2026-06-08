@@ -60,6 +60,11 @@ const MIME = {
   '.map':  'application/json',
 };
 
+/* A fixed loopback port keeps the app's origin (http://127.0.0.1:PORT) stable
+   across restarts. localStorage is partitioned by origin, so a random port
+   would silently discard the user's saved server choice on every launch. */
+const PREFERRED_PORT = 47820;
+
 function startServer() {
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
@@ -100,8 +105,19 @@ function startServer() {
       }
     });
 
-    server.on('error', reject);
-    server.listen(0, '127.0.0.1', () => {
+    // Prefer the fixed port (stable origin → persistent localStorage). If it is
+    // already taken, fall back to a random free port so the app still launches.
+    server.on('error', (err) => {
+      if (err && err.code === 'EADDRINUSE') {
+        server.listen(0, '127.0.0.1', () => {
+          serverPort = server.address().port;
+          resolve(serverPort);
+        });
+      } else {
+        reject(err);
+      }
+    });
+    server.listen(PREFERRED_PORT, '127.0.0.1', () => {
       serverPort = server.address().port;
       resolve(serverPort);
     });

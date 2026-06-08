@@ -52,6 +52,7 @@
       "icon": "build/icon.ico"
     },
     "nsis": {
+      "artifactName": "tflix-windows setup ${version}.${ext}",
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
