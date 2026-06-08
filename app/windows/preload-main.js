@@ -111,7 +111,9 @@ if (window.top === window.self) {
   }
 
   // Browse page: capture scroll + the open poster when the user hits Watch
-  // (capture phase, so it runs before the page's handler navigates away).
+  // (capture phase, so it runs before the page's handler navigates away). Also
+  // remember whether the poster came from a search, plus the query + filter, so
+  // we can rebuild the search results — not just the home page — on return.
   document.addEventListener('click', function (e) {
     if (!(e.target.closest && e.target.closest('#modal-watch-btn'))) return;
     try {
@@ -119,11 +121,17 @@ if (window.top === window.self) {
       if (!item) return;
       var ss = document.getElementById('season-select');
       var es = document.getElementById('episode-select');
+      var input = document.getElementById('search');
+      var results = document.getElementById('search-results-section');
+      var isSearch = !!(results && results.classList.contains('visible'));
+      var activeTab = document.querySelector('.filter-tab.active');
       sessionStorage.setItem(KEY, JSON.stringify({
         scrollY: window.scrollY,
         item: item,
         season: ss ? parseInt(ss.value || 1, 10) : 1,
-        episode: es ? parseInt(es.value || 1, 10) : 1
+        episode: es ? parseInt(es.value || 1, 10) : 1,
+        search: (isSearch && input) ? input.value.trim() : null,
+        filter: activeTab ? activeTab.dataset.filter : 'all'
       }));
     } catch (err) {}
   }, true);
@@ -133,41 +141,82 @@ if (window.top === window.self) {
     if (e.persisted) { try { sessionStorage.removeItem(KEY); } catch (err) {} }
   });
 
-  // Rows load lazily, so the page may be too short at first — keep nudging the
-  // scroll to the saved spot as content streams in, until reached or timeout.
-  function restoreScroll(targetY) {
-    if (!targetY) return;
+  // Content (home rows or search grid) loads lazily, so the page may be too
+  // short at first — keep nudging the scroll to the saved spot until reached or
+  // timeout, then fire the callback.
+  function restoreScroll(targetY, done) {
+    if (!targetY) { if (done) done(); return; }
     var deadline = Date.now() + 6000;
     (function step() {
       window.scrollTo(0, targetY);
-      if (window.scrollY < targetY - 2 && Date.now() < deadline) requestAnimationFrame(step);
+      if (window.scrollY >= targetY - 2 || Date.now() >= deadline) { if (done) done(); return; }
+      requestAnimationFrame(step);
     })();
+  }
+
+  // Reopen the poster. Resolves once the modal is fully open (and TV season/
+  // episode reselected), i.e. after openModal has locked body overflow.
+  function reopenModal(saved) {
+    if (typeof openModal !== 'function') return Promise.resolve();
+    return Promise.resolve(openModal(saved.item)).then(function () {
+      var type = (typeof mediaOf === 'function') ? mediaOf(saved.item) : saved.item.media_type;
+      if (type !== 'tv') return;
+      var ss = document.getElementById('season-select');
+      if (ss && saved.season != null) {
+        ss.value = saved.season;
+        if (typeof updateEpisodes === 'function') {
+          return Promise.resolve(updateEpisodes(saved.item.id)).then(function () {
+            var e2 = document.getElementById('episode-select');
+            if (e2 && saved.episode != null) e2.value = saved.episode;
+          });
+        }
+      }
+      var es = document.getElementById('episode-select');
+      if (es && saved.episode != null) es.value = saved.episode;
+    });
+  }
+
+  // With the poster already open, settle the page underneath it. The open modal
+  // locks body overflow (which clamps scrolling), so we briefly release it,
+  // scroll into place, then re-lock — giving the "scroll in the background"
+  // feel. Only re-lock if the modal is still open (user may have closed it).
+  function settleScroll(saved) {
+    var backdrop = document.getElementById('modal-backdrop');
+    document.body.style.overflow = '';
+    restoreScroll(saved.scrollY, function () {
+      if (backdrop && backdrop.classList.contains('open')) document.body.style.overflow = 'hidden';
+    });
   }
 
   function restore() {
     var saved = null;
     try { saved = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch (err) {}
     try { sessionStorage.removeItem(KEY); } catch (err) {}
-    if (!saved || !saved.item || typeof openModal !== 'function') return;
+    if (!saved || !saved.item) return;
 
-    restoreScroll(saved.scrollY);
+    // Rebuild the background. Home is already loading; a poster opened from a
+    // search needs the query (and filter) replayed. This runs concurrently with
+    // the modal opening, so the poster still appears instantly.
+    var bgReady;
+    if (saved.search && typeof doSearch === 'function') {
+      var input = document.getElementById('search');
+      if (input) input.value = saved.search;
+      var clearBtn = document.getElementById('search-clear');
+      if (clearBtn) clearBtn.classList.add('visible');
+      var filter = saved.filter || 'all';
+      document.querySelectorAll('.filter-tab').forEach(function (t) {
+        t.classList.toggle('active', t.dataset.filter === filter);
+      });
+      try { if (typeof currentFilter !== 'undefined') currentFilter = filter; } catch (err) {}
+      bgReady = Promise.resolve(doSearch(saved.search));
+    } else {
+      bgReady = Promise.resolve();
+    }
 
-    Promise.resolve(openModal(saved.item)).then(function () {
-      var type = (typeof mediaOf === 'function') ? mediaOf(saved.item) : saved.item.media_type;
-      var es = document.getElementById('episode-select');
-      if (type !== 'tv') return;
-      var ss = document.getElementById('season-select');
-      if (ss && saved.season != null) {
-        ss.value = saved.season;
-        if (typeof updateEpisodes === 'function') {
-          Promise.resolve(updateEpisodes(saved.item.id)).then(function () {
-            var e2 = document.getElementById('episode-select');
-            if (e2 && saved.episode != null) e2.value = saved.episode;
-          });
-          return;
-        }
-      }
-      if (es && saved.episode != null) es.value = saved.episode;
+    // Open the poster first; once it's open and the background is ready, scroll
+    // the background into place behind it.
+    reopenModal(saved).then(function () {
+      bgReady.then(function () { settleScroll(saved); });
     });
   }
 
