@@ -16,9 +16,21 @@ It lets users discover movies and TV shows and stream them directly within the w
 - 🔍 Search movies and TV shows from TMDB
 - 📄 View details such as title, release date, and poster
 - ▶️ Stream directly within TFLIX
+- 🖥️ Use it as a native **Windows desktop app** with no ads
+
+## Desktop App (Windows)
+
+Prefer a real app over a browser tab? TFLIX is also available as a native **Windows desktop app**.
+
+- 🪟 Runs in its own window — no browser needed
+- 🚫 Blocks the pop-ups and ad redirects (No Ads)
+- 🔑 Asks once for your free [TMDB API token](https://www.themoviedb.org/settings/api) and remembers it; change it anytime with the ⚙ button or `Ctrl+T`
+
+👉 See the [Windows app guide](app/windows/README.md) for setup and how to install it.
 
 ## Tech Stack
 
 - HTML, CSS, JavaScript
+- [Electron](https://www.electronjs.org/) (Windows desktop app)
 - [TMDB API](https://developers.themoviedb.org/)
 - [GitHub Pages](https://pages.github.com/)

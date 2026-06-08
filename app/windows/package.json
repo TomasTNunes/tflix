@@ -1,0 +1,64 @@
+{
+  "name": "tflix-desktop",
+  "version": "1.0.0",
+  "description": "TFLIX — Watch Movies & TV, as a Windows desktop app.",
+  "author": "Tomas Nunes",
+  "license": "MIT",
+  "main": "main.js",
+  "scripts": {
+    "make-icon": "node scripts/make-icon.js",
+    "start": "node scripts/make-icon.js && electron .",
+    "build": "node scripts/make-icon.js && electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^42.3.3",
+    "electron-builder": "^26.15.0",
+    "png-to-ico": "^2.1.8"
+  },
+  "build": {
+    "appId": "com.nunesnetwork.tflix",
+    "productName": "TFLIX",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload-setup.js",
+      "preload-main.js",
+      "setup.html",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../../index.html",
+        "to": "site/index.html"
+      },
+      {
+        "from": "../../404.html",
+        "to": "site/404.html"
+      },
+      {
+        "from": "../../assets",
+        "to": "site/assets"
+      },
+      {
+        "from": "../../stream",
+        "to": "site/stream"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "artifactName": "tflix-windows setup ${version}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "TFLIX"
+    }
+  }
+}
