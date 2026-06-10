@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.TFLIX" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/tflix_bg</item>
+        <item name="android:statusBarColor">@color/tflix_bg</item>
+        <item name="android:navigationBarColor">@color/tflix_bg</item>
+        <item name="android:colorPrimary">@color/tflix_bg</item>
+        <item name="android:colorPrimaryDark">@color/tflix_bg</item>
+    </style>
+</resources>

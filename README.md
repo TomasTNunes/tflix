@@ -33,9 +33,25 @@ Prefer a real app over a browser tab? TFLIX is also available as a native **Wind
 
 👉 See the [Windows app guide](app/windows/README.md) for more info.
 
+## Android App (Phone + Android TV)
+
+TFLIX is also available as a native **Android app** — one APK that works on phones,
+tablets, and **Android TV** (it shows up in the TV launcher).
+
+- 📱 Runs in its own app — no browser needed
+- 🚫 Blocks the pop-ups and ad redirects (No Ads)
+- 🔄 Always up to date — loads the live site, so new servers and fixes appear instantly
+- 📺 Android TV ready — installs and launches from the Leanback launcher
+
+📥 Download the APK from the [latest release](https://github.com/TomasTNunes/tflix/releases/latest)
+and sideload it (on TV: install via a file-manager app or `adb install`).
+
+👉 See the [Android app guide](app/android/README.md) for more info.
+
 ## Tech Stack
 
 - HTML, CSS, JavaScript
 - [Electron](https://www.electronjs.org/) (Windows desktop app)
+- [Kotlin](https://kotlinlang.org/) (Android phone + TV app)
 - [TMDB API](https://developers.themoviedb.org/)
 - [GitHub Pages](https://pages.github.com/)
