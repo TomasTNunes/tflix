@@ -24,7 +24,8 @@ Prefer a real app over a browser tab? TFLIX is also available as a native **Wind
 
 - 🪟 Runs in its own window — no browser needed
 - 🚫 Blocks the pop-ups and ad redirects (No Ads)
-- 🔑 Asks once for your free [TMDB API token](https://www.themoviedb.org/settings/api) and remembers it; change it anytime with the ⚙ button or `Ctrl+T`
+- 🔄 Always up to date — loads the live site, so new servers and fixes appear instantly
+- ✅ No setup — no API token to enter, just install and open
 
 📥 Download it from the [latest release](https://github.com/TomasTNunes/tflix/releases/latest).
 

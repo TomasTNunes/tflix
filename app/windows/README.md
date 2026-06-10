@@ -1,12 +1,14 @@
 # TFLIX Desktop (Windows)
 
-Wraps the TFLIX website in a native Windows app using [Electron](https://www.electronjs.org/).
-It runs a tiny local HTTP server that serves the site files in the repo root
-(`../../index.html`, `../../stream`, `../../assets`), so the player route (`/stream`) and the
-`__TMDB_TOKEN__` injection behave exactly like the deployed site.
+A native Windows app that wraps the live TFLIX website using
+[Electron](https://www.electronjs.org/).
 
-It also blocks all pop-ups and ad redirects that the third-party stream embeds try to
-open, so browsing and playback stay inside the app window — no stray browser tabs.
+The window loads the deployed site (<https://tflix.nunesnetwork.com>) directly, so it's
+**always up to date** — new stream servers, fixed embeds, and any other site change appear
+instantly, with no app update needed.
+
+Its job is to **block all pop-ups and ad redirects** that the third-party stream embeds try
+to open, so browsing and playback stay inside the app window — no stray browser tabs, no ads.
 
 ## Install
 
@@ -21,31 +23,12 @@ running it. Grab the latest `TFLIX Setup <version>.exe` from the
 there's **no need to uninstall the old version first**.
 
 The installer detects your existing install and upgrades it in place: it replaces the
-old version, keeps your desktop/Start-menu shortcuts, and **preserves your saved TMDB
-token and settings** (`%APPDATA%\tflix-app`). Just click through the wizard
+old version, keeps your desktop/Start-menu shortcuts, and **preserves your saved settings**
+(such as your chosen stream server, in `%APPDATA%\tflix-app`). Just click through the wizard
 (**Next → Install**).
 
-## The TMDB token
-
-On first launch the app shows a setup screen asking for your **TMDB API Read Access Token**
-(v4 auth). It verifies the token against the TMDB API and stores it in your per-user
-app-data folder (`%APPDATA%\tflix-app\tflix.config.json`). After a successful save the app
-relaunches the main window so the new token takes effect immediately.
-
-Get a free token at <https://www.themoviedb.org/settings/api> (the *API Read Access Token*).
-
-### Changing the token later
-
-There are three equivalent ways to re-open the token screen:
-
-| Method | How |
-|--------|-----|
-| **Gear button** | Click the floating ⚙ button in the bottom-right corner of any browse page |
-| **Keyboard shortcut** | Press `Ctrl+T` (`Cmd+T` on macOS) |
-| **Menu** | **TFLIX → Change TMDB Token…** (press `Alt` to reveal the hidden menu bar) |
-
-> The gear button is hidden on the `/stream` player page to keep it out of the way of
-> the playback UI.
+> The app loads the live website, so there's nothing to configure — no API token, no setup.
+> Just install and open it.
 
 ## Keyboard shortcuts
 
@@ -53,7 +36,6 @@ The menu bar is auto-hidden — tap `Alt` to reveal it. These accelerators work 
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl+T` | Change TMDB Token… |
 | `Ctrl+R` | Reload the page |
 | `Ctrl+Shift+R` | Force reload (ignore cache) |
 | `Ctrl+Shift+I` | Toggle DevTools |
@@ -61,8 +43,6 @@ The menu bar is auto-hidden — tap `Alt` to reveal it. These accelerators work 
 | `Ctrl++` / `Ctrl+-` | Zoom in / out |
 | `F11` | Toggle fullscreen |
 | `Ctrl+W` / `Alt+F4` | Quit |
-
-On the setup screen, `Ctrl+Enter` validates and saves the token.
 
 ## Run in development
 
@@ -72,8 +52,7 @@ npm install
 npm start
 ```
 
-`npm start` regenerates the app icon, then launches Electron pointed at the repo-root
-site files (no rebuild needed when you edit the site).
+`npm start` regenerates the app icon, then launches Electron pointed at the live site.
 
 ## Build the Windows installer
 
@@ -83,16 +62,13 @@ npm install
 npm run build
 ```
 
-The NSIS installer (`TFLIX Setup <version>.exe`) is written to `app/windows/dist/`.
-The site files (`index.html`, `404.html`, `assets`, `stream`) are bundled as
-`extraResources`, so the packaged app is fully self-contained.
+The NSIS installer (`TFLIX Setup <version>.exe`) is written to `app/windows/dist/`. The app
+ships as a thin shell — it loads the site over the network, so no site files are bundled.
 
 ## Project layout
 
 | File | Purpose |
 |------|---------|
-| `main.js` | Electron main process — local server, token storage, windows, menu, pop-up/ad blocking |
-| `setup.html` | First-run / change-token screen |
-| `preload-setup.js` | Secure IPC bridge for the setup screen |
-| `preload-main.js` | Injects the floating ⚙ gear button into the site |
+| `main.js` | Electron main process — window, menu, pop-up/ad blocking, loads the live site |
+| `preload-main.js` | Injects the version label + back-navigation state restore into the site |
 | `scripts/make-icon.js` | Builds `build/icon.ico` from `../../assets/icons/*.png` |
