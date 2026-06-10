@@ -2,8 +2,8 @@
 ;  TFLIX — custom NSIS hooks for electron-builder
 ;
 ;  Adds an opt-in checkbox to the uninstaller that, when ticked, also
-;  removes all per-user app data (the saved TMDB token, Electron cache,
-;  cookies, localStorage, …) stored in the user-data folder.
+;  removes all per-user app data (Electron cache, cookies, and the saved
+;  localStorage server choice) stored in the user-data folder.
 ;
 ;  The user-data folder is named after Electron's app name, which is the
 ;  "name" field in package.json ("tflix-app"). On Windows that resolves to
@@ -56,7 +56,7 @@
     ${NSD_CreateLabel} 0 0 100% 24u "This wizard will uninstall $(^Name) from your computer.$\r$\nClick Uninstall to continue."
     Pop $0
 
-    ${NSD_CreateCheckbox} 0 40u 100% 12u "Also delete all app data (saved TMDB token, cache and settings)"
+    ${NSD_CreateCheckbox} 0 40u 100% 12u "Also delete all app data (cache and saved settings)"
     Pop $DeleteDataCheckbox
 
     nsDialogs::Show
