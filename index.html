@@ -455,13 +455,15 @@
     .modal {
       background: var(--bg-elev); border: 1px solid var(--line);
       border-radius: var(--radius-lg); box-shadow: 0 30px 90px rgba(0,0,0,0.85);
-      width: 100%; max-width: 880px; margin: auto;
+      width: 100%; max-width: 880px; margin: auto; position: relative;
+      max-height: 92vh; display: flex; flex-direction: column;
       transform: translateY(28px) scale(0.97); transition: transform .3s var(--ease);
       overflow: hidden;
     }
     .modal-backdrop.open .modal { transform: none; }
 
-    .modal-hero { position: relative; aspect-ratio: 16/8; background: var(--card); }
+    .modal-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+    .modal-hero { position: relative; aspect-ratio: 16/9; background: var(--card); }
     #modal-backdrop-img { position: absolute; inset: 0; background-size: cover; background-position: center 20%; }
     .modal-hero::after {
       content: ''; position: absolute; inset: 0;
@@ -486,7 +488,7 @@
     }
     .modal-close:hover { background: rgba(0,0,0,0.85); }
 
-    .modal-body { padding: 1.4rem 2rem 2rem; }
+    .modal-body { padding: 1.4rem 2rem 1.5rem; }
     .modal-meta { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; font-size: 0.9rem; font-weight: 500; color: rgba(255,255,255,0.8); margin-bottom: 1rem; }
     .modal-meta .match { color: var(--green); font-weight: 700; }
     .modal-meta .chip { padding: 1px 8px; border: 1px solid rgba(255,255,255,0.25); border-radius: 4px; font-size: 0.72rem; }
@@ -525,11 +527,11 @@
 
     .modal-overview {
       font-size: 0.96rem; line-height: 1.6; color: rgba(255,255,255,0.78);
-      margin-bottom: 1.6rem;
+      margin-bottom: 0;
       display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
     }
     .field-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
-    .modal-selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .modal-selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.85rem; }
     .modal-select {
       width: 100%; padding: 0.7rem 2.4rem 0.7rem 0.95rem;
       background: var(--card); border: 1px solid var(--line); border-radius: 8px;
@@ -541,6 +543,10 @@
     }
     .modal-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
     .modal-select option { background: #16161c; color: var(--text); }
+    .modal-footer {
+      flex-shrink: 0; padding: 0.85rem 2rem 1.2rem;
+      border-top: 1px solid var(--line); background: var(--bg-elev);
+    }
     .modal-watch-btn { width: 100%; padding: 0.95rem; font-size: 1.02rem; }
 
     /* ─────────────── TOAST ─────────────── */
@@ -568,7 +574,8 @@
       .logo { font-size: 1.35rem; }
       .server-btn span.s-name { display: none; }
       .btn { padding: 0.7rem 1.4rem; font-size: 0.9rem; }
-      .modal-body { padding: 1.2rem 1.3rem 1.7rem; }
+      .modal-body { padding: 1.2rem 1.3rem 1.5rem; }
+      .modal-footer { padding: 0.85rem 1.3rem 1.1rem; }
       .modal-hero-content { padding: 1.2rem 1.3rem; }
       .modal-selectors { grid-template-columns: 1fr; }
     }
@@ -642,19 +649,23 @@
 <!-- ─────────────── MODAL ─────────────── -->
 <div class="modal-backdrop" id="modal-backdrop">
   <div class="modal" id="modal">
-    <div class="modal-hero">
-      <div id="modal-backdrop-img"></div>
-      <button class="modal-close" id="modal-close">✕</button>
-      <div class="modal-hero-content">
-        <div id="modal-type" class="modal-type"></div>
-        <div id="modal-title" class="modal-title"></div>
+    <button class="modal-close" id="modal-close">✕</button>
+    <div class="modal-scroll">
+      <div class="modal-hero">
+        <div id="modal-backdrop-img"></div>
+        <div class="modal-hero-content">
+          <div id="modal-type" class="modal-type"></div>
+          <div id="modal-title" class="modal-title"></div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div id="modal-meta" class="modal-meta"></div>
+        <div id="modal-genres" class="modal-genres"></div>
+        <div id="modal-digital-release" class="dr-loading"></div>
+        <div id="modal-overview" class="modal-overview"></div>
       </div>
     </div>
-    <div class="modal-body">
-      <div id="modal-meta" class="modal-meta"></div>
-      <div id="modal-genres" class="modal-genres"></div>
-      <div id="modal-digital-release" class="dr-loading"></div>
-      <div id="modal-overview" class="modal-overview"></div>
+    <div class="modal-footer">
       <div id="tv-selectors" style="display:none">
         <div class="modal-selectors">
           <div>
@@ -1181,6 +1192,18 @@ async function openModal(item) {
 
   $('modal-backdrop').classList.add('open');
   document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
+
+  // Open scrolled to the title (just above "FILM // Title"); if it all fits, this stays at the top.
+  requestAnimationFrame(() => {
+    const sc = $('modal').querySelector('.modal-scroll');
+    const hc = $('modal').querySelector('.modal-hero-content');
+    if (sc && hc) {
+      sc.scrollTop = 0;
+      const padTop = parseFloat(getComputedStyle(hc).paddingTop) || 0;
+      sc.scrollTop = hc.getBoundingClientRect().top - sc.getBoundingClientRect().top + padTop / 2;
+    }
+  });
 }
 
 /* ─── DIGITAL RELEASE BADGE (modal) ─── */
@@ -1285,6 +1308,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 function closeModal() {
   $('modal-backdrop').classList.remove('open');
   document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
   currentModalItem = null;
 }
 
