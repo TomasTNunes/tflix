@@ -206,6 +206,13 @@
       background: #fff; color: #0a0a0d; border-radius: 7px; font-weight: 700;
     }
 
+    /* ─── TV / D-PAD FOCUS ───
+       Visuals for the key-nav engine (script at the bottom); only active
+       while html.keynav is set, i.e. when navigating with arrows/remote. */
+    html.keynav .kf { outline: 3px solid var(--accent-h); outline-offset: 2px; border-radius: 8px; }
+    html.keynav .server-card.kf { border-color: var(--accent); background: var(--card-h); }
+    html.keynav .back-btn.kf { outline-offset: 1px; border-radius: 50%; }
+
     /* ─── RESPONSIVE ─── */
     @media (max-width: 1200px) {
       main { display: flex; flex-direction: column; }
@@ -567,6 +574,107 @@ $('back-btn').addEventListener('click', () => {
 
   if (state.type === 'tv') await setupTv();
   else await setupMovie();
+})();
+
+/* ─── TV / D-PAD NAVIGATION ───
+   Same model as the main page: arrow keys + Enter (what a TV remote sends)
+   walk the page's controls — back button → season/episode → next episode →
+   server cards. Activates on the first arrow key, deactivates on mouse or
+   touch, so pointer users never see it. Back itself is handled outside the
+   page (browser/back gesture/Android app). */
+(function () {
+  let active = false;
+  let cur = null;
+
+  const vis = el => !!(el && el.getClientRects().length);
+
+  function setFocus(el, scroll = true) {
+    if (!el) return;
+    if (cur) cur.classList.remove('kf');
+    cur = el;
+    el.classList.add('kf');
+    if (el.tagName === 'SELECT' || el.tagName === 'BUTTON') el.focus({ preventScroll: true });
+    if (scroll) el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+  }
+
+  function getSections() {
+    const secs = [];
+    const back = $('back-btn');
+    if (vis(back)) secs.push({ items: [back] });
+    const tv = $('tv-panel');
+    if (tv && !tv.hidden) {
+      const sels = [$('season-select'), $('episode-select')].filter(vis);
+      if (sels.length) secs.push({ items: sels });
+      const next = $('nextep-btn');
+      if (vis(next)) secs.push({ items: [next] });
+    }
+    document.querySelectorAll('.server-card').forEach(c => { if (vis(c)) secs.push({ items: [c] }); });
+    return secs;
+  }
+
+  function focusInitial() {
+    const sel = document.querySelector('.server-card.selected');
+    if (sel && vis(sel)) { setFocus(sel); return; }
+    const secs = getSections();
+    if (secs.length) setFocus(secs[0].items[0]);
+  }
+
+  function move(dx, dy) {
+    const secs = getSections();
+    if (!secs.length) return;
+    const si = secs.findIndex(s => s.items.indexOf(cur) >= 0);
+    if (si < 0) { focusInitial(); return; }
+    const sec = secs[si];
+    const ii = sec.items.indexOf(cur);
+
+    if (dx) {
+      const ni = ii + dx;
+      if (ni >= 0 && ni < sec.items.length) setFocus(sec.items[ni]);
+      return;
+    }
+    if (dy) {
+      const ns = secs[si + dy];
+      if (!ns) return;
+      setFocus(ns.items[Math.max(0, Math.min(ii, ns.items.length - 1))]);
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const k = e.key;
+    const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+
+    if (!active) {
+      if (arrows[k]) {
+        active = true;
+        document.documentElement.classList.add('keynav');
+        if (cur && vis(cur)) setFocus(cur); else focusInitial();
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (k === 'Enter') {
+      if (!cur) { focusInitial(); return; }
+      if (cur.tagName === 'SELECT') {
+        // Older WebViews lack showPicker — there the native Enter opens it.
+        if (typeof cur.showPicker === 'function') { e.preventDefault(); try { cur.showPicker(); } catch (err) {} }
+        return;
+      }
+      e.preventDefault();
+      cur.click();
+      return;
+    }
+
+    if (arrows[k]) { e.preventDefault(); move(arrows[k][0], arrows[k][1]); }
+  });
+
+  ['mousemove', 'mousedown', 'touchstart'].forEach(ev =>
+    document.addEventListener(ev, () => {
+      if (!active) return;
+      active = false;
+      document.documentElement.classList.remove('keynav');
+    }, { passive: true }));
 })();
 </script>
 </body>

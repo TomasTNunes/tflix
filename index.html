@@ -562,6 +562,31 @@
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     #toast .s-live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
 
+    /* ─────────────── TV / D-PAD FOCUS ───────────────
+       .kf marks the element focused by the key-nav engine (script at the
+       bottom). All visuals are gated on html.keynav, which is only set
+       while navigating with arrow keys / a TV remote — mouse and touch
+       users never see any of this. */
+    html.keynav .kf { outline: 3px solid var(--accent-h); outline-offset: 3px; border-radius: 8px; }
+    /* #search's own "outline: none" outranks the .kf rule (ID specificity) */
+    html.keynav #search.kf { outline: 3px solid var(--accent-h); outline-offset: 2px; border-radius: 99px; }
+    html.keynav .card.kf {
+      outline-offset: 0;
+      transform: scale(1.09) translateY(-4px);
+      box-shadow: 0 22px 48px rgba(0,0,0,0.7);
+      z-index: 6;
+    }
+    html.keynav .card.kf .card-info { opacity: 1; transform: translate3d(0, 0, 0); }
+    html.keynav .rank-card.kf-parent .card {
+      transform: scale(1.09) translateY(-4px);
+      box-shadow: 0 22px 48px rgba(0,0,0,0.7);
+      z-index: 6;
+    }
+    html.keynav .rank-card.kf-parent .rank-num {
+      -webkit-text-stroke-color: var(--accent);
+      text-shadow: 0 0 40px rgba(229,9,20,0.35);
+    }
+
     /* ─────────────── RESPONSIVE ─────────────── */
     @media (max-width: 860px) {
       .nav-links { display: none; }
@@ -1194,6 +1219,11 @@ async function openModal(item) {
   document.body.style.overflow = 'hidden';
   document.documentElement.style.overflow = 'hidden';
 
+  // Give the modal its own history entry so the system/remote Back button
+  // (phone gesture, TV remote, browser) closes it instead of leaving the page.
+  if (!(history.state && history.state.tflixModal)) history.pushState({ tflixModal: true }, '');
+  if (window.__knavModalOpened) window.__knavModalOpened();
+
   // Open scrolled to the title (just above "FILM // Title"); if it all fits, this stays at the top.
   requestAnimationFrame(() => {
     const sc = $('modal').querySelector('.modal-scroll');
@@ -1305,12 +1335,21 @@ $('modal-close').addEventListener('click', closeModal);
 $('modal-backdrop').addEventListener('click', e => { if (e.target === $('modal-backdrop')) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-function closeModal() {
+function closeModal(fromPop) {
+  if (!$('modal-backdrop').classList.contains('open')) return;
   $('modal-backdrop').classList.remove('open');
   document.body.style.overflow = '';
   document.documentElement.style.overflow = '';
   currentModalItem = null;
+  if (window.__knavModalClosed) window.__knavModalClosed();
+  // Closing by any means other than Back itself unwinds the modal's
+  // history entry, so the next Back doesn't have to be pressed twice.
+  if (fromPop !== true && history.state && history.state.tflixModal) history.back();
 }
+
+window.addEventListener('popstate', () => {
+  if ($('modal-backdrop').classList.contains('open')) closeModal(true);
+});
 
 /* ─── SEARCH ─── */
 let searchTimer;
@@ -1423,6 +1462,210 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   await loadHero();
   loadTop10();
   for (const cfg of CATEGORY_ROWS) loadRow(cfg);
+})();
+</script>
+
+<script>
+/* ─── TV / D-PAD NAVIGATION ───
+   Drives the whole page with arrow keys + Enter, which is exactly what an
+   Android TV remote sends. Activates on the first arrow-key press and
+   deactivates on any mouse/touch input, so mouse and touch users are
+   completely unaffected (and it doubles as desktop keyboard navigation).
+
+   Model: the page is a vertical list of sections (header → hero → rows;
+   or header → filter tabs → result grid). Up/Down moves between sections,
+   Left/Right within one, Enter activates. Each row remembers its last
+   position. The modal and the server dropdown trap focus while open. */
+(function () {
+  let active = false;
+  let cur = null;        // element the engine currently points at
+  let lastCard = null;   // card that opened the modal (refocused on close)
+  const mem = new Map(); // section key -> last item index
+
+  const vis = el => !!(el && el.getClientRects().length);
+
+  function setFocus(el, scroll = true) {
+    if (!el) return;
+    if (cur) {
+      cur.classList.remove('kf');
+      const rp = cur.closest('.rank-card');
+      if (rp) rp.classList.remove('kf-parent');
+    }
+    cur = el;
+    el.classList.add('kf');
+    const rp = el.closest('.rank-card');
+    if (rp) rp.classList.add('kf-parent');
+    // Real focus only where native behaviour needs it (selects open their
+    // picker, buttons stay accessible). Inputs get focused on Enter so the
+    // TV keyboard doesn't pop up just from navigating past the search box.
+    if (el.tagName === 'SELECT' || el.tagName === 'BUTTON') el.focus({ preventScroll: true });
+    else if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+    if (scroll) el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+  }
+
+  function getSections() {
+    // Modal open → trap focus inside it
+    if ($('modal-backdrop').classList.contains('open')) {
+      const s = [{ key: null, items: [$('modal-close')] }];
+      if ($('tv-selectors').style.display !== 'none')
+        s.push({ key: null, items: [$('season-select'), $('episode-select')] });
+      s.push({ key: null, items: [$('modal-watch-btn')] });
+      return s;
+    }
+    // Server dropdown open → trap focus on its items (one per "section",
+    // so Up/Down walks the vertical list)
+    if (serverMenu.classList.contains('open'))
+      return [...serverMenu.querySelectorAll('.server-item')].map(i => ({ key: null, items: [i] }));
+
+    const secs = [];
+    const header = [...document.querySelectorAll('.nav-link'), searchInput, serverBtn].filter(vis);
+    if (header.length) secs.push({ key: 'header', items: header });
+
+    if ($('search-results-section').classList.contains('visible')) {
+      const tabs = [...document.querySelectorAll('.filter-tab')].filter(vis);
+      if (tabs.length) secs.push({ key: 'tabs', items: tabs });
+      const grid = $('search-grid');
+      const cards = [...grid.querySelectorAll('.card')];
+      const cols = (getComputedStyle(grid).gridTemplateColumns || '').split(' ').filter(Boolean).length || 1;
+      for (let i = 0; i < cards.length; i += cols)
+        secs.push({ key: null, items: cards.slice(i, i + cols) });
+      return secs;
+    }
+
+    const heroPlay = document.querySelector('.hero-slide.active .hero-play');
+    if (heroPlay && vis(heroPlay)) secs.push({ key: 'hero', items: [heroPlay] });
+
+    document.querySelectorAll('#rows-container .scroller').forEach(sc => {
+      const items = [...sc.children]
+        .map(c => c.classList.contains('rank-card') ? c.querySelector('.card') : c)
+        .filter(c => c && c.classList.contains('card'));
+      if (items.length) secs.push({ key: sc, items });
+    });
+    return secs;
+  }
+
+  function focusInitial() {
+    if ($('modal-backdrop').classList.contains('open')) { setFocus($('modal-watch-btn'), false); return; }
+    const secs = getSections();
+    if (!secs.length) return;
+    const content = secs.find(s => s.key !== 'header' && s.key !== 'tabs');
+    setFocus((content || secs[0]).items[0]);
+  }
+
+  function move(dx, dy) {
+    // The hero auto-rotates: re-attach to the now-active slide's button
+    if (cur && cur.classList.contains('hero-play') && !vis(cur)) {
+      const p = document.querySelector('.hero-slide.active .hero-play');
+      if (p) setFocus(p, false);
+    }
+    const secs = getSections();
+    if (!secs.length) return;
+    const si = secs.findIndex(s => s.items.indexOf(cur) >= 0);
+    if (si < 0) { focusInitial(); return; }
+    const sec = secs[si];
+    const ii = sec.items.indexOf(cur);
+
+    if (dx) {
+      if (sec.key === 'hero') {            // ←/→ on the hero switch slides
+        goToHero(heroIndex + dx);
+        const p = document.querySelector('.hero-slide.active .hero-play');
+        if (p) setFocus(p, false);
+        return;
+      }
+      const ni = ii + dx;
+      if (ni >= 0 && ni < sec.items.length) {
+        setFocus(sec.items[ni]);
+        if (sec.key) mem.set(sec.key, ni);
+      }
+      return;
+    }
+    if (dy) {
+      const ns = secs[si + dy];
+      if (!ns) return;
+      if (sec.key) mem.set(sec.key, ii);
+      const want = (ns.key != null && mem.has(ns.key)) ? mem.get(ns.key) : ii;
+      setFocus(ns.items[Math.max(0, Math.min(want, ns.items.length - 1))]);
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const k = e.key;
+    const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+
+    if (!active) {
+      if (arrows[k]) {
+        active = true;
+        document.documentElement.classList.add('keynav');
+        if (cur && vis(cur)) setFocus(cur); else focusInitial();
+        e.preventDefault();
+      }
+      return;
+    }
+
+    const ae = document.activeElement;
+    const typing = ae && ae.tagName === 'INPUT';
+
+    if (k === 'Escape') {
+      if (serverMenu.classList.contains('open')) { serverMenu.classList.remove('open'); setFocus(serverBtn, false); }
+      else if (typing) ae.blur();
+      return;                       // modal Escape: the page's own handler closes it
+    }
+
+    if (typing) {
+      if (k === 'ArrowUp' || k === 'ArrowDown') ae.blur();  // leave the field, then move
+      else return;                  // ←/→ move the caret, Enter searches (native)
+    }
+
+    if (k === 'Enter') {
+      if (!cur) { focusInitial(); return; }
+      if (cur.tagName === 'SELECT') {
+        // Open the dropdown. Where showPicker is missing (older WebViews)
+        // the native Enter-on-focused-select does it, so don't preventDefault.
+        if (typeof cur.showPicker === 'function') { e.preventDefault(); try { cur.showPicker(); } catch (err) {} }
+        return;
+      }
+      if (cur === searchInput) { e.preventDefault(); searchInput.focus(); return; }
+      e.preventDefault();
+      const el = cur;
+      el.click();
+      requestAnimationFrame(() => {
+        if (serverMenu.classList.contains('open'))
+          setFocus(serverMenu.querySelector('.server-item.active') || serverMenu.querySelector('.server-item'), false);
+        else if (el.classList.contains('server-item')) setFocus(serverBtn, false);
+        else if (el.classList.contains('nav-link') && el.dataset.nav && el.dataset.nav !== 'home') {
+          // Jump straight into the row the nav link scrolled to
+          const sc = document.querySelector(`.row[data-anchor="${el.dataset.nav}"] .scroller`);
+          const first = sc && sc.querySelector('.card');
+          if (first) setFocus(first);
+        }
+        else if (!cur || !vis(cur)) focusInitial();
+      });
+      return;
+    }
+
+    if (arrows[k]) { e.preventDefault(); move(arrows[k][0], arrows[k][1]); }
+  });
+
+  /* Hooks called by openModal/closeModal so focus follows the modal */
+  window.__knavModalOpened = () => {
+    if (!active) return;
+    lastCard = cur;
+    setFocus($('modal-watch-btn'), false);
+  };
+  window.__knavModalClosed = () => {
+    if (!active) return;
+    if (lastCard && vis(lastCard)) setFocus(lastCard); else focusInitial();
+    lastCard = null;
+  };
+
+  /* Any mouse/touch input hands control back to the pointer */
+  ['mousemove', 'mousedown', 'touchstart'].forEach(ev =>
+    document.addEventListener(ev, () => {
+      if (!active) return;
+      active = false;
+      document.documentElement.classList.remove('keynav');
+    }, { passive: true }));
 })();
 </script>
 </body>
