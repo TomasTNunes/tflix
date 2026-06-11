@@ -212,6 +212,7 @@
     html.keynav .kf { outline: 3px solid var(--accent-h); outline-offset: 2px; border-radius: 8px; }
     html.keynav .server-card.kf { border-color: var(--accent); background: var(--card-h); }
     html.keynav .back-btn.kf { outline-offset: 1px; border-radius: 50%; }
+    html.keynav .player-wrap.kf { outline: 3px solid var(--accent); outline-offset: 3px; }
 
     /* ─── RESPONSIVE ─── */
     @media (max-width: 1200px) {
@@ -238,7 +239,7 @@
 
   <main id="main">
     <div class="player-col">
-      <div class="player-wrap">
+      <div class="player-wrap" id="player-wrap">
         <div class="player-loading" id="player-loading"><div class="spinner"></div></div>
         <iframe id="player" allowfullscreen allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; web-share *"></iframe>
       </div>
@@ -608,6 +609,12 @@ $('back-btn').addEventListener('click', () => {
       const next = $('nextep-btn');
       if (vis(next)) secs.push({ items: [next] });
     }
+    // The player itself is a focus stop: selecting it just scrolls the video
+    // to the middle of the screen (handy on a TV). It's a cross-origin iframe,
+    // so we never send real focus into it — setFocus only adds the highlight
+    // and scrolls; Enter on it is a harmless no-op click on the wrapper.
+    const player = $('player-wrap');
+    if (vis(player)) secs.push({ items: [player] });
     document.querySelectorAll('.server-card').forEach(c => { if (vis(c)) secs.push({ items: [c] }); });
     return secs;
   }
