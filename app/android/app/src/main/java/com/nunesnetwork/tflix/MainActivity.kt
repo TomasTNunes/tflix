@@ -22,6 +22,7 @@ import android.app.Activity
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Message
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -139,6 +140,39 @@ class MainActivity : Activity() {
         customViewCallback?.onCustomViewHidden()
         customViewCallback = null
         showSystemBars()
+    }
+
+    /* ─── D-pad Up/Down: drive the site's key-nav, not the WebView scroll ───
+       The site (tflix.nunesnetwork.com) ships its own arrow-key navigation
+       engine that highlights and "selects" posters. In a browser it works
+       because keydown + preventDefault cancels the page scroll. On Android TV
+       the WebView handles the hardware D-pad Up/Down natively and scrolls the
+       page vertically — a scroll the page's JS preventDefault does NOT cancel
+       — so focus never moves to the poster row. (Left/Right have no horizontal
+       scroll to fight, so they already reach the page and work.)
+
+       Fix: consume the native Up/Down here so the WebView can't scroll, and
+       re-dispatch the matching KeyboardEvent into the page so its own engine
+       moves the selection and scrolls the focused poster into view itself.
+
+       Note: while the on-screen keyboard (IME) is up, D-pad events go to the
+       IME window first and never reach here, so search-field typing is fine. */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        val key = when (event.keyCode) {
+            KeyEvent.KEYCODE_DPAD_UP -> "ArrowUp"
+            KeyEvent.KEYCODE_DPAD_DOWN -> "ArrowDown"
+            else -> return super.dispatchKeyEvent(event)
+        }
+        if (event.action == KeyEvent.ACTION_DOWN && ::webView.isInitialized) {
+            val code = if (key == "ArrowUp") 38 else 40
+            webView.evaluateJavascript(
+                "document.dispatchEvent(new KeyboardEvent('keydown',{" +
+                    "key:'$key',code:'$key',keyCode:$code,which:$code," +
+                    "bubbles:true,cancelable:true}));",
+                null,
+            )
+        }
+        return true  // consume both DOWN and UP so the WebView never scrolls
     }
 
     /* ─── Back: exit fullscreen video → page history → leave app ─── */
