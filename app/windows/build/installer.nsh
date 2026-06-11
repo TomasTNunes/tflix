@@ -2,8 +2,9 @@
 ;  TFLIX — custom NSIS hooks for electron-builder
 ;
 ;  Adds an opt-in checkbox to the uninstaller that, when ticked, also
-;  removes all per-user app data (Electron cache, cookies, and the saved
-;  localStorage server choice) stored in the user-data folder.
+;  removes all per-user app data: the Electron user-data folder (cache,
+;  cookies, and the saved localStorage server choice) plus the
+;  electron-updater download cache.
 ;
 ;  The user-data folder is named after Electron's app name, which is the
 ;  "name" field in package.json ("tflix-app"). On Windows that resolves to
@@ -84,6 +85,10 @@
     ; install (where the context would otherwise be "all" → C:\ProgramData).
     SetShellVarContext current
     RMDir /r "$APPDATA\${TFLIX_USERDATA_DIR}"
+    ; Also remove the electron-updater download cache, which lives in
+    ; %LOCALAPPDATA%\<appName>-updater (NSIS: $LOCALAPPDATA). $LOCALAPPDATA is
+    ; already user-scoped, so the "current" shell context set above applies.
+    RMDir /r "$LOCALAPPDATA\${TFLIX_USERDATA_DIR}-updater"
     DeleteRegKey HKCU "${TFLIX_REG_KEY}"
     ${If} $installMode == "all"
       SetShellVarContext all
