@@ -11,13 +11,17 @@
    popunder ads the third-party stream embeds fire never open.
    ─────────────────────────────────────────────────────────────── */
 
-const { app, BrowserWindow, Menu, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
 /* ─── The live site this shell wraps ─── */
 const SITE_URL = 'https://tflix.nunesnetwork.com/';
 const SITE_ORIGIN = new URL(SITE_URL).origin;   // https://tflix.nunesnetwork.com
+
+/* The site's Support button links here — the one pop-up we let through,
+   handed to the system browser instead of opening an app window. */
+const SUPPORT_URL = 'https://github.com/TomasTNunes/tflix';
 
 let mainWindow = null;
 
@@ -48,7 +52,11 @@ function createMainWindow() {
   // Block ALL pop-ups / new windows. The third-party stream embeds fire
   // popunder ads via window.open / target=_blank — denying them here means
   // no browser tab and no ad ever opens. (Sub-frames route through here too.)
-  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  // Sole exception: the site's Support link, which goes to the OS browser.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith(SUPPORT_URL)) shell.openExternal(url);
+    return { action: 'deny' };
+  });
 
   // Keep the top frame pinned to the TFLIX site: ad scripts sometimes try to
   // hijack the whole page via top.location = adURL. Allow only same-site nav.

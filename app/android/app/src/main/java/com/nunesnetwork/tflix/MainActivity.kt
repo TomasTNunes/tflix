@@ -9,7 +9,8 @@
 
    The app's only job is ad-blocking:
      • every window.open / target=_blank is denied (onCreateWindow),
-       so the popunder ads the stream embeds fire never open
+       so the popunder ads the stream embeds fire never open — except
+       the site's Support link, which opens in the system browser
      • the top frame is pinned to the TFLIX origin; the stream
        <iframe>s still navigate/redirect freely — blocking those
        breaks the embeds (same lesson as the desktop app)
@@ -19,6 +20,7 @@ package com.nunesnetwork.tflix
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Message
@@ -38,6 +40,10 @@ class MainActivity : Activity() {
     companion object {
         private const val SITE_URL = "https://tflix.nunesnetwork.com/"
         private const val SITE_ORIGIN = "https://tflix.nunesnetwork.com"
+
+        // The site's Support button links here — the one pop-up we let
+        // through, handed to the system browser (same as the desktop app).
+        private const val SUPPORT_URL = "https://github.com/TomasTNunes/tflix"
     }
 
     private lateinit var webView: WebView
@@ -96,12 +102,37 @@ class MainActivity : Activity() {
 
         webView.webChromeClient = object : WebChromeClient() {
             // Block ALL pop-ups / new windows — no popunder ad ever opens.
+            // This callback never receives the URL, so a throwaway WebView is
+            // attached just to learn it: the Support link (GitHub) goes to the
+            // system browser, everything else is dropped without loading.
             override fun onCreateWindow(
                 view: WebView,
                 isDialog: Boolean,
                 isUserGesture: Boolean,
                 resultMsg: Message,
-            ): Boolean = false
+            ): Boolean {
+                val transport = resultMsg.obj as? WebView.WebViewTransport ?: return false
+                val probe = WebView(view.context)
+                probe.webViewClient = object : WebViewClient() {
+                    override fun shouldOverrideUrlLoading(
+                        v: WebView,
+                        request: WebResourceRequest,
+                    ): Boolean {
+                        if (request.url.toString().startsWith(SUPPORT_URL)) {
+                            try {
+                                startActivity(Intent(Intent.ACTION_VIEW, request.url))
+                            } catch (_: Exception) {
+                                // No browser on this device (some TVs) — drop it.
+                            }
+                        }
+                        v.destroy()
+                        return true  // the probe never loads anything
+                    }
+                }
+                transport.webView = probe
+                resultMsg.sendToTarget()
+                return true
+            }
 
             // Fullscreen video: the embeds' players call this when the user
             // taps the fullscreen button.

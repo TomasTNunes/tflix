@@ -137,6 +137,29 @@
     }
     .search-wrap.open #search-clear.visible { display: block; }
 
+    .support-btn {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.45rem 1rem;
+      background: linear-gradient(135deg, rgba(229,9,20,0.18), rgba(229,9,20,0.04));
+      border: 1px solid rgba(229,9,20,0.4); border-radius: 99px;
+      color: var(--text); font-size: 0.8rem; font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      transition: background .2s, border-color .2s, box-shadow .25s, transform .15s var(--ease);
+    }
+    .support-btn:hover {
+      background: linear-gradient(135deg, rgba(229,9,20,0.32), rgba(229,9,20,0.1));
+      border-color: rgba(255,34,46,0.7);
+      box-shadow: 0 4px 22px rgba(229,9,20,0.35);
+      transform: translateY(-1px);
+    }
+    .support-btn:active { transform: scale(.96); }
+    .support-btn svg { flex-shrink: 0; }
+    @media (max-width: 560px) {
+      .support-btn span.s-name { display: none; }
+      .support-btn { padding: 0.45rem 0.6rem; }
+    }
+
     .server-wrap { position: relative; flex-shrink: 0; }
     .server-btn {
       display: flex; align-items: center; gap: 0.5rem;
@@ -629,6 +652,11 @@
       <input type="text" id="search" placeholder="Search movies &amp; TV shows…" autocomplete="off" spellcheck="false"/>
       <button id="search-clear" title="Clear">✕</button>
     </div>
+
+    <a class="support-btn" id="support-btn" href="https://github.com/TomasTNunes/tflix/issues" target="_blank" rel="noopener noreferrer" title="Report an issue or get support on GitHub">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      <span class="s-name">Support</span>
+    </a>
 
     <div class="server-wrap">
       <button class="server-btn" id="server-btn">
@@ -1518,7 +1546,7 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
       return [...serverMenu.querySelectorAll('.server-item')].map(i => ({ key: null, items: [i] }));
 
     const secs = [];
-    const header = [...document.querySelectorAll('.nav-link'), searchInput, serverBtn].filter(vis);
+    const header = [...document.querySelectorAll('.nav-link'), searchInput, $('support-btn'), serverBtn].filter(vis);
     if (header.length) secs.push({ key: 'header', items: header });
 
     if ($('search-results-section').classList.contains('visible')) {
