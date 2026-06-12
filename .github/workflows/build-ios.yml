@@ -1,6 +1,4 @@
-# Builds the unsigned iOS/iPadOS IPA on a GitHub macOS runner — the only way to
-# build the Apple app without a Mac. Manual trigger only: run it from the
-# Actions tab, then download the artifact and attach it to a release.
+# Builds the unsigned iOS/iPadOS IPA on a GitHub macOS runner.
 # The IPA is unsigned; users install it via AltStore/SideStore (which re-sign
 # it with their own Apple ID). See app/apple/README.md.
 name: Build iOS app
