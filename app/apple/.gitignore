@@ -1,0 +1,9 @@
+# Xcode user state
+xcuserdata/
+*.xcuserstate
+
+# Build output
+build/
+DerivedData/
+Payload/
+*.ipa

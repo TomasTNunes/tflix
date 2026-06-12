@@ -1,0 +1,39 @@
+# Builds the unsigned iOS/iPadOS IPA on a GitHub macOS runner — the only way to
+# build the Apple app without a Mac. Manual trigger only: run it from the
+# Actions tab, then download the artifact and attach it to a release.
+# The IPA is unsigned; users install it via AltStore/SideStore (which re-sign
+# it with their own Apple ID). See app/apple/README.md.
+name: Build iOS app
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build (Release, unsigned)
+        working-directory: app/apple
+        run: |
+          xcodebuild -project TFLIX.xcodeproj -scheme TFLIX -configuration Release \
+            -sdk iphoneos -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+      - name: Package IPA
+        working-directory: app/apple
+        run: |
+          APP=build/Build/Products/Release-iphoneos/TFLIX.app
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Info.plist")
+          mkdir Payload
+          cp -R "$APP" Payload/
+          zip -qr "tflix-ios.${VERSION}.ipa" Payload
+          echo "Built tflix-ios.${VERSION}.ipa"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tflix-ios-ipa
+          path: app/apple/*.ipa
+          if-no-files-found: error
