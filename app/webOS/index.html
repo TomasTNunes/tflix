@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TFLIX</title>
+  <!--
+    ───────────────────────────────────────────────────────────────
+    TFLIX webOS — LG TV (webOS)
+
+    A thin web-app shell around the live TFLIX website
+    (https://tflix.nunesnetwork.com), the LG TV counterpart of the
+    Electron desktop and Android WebView apps. The packaged app is
+    just this one page: on launch it navigates the whole app card to
+    the deployed site, so any change to the site — new stream servers,
+    fixed embeds — appears instantly, with no app update.
+
+    Why a top-level navigation (and not an <iframe>)?
+      • webOS is Chromium-based, so the site's own arrow-key poster
+        navigation works natively when it owns the document — the same
+        way it does in a desktop browser. A cross-origin <iframe>
+        would swallow the remote's key events and break focus/back.
+      • location.replace() (not assign) adds no history entry, so the
+        TV remote's Back button exits the app immediately from the
+        site rather than bouncing through this splash first.
+
+    Ad / pop-up note: the third-party stream embeds fire popunder ads
+    via window.open. webOS TV web apps are single-card and have no
+    pop-up surface, so those windows simply never open — the platform
+    gives us the ad-blocking the desktop/Android shells implement by
+    hand. (See README.)
+    ───────────────────────────────────────────────────────────────
+  -->
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0d; --accent: #e50914; --text: #f4f4f7; --muted: #9a9aa6;
+    }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: system-ui, sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; overflow: hidden; -webkit-font-smoothing: antialiased;
+    }
+    .logo {
+      font-size: 3.2rem; font-weight: 800; letter-spacing: -0.04em;
+      color: var(--accent); text-shadow: 0 0 40px rgba(229,9,20,0.55);
+    }
+    .status { margin-top: 1.6rem; color: var(--muted); font-size: 1.1rem; }
+    .spinner {
+      margin-top: 2.2rem; width: 44px; height: 44px; border-radius: 50%;
+      border: 4px solid rgba(255,255,255,0.12); border-top-color: var(--accent);
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="logo">TFLIX</div>
+  <div class="status" id="status">Loading…</div>
+  <div class="spinner" id="spinner"></div>
+
+  <script>
+    'use strict';
+
+    // The live site this shell wraps. Changing the site needs no app update.
+    var SITE_URL = 'https://tflix.nunesnetwork.com/';
+
+    // webOS TV remote key codes.
+    var KEY_BACK = 461;
+
+    var statusEl = document.getElementById('status');
+
+    function showOffline() {
+      document.getElementById('spinner').classList.add('hidden');
+      statusEl.textContent = 'No internet connection — check your network and try again.';
+    }
+
+    function go() {
+      if (navigator.onLine === false) { showOffline(); return; }
+      // Replace (don't push) so Back from the site exits the app directly.
+      window.location.replace(SITE_URL);
+    }
+
+    // On the splash, Back should close the app rather than do nothing.
+    document.addEventListener('keydown', function (e) {
+      if (e.keyCode === KEY_BACK) {
+        if (typeof window.close === 'function') window.close();
+      }
+    });
+
+    // If we're still here (e.g. came back offline), retry when the network returns.
+    window.addEventListener('online', go);
+
+    // Let the splash paint one frame, then hand the card to the live site.
+    if (navigator.onLine === false) {
+      showOffline();
+    } else {
+      window.requestAnimationFrame(function () { window.setTimeout(go, 50); });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "id": "com.nunesnetwork.tflix",
+  "version": "1.0.0",
+  "vendor": "Nunes Network",
+  "type": "web",
+  "main": "index.html",
+  "title": "TFLIX",
+  "appDescription": "Watch Movies & TV — the live TFLIX site as an LG webOS TV app.",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "iconColor": "#e50914",
+  "bgColor": "#0a0a0d",
+  "splashBackground": "splash.png",
+  "disableBackHistoryAPI": false,
+  "handlesRelaunch": false,
+  "requiredMemory": 64
+}

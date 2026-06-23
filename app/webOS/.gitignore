@@ -1,0 +1,2 @@
+# webOS build output (ares-package writes the .ipk here)
+*.ipk
