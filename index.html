@@ -510,14 +510,18 @@
       font-size: clamp(1.6rem, 4vw, 2.6rem); font-weight: 800; line-height: 1.02;
       letter-spacing: -0.02em; text-shadow: 0 3px 20px rgba(0,0,0,0.6);
     }
-    .modal-close {
-      position: absolute; top: 1rem; right: 1rem; z-index: 3;
+    .modal-view { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+    .modal-close, .modal-back {
+      position: absolute; top: 1rem; z-index: 3;
       width: 38px; height: 38px; border-radius: 50%;
       background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.15);
       color: #fff; cursor: pointer; font-size: 1.3rem; line-height: 1;
       display: grid; place-items: center; backdrop-filter: blur(6px); transition: background .2s;
     }
-    .modal-close:hover { background: rgba(0,0,0,0.85); }
+    .modal-close { right: 1rem; }
+    .modal-back { left: 1rem; }
+    .modal-close:hover, .modal-back:hover { background: rgba(0,0,0,0.85); }
+    .modal-back:active { transform: scale(.93); }
 
     .modal-body { padding: 1.4rem 2rem 1.5rem; }
     .modal-meta { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; font-size: 0.9rem; font-weight: 500; color: rgba(255,255,255,0.8); margin-bottom: 1rem; }
@@ -575,18 +579,71 @@
     @media (hover: none) { .cast-scroller { overflow-x: auto; } }
     .cast-wrap .arrow { bottom: 0; width: 3rem; background: linear-gradient(to right, var(--bg-elev) 25%, transparent); }
     .cast-wrap.static .arrow { display: none; }
-    .cast-member { flex: 0 0 auto; width: 96px; text-align: center; }
+    .cast-member { flex: 0 0 auto; width: 96px; text-align: center; cursor: pointer; }
     .cast-photo {
       width: 84px; height: 84px; border-radius: 50%; object-fit: cover; display: block;
       margin: 0 auto 0.55rem; background: var(--card); border: 1px solid var(--line);
+      transition: transform .25s var(--ease), border-color .25s, box-shadow .25s;
     }
+    .cast-member:hover .cast-photo {
+      transform: scale(1.07); border-color: rgba(255,255,255,0.75);
+      box-shadow: 0 8px 22px rgba(0,0,0,0.6);
+    }
+    .cast-member:hover .cast-name { color: var(--accent-h); }
     .cast-photo-placeholder { display: grid; place-items: center; color: var(--muted); font-size: 1.2rem; font-weight: 700; }
     .cast-name {
-      font-size: 0.82rem; font-weight: 500; line-height: 1.25; color: var(--text);
+      font-size: 0.82rem; font-weight: 500; line-height: 1.25; color: var(--text); transition: color .2s;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
     .cast-character {
       font-size: 0.72rem; line-height: 1.25; color: var(--muted); margin-top: 2px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    /* ── Person view (modal) ── */
+    .person-hero { position: relative; padding: 4.6rem 2rem 1.4rem; overflow: hidden; }
+    .person-hero-bg {
+      position: absolute; inset: 0; background-size: cover; background-position: center 25%;
+      opacity: 0.35;
+    }
+    .person-hero-bg::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(17,17,22,0.15), var(--bg-elev));
+    }
+    .person-head { position: relative; display: flex; align-items: center; gap: 1.6rem; margin-bottom: 1.2rem; }
+    .person-photo {
+      width: 150px; height: 150px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+      background: var(--card); border: 3px solid rgba(255,255,255,0.12);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    }
+    .person-photo.cast-photo-placeholder { font-size: 2.4rem; }
+    .person-name {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; line-height: 1.05;
+      letter-spacing: -0.02em; text-shadow: 0 3px 20px rgba(0,0,0,0.6); margin-bottom: 0.6rem;
+    }
+    .person-fact { font-size: 0.9rem; line-height: 1.55; color: rgba(255,255,255,0.8); }
+    .person-bio {
+      position: relative; font-size: 0.94rem; line-height: 1.6; color: rgba(255,255,255,0.78);
+      white-space: pre-line;
+      display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .person-bio.expanded { display: block; }
+    .person-bio-more {
+      position: relative; background: none; border: none; padding: 0.4rem 0 0;
+      color: var(--text); font-family: inherit; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; transition: color .2s;
+    }
+    .person-bio-more:hover { color: var(--accent-h); }
+    .person-credits { padding: 0.6rem 2rem 2rem; }
+    .person-section-title {
+      font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.3rem; font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .person-section-title .count { font-family: inherit; font-size: 0.85rem; font-weight: 500; color: var(--muted); margin-left: 0.4rem; }
+    .person-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    .appearance-role {
+      font-size: 0.74rem; line-height: 1.3; color: var(--muted); text-align: center; margin-top: 0.45rem;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
 
@@ -638,6 +695,7 @@
     }
     html.keynav .cast-member.kf { outline: none; }
     html.keynav .cast-member.kf .cast-photo { outline: 3px solid var(--accent-h); outline-offset: 3px; }
+    html.keynav .modal-back.kf, html.keynav .modal-close.kf { border-radius: 50%; }
     html.keynav .card.kf .card-info { opacity: 1; transform: translate3d(0, 0, 0); }
     html.keynav .rank-card.kf-parent .card {
       transform: scale(1.09) translateY(-4px);
@@ -664,6 +722,11 @@
       .modal-body { padding: 1.2rem 1.3rem 1.5rem; }
       .modal-cast .field-label { padding: 0 1.3rem; }
       .cast-scroller { padding: 0.5rem 1.3rem; }
+      .person-hero { padding: 4.2rem 1.3rem 1.3rem; }
+      .person-head { flex-direction: column; text-align: center; gap: 1rem; }
+      .person-photo { width: 120px; height: 120px; }
+      .person-credits { padding: 0.6rem 1.3rem 1.6rem; }
+      .person-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
       .modal-footer { padding: 0.85rem 1.3rem 1.1rem; }
       .modal-hero-content { padding: 1.2rem 1.3rem; }
       .modal-selectors { grid-template-columns: 1fr; }
@@ -743,8 +806,12 @@
 <!-- ─────────────── MODAL ─────────────── -->
 <div class="modal-backdrop" id="modal-backdrop">
   <div class="modal" id="modal">
+    <button class="modal-back" id="modal-back" title="Back" aria-label="Back" style="display:none">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
     <button class="modal-close" id="modal-close">✕</button>
-    <div class="modal-scroll">
+    <div class="modal-view" id="title-view">
+    <div class="modal-scroll" id="title-scroll">
       <div class="modal-hero">
         <div id="modal-backdrop-img"></div>
         <div class="modal-hero-content">
@@ -784,6 +851,12 @@
         <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         Play
       </button>
+    </div>
+    </div>
+    <div class="modal-view" id="person-view" style="display:none">
+      <div class="modal-scroll" id="person-scroll">
+        <div id="person-content"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1253,8 +1326,101 @@ async function loadGenres() {
   } catch {}
 }
 
-/* ─── MODAL ─── */
-async function openModal(item) {
+/* ─── MODAL ───
+   The modal holds a stack of views: a title (movie/show) or a person. Opening
+   from the page starts a fresh stack; opening from inside the modal (a cast
+   member, an appearance) pushes onto it and the top-left Back pops it. Each
+   pushed level gets its own history entry, so the system/remote Back button
+   walks back the same way, and ✕ closes the whole stack.
+
+   Each entry stores its depth (how many steps above the page it sits), so
+   closing can always return to the page in one go — even after a reload has
+   left us on a stale modal entry (Back from the player in the apps, which
+   reload instead of restoring from the bfcache). */
+let modalStack  = [];
+let titleViewEntry  = null;   // entry each view currently shows, so Back can skip re-rendering
+let personViewEntry = null;
+
+const modalIsOpen = () => $('modal-backdrop').classList.contains('open');
+const modalDepth  = () => (history.state && history.state.tflixModal) ? (history.state.depth || 1) : 0;
+const viewScroll  = kind => $(kind === 'person' ? 'person-scroll' : 'title-scroll');
+
+function openModal(item) { return showModalEntry({ kind: 'title', item }, 'forward'); }
+function openPerson(id)  { return showModalEntry({ kind: 'person', id }, 'forward'); }
+
+function modalBack() {
+  if (modalStack.length < 2) return;
+  modalStack.pop();
+  showModalEntry(modalStack[modalStack.length - 1], 'back');
+}
+
+async function showModalEntry(entry, dir) {
+  const wasOpen = modalIsOpen();
+  if (dir === 'forward') {
+    if (wasOpen) {
+      const prev = modalStack[modalStack.length - 1];
+      prev.scrollTop = viewScroll(prev.kind).scrollTop;
+      prev.focusEl = window.__knavCurrent ? window.__knavCurrent() : null;
+      modalStack.push(entry);
+    } else {
+      modalStack = [entry];
+    }
+  }
+
+  // Titles render before the switch so the old view stays up while TV seasons load
+  if (entry.kind === 'title' && titleViewEntry !== entry) {
+    titleViewEntry = entry;
+    await renderTitle(entry.item);
+    if (modalStack[modalStack.length - 1] !== entry) return;   // navigated elsewhere meanwhile
+  }
+
+  $('title-view').style.display  = entry.kind === 'title'  ? '' : 'none';
+  $('person-view').style.display = entry.kind === 'person' ? '' : 'none';
+  $('modal-back').style.display  = modalStack.length > 1 ? '' : 'none';
+
+  if (entry.kind === 'person' && personViewEntry !== entry) {
+    personViewEntry = entry;
+    renderPerson(entry);
+  }
+
+  if (!wasOpen) {
+    $('modal-backdrop').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    // Give the modal its own history entry so the system/remote Back button
+    // (phone gesture, TV remote, browser) closes it instead of leaving the page.
+    if (!modalDepth()) history.pushState({ tflixModal: true, depth: 1 }, '');
+    if (window.__knavModalOpened) window.__knavModalOpened();
+  } else if (dir === 'forward') {
+    history.pushState({ tflixModal: true, depth: modalDepth() + 1 }, '');
+  }
+
+  requestAnimationFrame(() => {
+    if (dir === 'back') viewScroll(entry.kind).scrollTop = entry.scrollTop || 0;
+    else if (entry.kind === 'title') scrollTitleToDefault();
+    else $('person-scroll').scrollTop = 0;
+    if (wasOpen && window.__knavModalFocus) window.__knavModalFocus(dir === 'back' ? entry.focusEl : null);
+  });
+}
+
+// Open scrolled to the title (just above "FILM // Title"); if it all fits, this stays at the top.
+// The cast row is hidden while measuring so the opening scroll is the same with or without it.
+function scrollTitleToDefault() {
+  const sc = $('title-scroll');
+  const hc = sc.querySelector('.modal-hero-content');
+  const cast = $('modal-cast');
+  const castDisplay = cast.style.display;
+  cast.style.display = 'none';
+  sc.scrollTop = 0;
+  const padTop = parseFloat(getComputedStyle(hc).paddingTop) || 0;
+  sc.scrollTop = hc.getBoundingClientRect().top - sc.getBoundingClientRect().top + padTop / 2;
+  const top = sc.scrollTop;
+  cast.style.display = castDisplay;
+  sc.scrollTop = top;
+}
+
+async function renderTitle(item) {
   const type    = mediaOf(item);
   const isMovie = type === 'movie';
   const title   = item.title || item.name;
@@ -1293,33 +1459,105 @@ async function openModal(item) {
     drEl.style.display = 'none';
     await loadTvSeasons(item.id);
   }
+}
 
-  $('modal-backdrop').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  document.documentElement.style.overflow = 'hidden';
+/* ─── PERSON VIEW (modal) ─── */
+const personCache = {};
+const fmtLongDate = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  // Give the modal its own history entry so the system/remote Back button
-  // (phone gesture, TV remote, browser) closes it instead of leaving the page.
-  if (!(history.state && history.state.tflixModal)) history.pushState({ tflixModal: true }, '');
-  if (window.__knavModalOpened) window.__knavModalOpened();
+function ageBetween(from, to) {
+  const a = new Date(from), b = to ? new Date(to) : new Date();
+  let age = b.getFullYear() - a.getFullYear();
+  if (b.getMonth() < a.getMonth() || (b.getMonth() === a.getMonth() && b.getDate() < a.getDate())) age--;
+  return age;
+}
 
-  // Open scrolled to the title (just above "FILM // Title"); if it all fits, this stays at the top.
-  // The cast row is hidden while measuring so the opening scroll is the same with or without it.
-  requestAnimationFrame(() => {
-    const sc = $('modal').querySelector('.modal-scroll');
-    const hc = $('modal').querySelector('.modal-hero-content');
-    if (sc && hc) {
-      const cast = $('modal-cast');
-      const castDisplay = cast.style.display;
-      cast.style.display = 'none';
-      sc.scrollTop = 0;
-      const padTop = parseFloat(getComputedStyle(hc).paddingTop) || 0;
-      sc.scrollTop = hc.getBoundingClientRect().top - sc.getBoundingClientRect().top + padTop / 2;
-      const top = sc.scrollTop;
-      cast.style.display = castDisplay;
-      sc.scrollTop = top;
+// One entry per title (a show can be credited several times), talk/news shows
+// left out, best-known first
+function personAppearances(p) {
+  const byKey = new Map();
+  for (const c of p.combined_credits?.cast || []) {
+    if (!c.poster_path) continue;
+    if ((c.genre_ids || []).some(g => g === 10767 || g === 10763)) continue;
+    const key = `${c.media_type}-${c.id}`;
+    const seen = byKey.get(key);
+    if (seen) { if (c.character && !seen.characters.includes(c.character)) seen.characters.push(c.character); }
+    else byKey.set(key, { item: c, characters: c.character ? [c.character] : [] });
+  }
+  return [...byKey.values()].sort((a, b) => (b.item.vote_count || 0) - (a.item.vote_count || 0));
+}
+
+async function renderPerson(entry) {
+  const el = $('person-content');
+  el.innerHTML = '<div class="spinner-wrap" style="padding-top:6rem"><div class="spinner"></div></div>';
+  try {
+    let p = personCache[entry.id];
+    if (!p) {
+      p = await tmdb(`/person/${entry.id}?append_to_response=combined_credits`);
+      if (!p || !p.name) throw new Error('person not found');
+      personCache[entry.id] = p;
     }
-  });
+    if (personViewEntry !== entry) return;   // navigated elsewhere meanwhile
+
+    const apps  = personAppearances(p);
+    const photo = poster(p.profile_path, 'h632');
+    const bg    = apps.map(a => backdrop(a.item.backdrop_path)).find(Boolean);
+    const initials = p.name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('');
+
+    const facts = [];
+    if (p.birthday) {
+      let born = `Born ${fmtLongDate(p.birthday)}`;
+      if (!p.deathday) born += ` (age ${ageBetween(p.birthday)})`;
+      if (p.place_of_birth) born += ` · ${p.place_of_birth}`;
+      facts.push(born);
+    } else if (p.place_of_birth) facts.push(`Born in ${p.place_of_birth}`);
+    if (p.deathday) facts.push(`Died ${fmtLongDate(p.deathday)}${p.birthday ? ` (aged ${ageBetween(p.birthday, p.deathday)})` : ''}`);
+    const aka = (p.also_known_as || []).filter(n => /^[\p{Script=Latin}\s.'’,-]+$/u.test(n)).slice(0, 4);
+    if (aka.length) facts.push(`Also known as: ${aka.join(', ')}`);
+
+    el.innerHTML = `
+      <div class="person-hero">
+        <div class="person-hero-bg" ${bg ? `style="background-image:url('${bg}')"` : ''}></div>
+        <div class="person-head">
+          ${photo
+            ? `<img class="person-photo" src="${photo}" alt="${esc(p.name)}">`
+            : `<div class="person-photo cast-photo-placeholder">${esc(initials)}</div>`}
+          <div>
+            <h2 class="person-name">${esc(p.name)}</h2>
+            ${facts.map(f => `<div class="person-fact">${esc(f)}</div>`).join('')}
+          </div>
+        </div>
+        <p class="person-bio" id="person-bio">${esc(p.biography || 'No biography available.')}</p>
+        <button class="person-bio-more" id="person-bio-more" style="display:none">Read more</button>
+      </div>
+      ${apps.length ? `
+      <div class="person-credits">
+        <div class="person-section-title">Appearances<span class="count">${apps.length}</span></div>
+        <div class="grid person-grid" id="person-grid"></div>
+      </div>` : ''}`;
+
+    const grid = $('person-grid');
+    apps.forEach(({ item, characters }) => {
+      const wrap = document.createElement('div');
+      wrap.appendChild(makeCard(item));
+      if (characters.length) {
+        const role = document.createElement('div');
+        role.className = 'appearance-role';
+        role.textContent = `as ${characters.join(' / ')}`;
+        wrap.appendChild(role);
+      }
+      grid.appendChild(wrap);
+    });
+
+    const bio = $('person-bio'), more = $('person-bio-more');
+    if (bio.scrollHeight > bio.clientHeight + 1) more.style.display = '';
+    more.addEventListener('click', () => {
+      more.textContent = bio.classList.toggle('expanded') ? 'Show less' : 'Read more';
+    });
+  } catch {
+    if (personViewEntry === entry)
+      el.innerHTML = '<div class="empty" style="padding-top:6rem"><h3>Couldn’t load this person</h3><p>Please try again.</p></div>';
+  }
 }
 
 /* ─── DIGITAL RELEASE BADGE (modal) ─── */
@@ -1368,6 +1606,7 @@ async function loadCast(type, id) {
       // aggregate_credits covers every season of a show; /credits only the latest
       const data = await tmdb(type === 'movie' ? `/movie/${id}/credits` : `/tv/${id}/aggregate_credits`);
       cast = (data.cast || []).slice(0, 20).map(c => ({
+        id: c.id,
         name: c.name,
         photo: poster(c.profile_path, 'w185'),
         character: c.character ?? c.roles?.[0]?.character ?? '',
@@ -1381,7 +1620,7 @@ async function loadCast(type, id) {
     sc.innerHTML = cast.map(c => {
       const initials = (c.name || '').split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('');
       return `
-        <div class="cast-member">
+        <div class="cast-member" data-id="${c.id}">
           ${c.photo
             ? `<img class="cast-photo" src="${c.photo}" alt="${esc(c.name)}" loading="lazy">`
             : `<div class="cast-photo cast-photo-placeholder">${esc(initials)}</div>`}
@@ -1391,12 +1630,18 @@ async function loadCast(type, id) {
     }).join('');
     wrap.style.display = '';
     sc.scrollLeft = 0;
-    wrap.querySelector('.cast-wrap').classList.toggle('static', sc.scrollWidth <= sc.clientWidth + 1);
   } catch {}
 }
 
 {
   const sc = $('cast-scroller');
+  const castWrap = $('modal-cast').querySelector('.cast-wrap');
+  // Measured on hover (when the arrows would show), as the view may be hidden when the cast loads
+  castWrap.addEventListener('mouseenter', () => castWrap.classList.toggle('static', sc.scrollWidth <= sc.clientWidth + 1));
+  sc.addEventListener('click', e => {
+    const m = e.target.closest('.cast-member');
+    if (m && m.dataset.id) openPerson(+m.dataset.id);
+  });
   const step = () => Math.max(sc.clientWidth * 0.82, 200);
   $('modal-cast').querySelector('.arrow.left').addEventListener('click', () => sc.scrollBy({ left: -step(), behavior: 'smooth' }));
   $('modal-cast').querySelector('.arrow.right').addEventListener('click', () => sc.scrollBy({ left:  step(), behavior: 'smooth' }));
@@ -1470,21 +1715,31 @@ $('modal-watch-btn').addEventListener('click', () => {
 $('modal-close').addEventListener('click', closeModal);
 $('modal-backdrop').addEventListener('click', e => { if (e.target === $('modal-backdrop')) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+// Go through history so the pushed entry is consumed; popstate below does the actual step back
+$('modal-back').addEventListener('click', () => history.back());
 
-function closeModal(fromPop) {
-  if (!$('modal-backdrop').classList.contains('open')) return;
+function closeModal() {
+  if (!modalIsOpen()) return;
   $('modal-backdrop').classList.remove('open');
   document.body.style.overflow = '';
   document.documentElement.style.overflow = '';
   currentModalItem = null;
+  modalStack = [];
+  titleViewEntry = personViewEntry = null;
   if (window.__knavModalClosed) window.__knavModalClosed();
-  // Closing by any means other than Back itself unwinds the modal's
-  // history entry, so the next Back doesn't have to be pressed twice.
-  if (fromPop !== true && history.state && history.state.tflixModal) history.back();
+  // Unwind whatever modal history entries remain, so the next Back leaves
+  // the page instead of having to be pressed once per card.
+  const depth = modalDepth();
+  if (depth) history.go(-depth);
 }
 
 window.addEventListener('popstate', () => {
-  if ($('modal-backdrop').classList.contains('open')) closeModal(true);
+  if (modalIsOpen()) {
+    if (modalStack.length > 1) modalBack();
+    else closeModal();
+  } else if (modalDepth()) {
+    history.go(-modalDepth());   // stale entry left from before a reload: skip back to the page
+  }
 });
 
 /* ─── SEARCH ─── */
@@ -1642,7 +1897,19 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   function getSections() {
     // Modal open → trap focus inside it
     if ($('modal-backdrop').classList.contains('open')) {
-      const s = [{ key: null, items: [$('modal-close')] }];
+      const s = [{ key: null, items: [$('modal-back'), $('modal-close')].filter(vis) }];
+      if (vis($('person-view'))) {
+        const more = $('person-bio-more');
+        if (vis(more)) s.push({ key: null, items: [more] });
+        const grid = $('person-grid');
+        if (grid) {
+          const cards = [...grid.querySelectorAll('.card')];
+          const cols = (getComputedStyle(grid).gridTemplateColumns || '').split(' ').filter(Boolean).length || 1;
+          for (let i = 0; i < cards.length; i += cols)
+            s.push({ key: null, items: cards.slice(i, i + cols) });
+        }
+        return s;
+      }
       const cast = $('cast-scroller');
       if (vis(cast)) {
         const members = [...cast.querySelectorAll('.cast-member')];
@@ -1686,7 +1953,10 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   }
 
   function focusInitial() {
-    if ($('modal-backdrop').classList.contains('open')) { setFocus($('modal-watch-btn'), false); return; }
+    if ($('modal-backdrop').classList.contains('open')) {
+      setFocus(vis($('person-view')) ? $('modal-back') : $('modal-watch-btn'), false);
+      return;
+    }
     const secs = getSections();
     if (!secs.length) return;
     const content = secs.find(s => s.key !== 'header' && s.key !== 'tabs');
@@ -1794,6 +2064,15 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
     lastCard = cur;
     mem.delete($('cast-scroller'));  // new title, new cast: start from the first actor
     setFocus($('modal-watch-btn'), false);
+  };
+  /* Moving between views inside the modal: Back returns to the element that
+     opened the next view (when it's still there), forward starts fresh */
+  window.__knavCurrent = () => active ? cur : null;
+  window.__knavModalFocus = el => {
+    if (!active) return;
+    if (el && vis(el)) { setFocus(el); return; }
+    if (!el) mem.delete($('cast-scroller'));
+    focusInitial();
   };
   window.__knavModalClosed = () => {
     if (!active) return;
