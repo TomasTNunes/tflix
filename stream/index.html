@@ -179,6 +179,12 @@
     }
     .sel:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
     .sel option { background: #16161c; color: var(--text); }
+    /* Slim gray scrollbar in the dropdown list (Chrome/Edge/app draw these
+       in the native popup; the standard scrollbar-color is ignored there) */
+    .sel::-webkit-scrollbar { width: 8px; }
+    .sel::-webkit-scrollbar-track { background: transparent; }
+    .sel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.28); border-radius: 99px; }
+    .sel::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.45); }
 
     .nextep-btn {
       width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;

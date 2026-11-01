@@ -660,6 +660,12 @@
     }
     .modal-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
     .modal-select option { background: #16161c; color: var(--text); }
+    /* Slim gray scrollbar in the dropdown list (Chrome/Edge/app draw these
+       in the native popup; the standard scrollbar-color is ignored there) */
+    .modal-select::-webkit-scrollbar { width: 8px; }
+    .modal-select::-webkit-scrollbar-track { background: transparent; }
+    .modal-select::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.28); border-radius: 99px; }
+    .modal-select::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.45); }
     .modal-footer {
       flex-shrink: 0; padding: 0.85rem 2rem 1.2rem;
       border-top: 1px solid var(--line); background: var(--bg-elev);
