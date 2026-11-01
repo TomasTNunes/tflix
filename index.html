@@ -477,9 +477,10 @@
       position: fixed; inset: 0; background: rgba(0,0,0,0.78);
       backdrop-filter: blur(6px); z-index: 600;
       display: flex; align-items: flex-start; justify-content: center;
-      padding: 4vh 1rem; overflow-y: auto;
+      padding: 4vh 1rem; overflow-y: auto; scrollbar-width: none;
       opacity: 0; pointer-events: none; transition: opacity .25s;
     }
+    .modal-backdrop::-webkit-scrollbar { display: none; }
     .modal-backdrop.open { opacity: 1; pointer-events: all; }
     .modal {
       background: var(--bg-elev); border: 1px solid var(--line);
@@ -491,7 +492,8 @@
     }
     .modal-backdrop.open .modal { transform: none; }
 
-    .modal-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+    .modal-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+    .modal-scroll::-webkit-scrollbar { display: none; }
     .modal-hero { position: relative; aspect-ratio: 16/9; background: var(--card); }
     #modal-backdrop-img { position: absolute; inset: 0; background-size: cover; background-position: center 20%; }
     .modal-hero::after {
