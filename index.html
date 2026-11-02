@@ -203,6 +203,42 @@
 
     @keyframes pop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
 
+    .account-wrap { position: relative; flex-shrink: 0; }
+    .account-btn {
+      position: relative;
+      width: 38px; height: 38px; border-radius: 50%; padding: 0;
+      display: grid; place-items: center;
+      background: rgba(255,255,255,0.06); border: 1px solid var(--line);
+      color: var(--text); cursor: pointer;
+      font-family: 'Bricolage Grotesque', sans-serif; font-size: 1rem; font-weight: 800;
+      transition: background .2s, border-color .2s, box-shadow .25s, transform .15s var(--ease);
+    }
+    .account-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+    .account-btn:active { transform: scale(.94); }
+    .account-btn.signed-in { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 16px rgba(229,9,20,0.4); }
+    .account-btn.signed-in:hover { background: var(--accent-h); }
+    .account-btn.signed-in svg { display: none; }
+    /* Email not verified yet: My List isn't syncing */
+    .account-btn.unverified::after {
+      content: ''; position: absolute; top: -2px; right: -2px;
+      width: 11px; height: 11px; border-radius: 50%;
+      background: #fbbf24; border: 2px solid var(--bg);
+    }
+    /* Who's signed in: muted and not clickable, unlike the rows below it */
+    .account-head {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.75rem 1rem; border-bottom: 1px solid var(--line); cursor: default;
+    }
+    .account-head-avatar {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center;
+      background: rgba(229,9,20,0.18); color: var(--accent-h);
+      font-family: 'Bricolage Grotesque', sans-serif; font-size: 0.8rem; font-weight: 800;
+    }
+    .account-head-name { font-size: 0.84rem; color: var(--muted); word-break: break-all; }
+    .s-dot.warn { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
+    #account-initial:empty { display: none; }
+
     /* ─────────────── HERO BILLBOARD ─────────────── */
     #hero {
       position: relative; width: 100%;
@@ -372,6 +408,35 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.5);
     }
     .card-info .match { color: var(--green); font-size: 0.72rem; font-weight: 700; }
+
+    /* My List toggle: mirrors .mini-play on the right. It only takes clicks
+       while the card is hovered, so a tap on a touch screen opens the title
+       instead of silently toggling an invisible button. */
+    .card-add {
+      margin-left: auto; padding: 0;
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center;
+      background: rgba(20,20,26,0.75); color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.7);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      cursor: pointer; pointer-events: none;
+      transition: transform .2s var(--ease), background .2s, border-color .2s, box-shadow .2s, color .2s;
+    }
+    .card:hover .card-add, .rank-card:hover .card-add { pointer-events: auto; }
+    .card-add:hover {
+      transform: scale(1.2);
+      background: var(--accent); border-color: var(--accent); color: #fff;
+      box-shadow: 0 0 0 4px var(--accent-soft), 0 4px 14px rgba(229,9,20,0.55);
+    }
+    .card-add.added { background: #fff; border-color: #fff; color: #0a0a0d; }
+    .card-add.added:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .list-btn svg { transition: transform .25s var(--ease); }
+    .list-btn:hover .ic-plus { transform: rotate(90deg); }
+    .list-btn .ic-check, .list-btn.added .ic-plus { display: none; }
+    .list-btn.added .ic-check { display: block; }
+    .list-btn.pop { animation: listPop .35s var(--ease); }
+    @keyframes listPop { 40% { transform: scale(1.4); } }
     .card-info-title {
       font-size: 0.82rem; font-weight: 600; line-height: 1.25;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -670,7 +735,205 @@
       flex-shrink: 0; padding: 0.85rem 2rem 1.2rem;
       border-top: 1px solid var(--line); background: var(--bg-elev);
     }
-    .modal-watch-btn { width: 100%; padding: 0.95rem; font-size: 1.02rem; }
+    .modal-actions { display: flex; gap: 0.7rem; }
+    .modal-watch-btn { flex: 1; padding: 0.95rem; font-size: 1.02rem; }
+    .modal-list-btn {
+      flex-shrink: 0; padding: 0.95rem 1.4rem; font-size: 1.02rem;
+      background: rgba(70,70,80,0.75); color: #fff;
+    }
+    .modal-list-btn:hover, .hero-list:hover {
+      background: var(--accent); transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(229,9,20,0.45);
+    }
+    .modal-list-btn.added, .hero-list.added { background: rgba(255,255,255,0.16); }
+    .modal-list-btn.added:hover, .hero-list.added:hover { background: var(--accent); }
+
+    /* ─────────────── ACCOUNT DIALOG ─────────────── */
+    .auth-backdrop {
+      position: fixed; inset: 0; z-index: 700;
+      background: rgba(0,0,0,0.78); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center; padding: 1rem;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .auth-backdrop.open { opacity: 1; pointer-events: all; }
+    .auth-dialog {
+      position: relative; width: 100%; max-width: 400px;
+      background: var(--bg-elev); border: 1px solid var(--line);
+      border-radius: var(--radius-lg); box-shadow: 0 30px 90px rgba(0,0,0,0.85);
+      padding: 2.2rem 2rem 1.8rem;
+      transform: translateY(20px) scale(0.97); transition: transform .3s var(--ease);
+    }
+    .auth-backdrop.open .auth-dialog { transform: none; }
+    .auth-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em;
+      margin-bottom: 0.35rem; padding-right: 2.5rem;
+    }
+    .auth-sub { font-size: 0.9rem; line-height: 1.5; color: var(--muted); margin-bottom: 1.4rem; word-break: break-word; }
+    .auth-input {
+      width: 100%; height: 46px; padding: 0 1rem; margin-bottom: 1rem;
+      background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+      color: var(--text); font-family: inherit; font-size: 0.95rem;
+      outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    .auth-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .auth-msg { font-size: 0.84rem; line-height: 1.45; color: #ff6b6b; margin: -0.2rem 0 1rem; }
+    .auth-msg:empty { display: none; }
+    .auth-msg.ok { color: var(--green); }
+    .auth-dialog .btn { width: 100%; }
+    .auth-actions { display: flex; flex-direction: column; gap: 0.6rem; }
+    .auth-note { font-size: 0.78rem; line-height: 1.5; color: var(--muted); margin-top: 0.9rem; }
+    .auth-foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.3rem; }
+    .auth-link {
+      background: none; border: none; padding: 0;
+      color: var(--text); font-family: inherit; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; transition: color .2s;
+    }
+    .auth-link:hover { color: var(--accent-h); }
+    .auth-link .acc-hint { display: none; }
+    .auth-link.disabled, .auth-link.disabled:hover { color: rgba(255,255,255,0.32); cursor: not-allowed; }
+    .auth-link.disabled:hover .acc-label, html.keynav .auth-link.disabled.kf .acc-label { display: none; }
+    .auth-link.disabled:hover .acc-hint, html.keynav .auth-link.disabled.kf .acc-hint { display: inline; }
+    .auth-dialog [hidden] { display: none; }
+    .auth-sub:empty { display: none; }
+    /* Pinned to the top: the day list below the grid changes height, and
+       re-centring would move the month arrows under the cursor */
+    .auth-dialog.wide {
+      max-width: 780px; max-height: 92vh; overflow-y: auto; scrollbar-width: none;
+      align-self: flex-start; margin-top: 4vh;
+    }
+    .auth-dialog.wide::-webkit-scrollbar { display: none; }
+
+    /* Calendar card */
+    .cal-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem; }
+    .cal-month {
+      font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.15rem; font-weight: 700;
+      min-width: 11rem; text-align: center;
+    }
+    .cal-nav {
+      width: 34px; height: 34px; border-radius: 50%; padding: 0;
+      display: grid; place-items: center;
+      background: var(--card); border: 1px solid var(--line); color: var(--text);
+      cursor: pointer; transition: background .15s, border-color .15s;
+    }
+    .cal-nav:hover { background: var(--card-h); border-color: rgba(255,255,255,0.2); }
+    .cal-today {
+      margin-left: auto; padding: 0.4rem 0.95rem; border-radius: 99px;
+      background: transparent; border: 1px solid var(--line); color: var(--text);
+      font-family: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: border-color .15s;
+    }
+    .cal-today:hover { border-color: rgba(255,255,255,0.3); }
+    .cal-legend { display: flex; gap: 1rem; margin-bottom: 0.7rem; font-size: 0.76rem; color: var(--muted); }
+    .cal-legend span { display: flex; align-items: center; gap: 0.4rem; }
+    .cal-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .cal-dot.episode { background: var(--accent-h); }
+    .cal-dot.digital { background: var(--green); }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; transition: opacity .2s; }
+    .cal-grid.loading { opacity: 0.5; }
+    .cal-wd {
+      padding-bottom: 0.3rem; text-align: center;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+    }
+    .cal-cell {
+      min-height: 76px; padding: 0.35rem; overflow: hidden;
+      display: flex; flex-direction: column; align-items: stretch; gap: 3px; text-align: left;
+      background: var(--card); border: 1px solid transparent; border-radius: 8px;
+      color: var(--text); font-family: inherit; cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .cal-cell:hover { background: var(--card-h); }
+    .cal-cell.other { opacity: 0.38; }
+    .cal-cell.selected { background: var(--card-h); border-color: rgba(255,255,255,0.35); }
+    .cal-num { align-self: flex-start; padding: 0 0.35rem; border-radius: 99px; font-size: 0.78rem; font-weight: 600; }
+    .cal-cell.today .cal-num { background: var(--accent); color: #fff; }
+    .cal-chip {
+      padding: 1px 5px; border-radius: 4px;
+      font-size: 0.66rem; font-weight: 600; line-height: 1.3;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cal-chip.episode { background: rgba(229,9,20,0.22); color: #ffb3b6; }
+    .cal-chip.digital { background: rgba(34,197,94,0.18); color: #86efac; }
+    .cal-more { font-size: 0.64rem; color: var(--muted); }
+    .cal-day { margin-top: 1.1rem; }
+    .cal-day-title { margin-bottom: 0.6rem; font-size: 0.95rem; font-weight: 700; }
+    .cal-empty { padding: 0.4rem 0; font-size: 0.86rem; color: var(--muted); }
+    .cal-item {
+      display: flex; align-items: center; gap: 0.8rem;
+      width: 100%; padding: 0.5rem; margin-bottom: 0.4rem; text-align: left;
+      background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+      color: var(--text); font-family: inherit; cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .cal-item:hover { background: var(--card-h); border-color: rgba(255,255,255,0.2); }
+    .cal-item-poster { width: 38px; aspect-ratio: 2/3; border-radius: 4px; object-fit: cover; flex-shrink: 0; background: var(--bg-elev); }
+    .cal-item-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .cal-item-title { font-size: 0.9rem; font-weight: 600; }
+    .cal-item-sub { font-size: 0.78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cal-badge { flex-shrink: 0; padding: 2px 8px; border-radius: 99px; font-size: 0.66rem; font-weight: 700; }
+    .cal-badge.episode { background: rgba(229,9,20,0.18); color: #ff8a8a; }
+    .cal-badge.digital { background: rgba(34,197,94,0.14); color: #4ade80; }
+    @media (max-width: 560px) {
+      .cal-month { min-width: 0; font-size: 1rem; }
+      .cal-cell { min-height: 46px; padding: 0.25rem; align-items: center; }
+      .cal-num { align-self: center; }
+      /* Too narrow for titles: each release becomes a dot */
+      .cal-chip { width: 6px; height: 6px; padding: 0; border-radius: 50%; font-size: 0; }
+      .cal-chip.episode { background: var(--accent-h); }
+      .cal-chip.digital { background: var(--green); }
+      .cal-more { display: none; }
+    }
+    .auth-dialog.has-back { padding-top: 4.2rem; }
+
+    /* My Account card */
+    .acct-head { display: flex; align-items: center; gap: 0.9rem; margin: 0.4rem 0 1.2rem; }
+    .acct-avatar {
+      width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center;
+      background: var(--accent); color: #fff; box-shadow: 0 0 18px rgba(229,9,20,0.4);
+      font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.4rem; font-weight: 800;
+    }
+    .acct-name { font-size: 1.05rem; font-weight: 700; word-break: break-all; }
+    .acct-kind { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+    .acct-info { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 1.2rem; }
+    .acct-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.7rem 0.9rem; font-size: 0.88rem; }
+    .acct-row + .acct-row { border-top: 1px solid var(--line); }
+    .acct-row > span:first-child { color: var(--muted); flex-shrink: 0; }
+    .acct-row > span:last-child { text-align: right; word-break: break-all; }
+    .acct-badge { display: inline-block; margin-left: 0.4rem; padding: 1px 7px; border-radius: 99px; font-size: 0.7rem; font-weight: 700; }
+    .acct-badge.ok   { color: #4ade80; background: rgba(34,197,94,0.12); }
+    .acct-badge.warn { color: #fbbf24; background: rgba(234,179,8,0.12); }
+    .acct-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+    .acct-action {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+      width: 100%; padding: 0.8rem 1rem; text-align: left;
+      background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+      color: var(--text); font-family: inherit; font-size: 0.92rem; font-weight: 600;
+      cursor: pointer; transition: background .15s, border-color .15s, color .15s;
+    }
+    .acct-action:hover { background: var(--card-h); border-color: rgba(255,255,255,0.2); }
+    .acct-action::after { content: '›'; font-size: 1.25rem; line-height: 1; color: var(--muted); }
+    .acct-action-label { display: flex; align-items: center; gap: 0.6rem; }
+    .acct-action.danger { color: #ff6b6b; }
+    .acct-action.danger:hover { background: rgba(229,9,20,0.14); border-color: rgba(229,9,20,0.4); }
+    /* Unavailable for username accounts: dimmed, and the label swaps for the
+       reason on hover (same line, so nothing changes size) */
+    .acct-action.disabled, .acct-action.disabled:hover { color: rgba(255,255,255,0.32); background: var(--card); border-color: var(--line); cursor: not-allowed; }
+    .acct-action.disabled::after { content: none; }
+    .acct-action .acc-hint { display: none; font-weight: 500; }
+    .acct-action.disabled:hover .acc-label, html.keynav .acct-action.disabled.kf .acc-label { display: none; }
+    .acct-action.disabled:hover .acc-hint, html.keynav .acct-action.disabled.kf .acc-hint { display: inline; }
+    .btn-danger { background: var(--accent); color: #fff; }
+    .btn-danger:hover { background: var(--accent-h); transform: translateY(-2px); box-shadow: 0 6px 22px rgba(229,9,20,0.45); }
+    .merge-list {
+      max-height: 232px; overflow-y: auto; margin-bottom: 0.6rem;
+      display: flex; flex-direction: column; gap: 0.55rem;
+      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.28) transparent;
+    }
+    .merge-item { display: flex; align-items: center; gap: 0.75rem; }
+    .merge-poster { width: 34px; aspect-ratio: 2/3; border-radius: 4px; object-fit: cover; flex-shrink: 0; background: var(--card); }
+    .merge-title { font-size: 0.9rem; font-weight: 600; line-height: 1.25; }
+    .merge-meta { font-size: 0.74rem; color: var(--muted); margin-top: 1px; }
+    @media (max-width: 560px) { .auth-dialog { padding: 2rem 1.3rem 1.5rem; } }
 
     /* ─────────────── TOAST ─────────────── */
     #toast {
@@ -701,7 +964,7 @@
     }
     html.keynav .cast-member.kf { outline: none; }
     html.keynav .cast-member.kf .cast-photo { outline: 3px solid var(--accent-h); outline-offset: 3px; }
-    html.keynav .modal-back.kf, html.keynav .modal-close.kf { border-radius: 50%; }
+    html.keynav .modal-back.kf, html.keynav .modal-close.kf, html.keynav .account-btn.kf { border-radius: 50%; }
     html.keynav .card.kf .card-info { opacity: 1; transform: translate3d(0, 0, 0); }
     html.keynav .rank-card.kf-parent .card {
       transform: scale(1.09) translateY(-4px);
@@ -736,6 +999,8 @@
       .modal-footer { padding: 0.85rem 1.3rem 1.1rem; }
       .modal-hero-content { padding: 1.2rem 1.3rem; }
       .modal-selectors { grid-template-columns: 1fr; }
+      .modal-list-btn { padding: 0.7rem 1rem; }
+      .modal-list-btn .list-label { display: none; }
     }
   </style>
 </head>
@@ -748,6 +1013,7 @@
   <nav class="nav-links">
     <span class="nav-link active" data-nav="home">Home</span>
     <span class="nav-link" data-nav="trending">Trending</span>
+    <span class="nav-link" data-nav="mylist" id="nav-mylist" hidden>My List</span>
     <span class="nav-link" data-nav="movies">Movies</span>
     <span class="nav-link" data-nav="tv">TV Shows</span>
   </nav>
@@ -777,6 +1043,14 @@
       <div class="server-menu" id="server-menu">
         <div class="server-menu-header">Streaming Servers</div>
       </div>
+    </div>
+
+    <div class="account-wrap">
+      <button class="account-btn" id="account-btn" aria-label="Account" title="Sign in to sync My List">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+        <span id="account-initial"></span>
+      </button>
+      <div class="server-menu account-menu" id="account-menu"></div>
     </div>
   </div>
 </header>
@@ -853,10 +1127,17 @@
           </div>
         </div>
       </div>
-      <button class="btn btn-primary modal-watch-btn" id="modal-watch-btn">
-        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        Play
-      </button>
+      <div class="modal-actions">
+        <button class="btn btn-primary modal-watch-btn" id="modal-watch-btn">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Play
+        </button>
+        <button class="btn modal-list-btn list-btn" id="modal-list-btn" aria-label="My List">
+          <svg class="ic-plus" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          <svg class="ic-check" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+          <span class="list-label">My List</span>
+        </button>
+      </div>
     </div>
     </div>
     <div class="modal-view" id="person-view" style="display:none">
@@ -864,6 +1145,109 @@
         <div id="person-content"></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ─────────────── ACCOUNT DIALOG ─────────────── -->
+<div class="auth-backdrop" id="auth-backdrop">
+  <div class="auth-dialog" id="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <button class="modal-back" id="auth-back" title="Back" aria-label="Back" hidden>
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <button class="modal-close" id="auth-close" aria-label="Close">✕</button>
+    <div class="auth-title" id="auth-title"></div>
+    <div class="auth-sub" id="auth-sub"></div>
+
+    <form id="auth-form" novalidate>
+      <label class="field-label" for="auth-id">Username or email</label>
+      <input class="auth-input" id="auth-id" type="text" autocomplete="username" autocapitalize="none" spellcheck="false">
+      <label class="field-label" for="auth-pass">Password</label>
+      <input class="auth-input" id="auth-pass" type="password" autocomplete="current-password">
+      <div class="auth-msg" id="auth-msg"></div>
+      <button class="btn btn-primary" id="auth-submit" type="submit"></button>
+      <div class="auth-note" id="auth-note">Email is optional. Without one, you can't recover your password if you forget it.</div>
+      <div class="auth-foot">
+        <button class="auth-link" id="auth-switch" type="button"></button>
+        <button class="auth-link" id="auth-forgot" type="button">Forgot password?</button>
+      </div>
+    </form>
+
+    <div id="auth-verify">
+      <div class="auth-msg" id="verify-msg"></div>
+      <div class="auth-actions">
+        <button class="btn btn-primary" id="verify-check" type="button">I've verified my email</button>
+        <button class="btn btn-ghost" id="verify-resend" type="button">Resend email</button>
+      </div>
+      <div class="auth-foot"><button class="auth-link" id="verify-signout" type="button">Use a different account</button></div>
+    </div>
+
+    <div id="auth-account">
+      <div class="acct-head">
+        <div class="acct-avatar" id="acct-avatar"></div>
+        <div>
+          <div class="acct-name" id="acct-name"></div>
+          <div class="acct-kind" id="acct-kind"></div>
+        </div>
+      </div>
+      <div class="acct-info" id="acct-info"></div>
+      <div class="acct-actions" id="acct-actions"></div>
+    </div>
+
+    <div id="auth-calendar">
+      <div class="cal-head">
+        <button class="cal-nav" id="cal-prev" type="button" aria-label="Previous month">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="cal-month" id="cal-month"></div>
+        <button class="cal-nav" id="cal-next" type="button" aria-label="Next month">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="cal-today" id="cal-today" type="button">Jump to today</button>
+      </div>
+      <div class="cal-legend">
+        <span><i class="cal-dot episode"></i>New episode</span>
+        <span><i class="cal-dot digital"></i>Digital release</span>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-day" id="cal-day"></div>
+    </div>
+
+    <div id="auth-merge" class="auth-actions">
+      <div class="merge-list" id="merge-list"></div>
+      <button class="btn btn-primary" id="merge-add" type="button">Add to my list</button>
+      <button class="btn btn-ghost" id="merge-discard" type="button">Discard</button>
+    </div>
+
+    <form id="auth-add-email" novalidate>
+      <label class="field-label" for="add-email-input">Email</label>
+      <input class="auth-input" id="add-email-input" type="email" autocomplete="email" autocapitalize="none" spellcheck="false">
+      <label class="field-label" for="add-email-pass">Current password</label>
+      <input class="auth-input" id="add-email-pass" type="password" autocomplete="current-password">
+      <div class="auth-msg" id="add-email-msg"></div>
+      <button class="btn btn-primary" type="submit">Send confirmation link</button>
+    </form>
+
+    <form id="auth-password" novalidate>
+      <input type="text" autocomplete="username" hidden>
+      <label class="field-label" for="password-current">Current password</label>
+      <input class="auth-input" id="password-current" type="password" autocomplete="current-password">
+      <label class="field-label" for="password-new">New password</label>
+      <input class="auth-input" id="password-new" type="password" autocomplete="new-password">
+      <div class="auth-msg" id="password-msg"></div>
+      <button class="btn btn-primary" type="submit">Change password</button>
+    </form>
+
+    <form id="auth-delete" novalidate>
+      <label class="field-label" for="delete-pass">Password</label>
+      <input class="auth-input" id="delete-pass" type="password" autocomplete="current-password">
+      <div class="auth-msg" id="delete-msg"></div>
+      <button class="btn btn-danger" type="submit">Delete account</button>
+      <div class="auth-foot">
+        <button class="auth-link" id="delete-forgot" type="button">
+          <span class="acc-label">Forgot password?</span><span class="acc-hint">Only available with an email</span>
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -888,6 +1272,19 @@ const SERVERS = [
   { name: 'Naafiri', id: 5 },
   { name: 'Ryze',    id: 6 },
 ];
+
+// Firebase web config is public by design; the Firestore rules are what protect the data
+const FIREBASE_VERSION = '13.1.0';
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyDYtSIxT89rF9xWjKt9TNZQCN3rQSzhFyc',
+  authDomain: 'tflix-5f48f.firebaseapp.com',
+  projectId: 'tflix-5f48f',
+  storageBucket: 'tflix-5f48f.firebasestorage.app',
+  messagingSenderId: '1077791721042',
+  appId: '1:1077791721042:web:7a37c01a48ab03b155018b',
+};
+// Username-only accounts sign in as <username>@USER_DOMAIN (must match the Firestore rules)
+const USER_DOMAIN = 'users.tflix.nunesnetwork.com';
 
 const CURRENT_YEAR = new Date().getFullYear();
 const CATEGORY_ROWS = [
@@ -978,7 +1375,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
   });
 });
 
-const NAV_SECTIONS = ['trending', 'movies', 'tv'];
+const NAV_SECTIONS = ['trending', 'mylist', 'movies', 'tv'];   // in page order
 let rafNav = null;
 
 function updateActiveNav() {
@@ -989,10 +1386,10 @@ function updateActiveNav() {
     let active = 'home';
     for (const anchor of NAV_SECTIONS) {
       const el = document.querySelector(`[data-anchor="${anchor}"]`);
-      if (!el) continue;
+      if (!el || el.hidden) continue;
       if (el.getBoundingClientRect().top <= NAV_OFFSET + 40) active = anchor;
     }
-    const navKey = { trending: 'trending', movies: 'movies', tv: 'tv' }[active] || 'home';
+    const navKey = { trending: 'trending', mylist: 'mylist', movies: 'movies', tv: 'tv' }[active] || 'home';
     document.querySelectorAll('.nav-link').forEach(l =>
       l.classList.toggle('active', l.dataset.nav === navKey)
     );
@@ -1026,8 +1423,8 @@ SERVERS.forEach(s => {
 const savedServer = SERVERS.find(s => s.id === currentServer) || SERVERS[0];
 serverLabel.textContent = savedServer.name;
 
-serverBtn.addEventListener('click', e => { e.stopPropagation(); serverMenu.classList.toggle('open'); });
-document.addEventListener('click', () => serverMenu.classList.remove('open'));
+serverBtn.addEventListener('click', e => { e.stopPropagation(); accountMenu.classList.remove('open'); serverMenu.classList.toggle('open'); });
+document.addEventListener('click', () => { serverMenu.classList.remove('open'); accountMenu.classList.remove('open'); });
 
 /* ─── PLAYER URL ─── */
 function playerUrl(item, season = 1, episode = 1) {
@@ -1086,10 +1483,16 @@ function makeCard(item, { drDate = null } = {}) {
       <div class="card-info-top">
         <span class="mini-play"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
         ${m ? `<span class="match">${m}% Match</span>` : ''}
+        <button class="card-add list-btn" data-list-key="${listKey(item)}" aria-label="My List">${LIST_ICONS}</button>
       </div>
       <div class="card-info-title">${esc(title)}</div>
       <div class="card-info-meta">${year(date)} · ★ ${rating(item.vote_average)}</div>
     </div>`;
+
+  card.dataset.key = listKey(item);
+  const add = card.querySelector('.card-add');
+  paintListBtn(add);
+  add.addEventListener('click', e => { e.stopPropagation(); keepInView(card, () => toggleMyList(item)); popListBtn(add); });
 
   card.addEventListener('click', () => openModal(item));
   return card;
@@ -1281,10 +1684,18 @@ async function loadHero() {
             <button class="btn btn-primary hero-play">
               <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Play
             </button>
+            <button class="btn btn-ghost hero-list list-btn" data-list-key="${listKey(item)}" aria-label="My List">
+              <svg class="ic-plus" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <svg class="ic-check" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+              My List
+            </button>
           </div>
         </div>`;
 
       slide.querySelector('.hero-play').addEventListener('click', () => openModal(item));
+      const listBtn = slide.querySelector('.hero-list');
+      paintListBtn(listBtn);
+      listBtn.addEventListener('click', () => { toggleMyList(item); popListBtn(listBtn); });
       hero.appendChild(slide);
     });
 
@@ -1434,6 +1845,8 @@ async function renderTitle(item) {
   const m       = matchPct(item.vote_average);
 
   currentModalItem = { ...item, media_type: type };
+  $('modal-list-btn').dataset.listKey = listKey(item);
+  paintListBtn($('modal-list-btn'));
 
   const bg = backdrop(item.backdrop_path) || poster(item.poster_path, 'w780');
   $('modal-backdrop-img').style.backgroundImage = bg ? `url('${bg}')` : 'none';
@@ -1720,7 +2133,10 @@ $('modal-watch-btn').addEventListener('click', () => {
 
 $('modal-close').addEventListener('click', closeModal);
 $('modal-backdrop').addEventListener('click', e => { if (e.target === $('modal-backdrop')) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (authIsOpen()) closeAuth(); else closeModal();
+});
 // Go through history so the pushed entry is consumed; popstate below does the actual step back
 $('modal-back').addEventListener('click', () => history.back());
 
@@ -1853,11 +2269,750 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   });
 });
 
+/* ─── MY LIST ───
+   Saved titles keyed "movie_550" / "tv_1399". Signed out, they live in
+   localStorage; signed in (and verified), in one Firestore doc —
+   users/{uid} → { list: { key: entry } } — so loading the whole list is a
+   single read. Entries keep the TMDB fields makeCard/openModal use, so the
+   row renders without refetching anything. The row and its nav link only
+   show while the list has something in it. */
+const MYLIST_KEY = 'tflix_mylist';
+const MYLIST_FIELDS = ['id', 'title', 'name', 'poster_path', 'backdrop_path', 'vote_average',
+  'release_date', 'first_air_date', 'overview', 'genre_ids', 'original_language'];
+const LIST_ICONS = `
+  <svg class="ic-plus" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  <svg class="ic-check" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>`;
+
+let myList = readLocalList();   // key -> entry, from whichever store is active
+let myListRef = null;           // the user's Firestore doc while synced, else null
+let myListUnsub = null;
+let myListScroller = null;
+
+function listKey(item) { return `${mediaOf(item)}_${item.id}`; }
+
+function listEntry(item) {
+  const e = { media_type: mediaOf(item), addedAt: Date.now() };
+  for (const f of MYLIST_FIELDS) if (item[f] != null) e[f] = item[f];
+  return e;
+}
+
+function readLocalList() {
+  try { return JSON.parse(localStorage.getItem(MYLIST_KEY)) || {}; } catch { return {}; }
+}
+
+function saveLocalList(list) {
+  if (Object.keys(list).length) localStorage.setItem(MYLIST_KEY, JSON.stringify(list));
+  else localStorage.removeItem(MYLIST_KEY);
+}
+
+function toggleMyList(item) {
+  const key = listKey(item);
+  const adding = !myList[key];
+  const next = { ...myList };
+  if (adding) next[key] = listEntry(item); else delete next[key];
+  if (myListRef) {
+    // A rejected write is rolled back by the snapshot listener
+    writeRemoteList({ [key]: adding ? next[key] : fb.f.deleteField() })
+      .catch(() => toast("Couldn't update My List, try again"));
+  } else {
+    saveLocalList(next);
+  }
+  setMyList(next);
+  toast(adding ? 'Added to My List' : 'Removed from My List');
+}
+
+// Merges into the list map, touching only the given keys
+function writeRemoteList(changes) {
+  return fb.f.setDoc(myListRef, { list: changes }, { merge: true });
+}
+
+// Follows the signed-in user's list, or falls back to the local one
+function startListSync() {
+  const uid = canSync(authUser) ? authUser.uid : null;
+  if (myListRef && myListRef.id === uid) return;
+  if (myListUnsub) myListUnsub();
+  myListUnsub = myListRef = null;
+  if (!uid) { setMyList(readLocalList()); return; }
+
+  myListRef = fb.f.doc(fb.db, 'users', uid);
+  let first = true;
+  myListUnsub = fb.f.onSnapshot(myListRef, snap => {
+    const remote = (snap.exists() && snap.data().list) || {};
+    setMyList(remote);
+    if (first) { first = false; mergeLocalList(remote); }
+  }, err => {
+    console.warn('My List sync failed', err);
+    toast("Couldn't load My List");
+  });
+}
+
+// Titles saved while signed out only join the account if the user says so
+// (it may be someone else's device)
+let pendingMerge = null;
+
+function mergeLocalList(remote) {
+  const fresh = Object.fromEntries(Object.entries(readLocalList()).filter(([k]) => !remote[k]));
+  const n = Object.keys(fresh).length;
+  if (!n) { saveLocalList({}); return; }
+  pendingMerge = fresh;
+  $('auth-title').textContent = `Add ${n} title${n !== 1 ? 's' : ''} to your list?`;
+  $('auth-sub').textContent = 'You saved these on this device before signing in.';
+  $('merge-list').innerHTML = Object.values(fresh)
+    .sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0))
+    .map(e => {
+      const src = poster(e.poster_path, 'w92');
+      return `<div class="merge-item">
+        ${src ? `<img class="merge-poster" src="${src}" alt="" loading="lazy">` : '<div class="merge-poster"></div>'}
+        <div>
+          <div class="merge-title">${esc(e.title || e.name || 'Untitled')}</div>
+          <div class="merge-meta">${year(e.release_date || e.first_air_date)} · ${e.media_type === 'tv' ? 'Series' : 'Film'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  showAuth('merge');
+}
+
+$('merge-add').addEventListener('click', () => {
+  const add = pendingMerge;
+  closeAuth();
+  if (!add || !myListRef) return;
+  writeRemoteList(add).then(() => { saveLocalList({}); toast('Added to My List'); },
+                            () => toast("Couldn't add your saved titles"));
+});
+
+$('merge-discard').addEventListener('click', () => {
+  saveLocalList({});
+  closeAuth();
+});
+
+function setMyList(list) {
+  myList = list;
+  renderMyList();
+}
+
+function paintListBtn(btn) {
+  const on = !!myList[btn.dataset.listKey];
+  btn.classList.toggle('added', on);
+  btn.title = on ? 'Remove from My List' : 'Add to My List';
+}
+
+// Adding the first title (or removing the last) shows/hides the My List row,
+// shifting every row below it; scroll by the same amount so `el` stays put
+function keepInView(el, change) {
+  const top = el.getBoundingClientRect().top;
+  change();
+  if (el.isConnected && el.getClientRects().length)
+    window.scrollBy({ top: el.getBoundingClientRect().top - top, behavior: 'instant' });
+}
+
+function popListBtn(btn) {
+  btn.classList.remove('pop');
+  void btn.offsetWidth;   // restart the animation on quick repeat clicks
+  btn.classList.add('pop');
+  btn.addEventListener('animationend', () => btn.classList.remove('pop'), { once: true });
+}
+
+function renderMyList() {
+  const entries = Object.values(myList).sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
+  $('nav-mylist').hidden = !entries.length;
+  if (myListScroller) {
+    myListScroller.closest('.row').hidden = !entries.length;
+    // Reuse the cards already there so the row keeps its scroll position and focus
+    const cards = new Map([...myListScroller.children].map(c => [c.dataset.key, c]));
+    myListScroller.replaceChildren(...entries.map(e => cards.get(listKey(e)) || makeCard(e)));
+  }
+  document.querySelectorAll('[data-list-key]').forEach(paintListBtn);
+  updateActiveNav();
+}
+
+function loadMyListRow() {
+  myListScroller = buildRow({ title: 'My List', anchor: 'mylist' });
+  renderMyList();
+}
+
+$('modal-list-btn').addEventListener('click', () => {
+  if (!currentModalItem) return;
+  toggleMyList(currentModalItem);
+  popListBtn($('modal-list-btn'));
+});
+
+/* ─── ACCOUNT ───
+   Firebase Auth (email + password) behind one "Username or email" field.
+   A username signs in as <username>@USER_DOMAIN, an address that never gets
+   mail, so only accounts made with a real email can reset their password.
+   Email accounts must verify before My List syncs (the Firestore rules
+   enforce the same). The SDK only loads when someone opens the account
+   button, or on page load if this browser was signed in last time. */
+const SIGNED_IN_KEY = 'tflix_signed_in';
+const accountMenu = $('account-menu');
+
+let fb = null;          // { a: auth module, f: firestore module, auth, db }
+let fbLoading = null;
+let authUser = null;
+let authMode = 'signin';
+let authView = null;    // 'form' | 'verify' | 'merge' while the dialog is open
+
+const isUsernameAccount = u => (u?.email || '').endsWith('@' + USER_DOMAIN);
+const canSync     = u => !!u && (u.emailVerified || isUsernameAccount(u));
+const accountName = u => isUsernameAccount(u) ? u.email.split('@')[0] : u.email;
+const authIsOpen  = () => $('auth-backdrop').classList.contains('open');
+
+// Emails get a "Continue" link back to the site; that needs the domain to be
+// authorized in Firebase, so fall back to the plain email if it isn't
+const withContinueLink = send => send({ url: location.origin + '/' }).catch(err =>
+  (err && String(err.code).includes('continue-uri')) ? send(undefined) : Promise.reject(err));
+
+function ensureFirebase() {
+  return fbLoading ||= (async () => {
+    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}`;
+    const [{ initializeApp }, a, f] = await Promise.all([
+      import(`${base}/firebase-app.js`),
+      import(`${base}/firebase-auth.js`),
+      import(`${base}/firebase-firestore.js`),
+    ]);
+    const app = initializeApp(FIREBASE_CONFIG);
+    fb = { a, f, auth: a.getAuth(app), db: f.getFirestore(app) };
+    a.onAuthStateChanged(fb.auth, onAuthChange);
+    await fb.auth.authStateReady();
+  })().catch(err => { fbLoading = null; throw err; });
+}
+
+function onAuthChange(user) {
+  authUser = user;
+  if (user) localStorage.setItem(SIGNED_IN_KEY, '1'); else localStorage.removeItem(SIGNED_IN_KEY);
+  renderAccount();
+  startListSync();
+  if (user && !canSync(user)) refreshVerified();
+}
+
+// emailVerified only updates on reload, and the rules read it from the ID
+// token, so a fresh token is needed before the list can sync
+async function refreshVerified() {
+  const u = fb && fb.auth.currentUser;
+  if (!u || canSync(u)) return !!u;
+  try {
+    await u.reload();
+    if (!u.emailVerified) return false;
+    await u.getIdToken(true);
+  } catch { return false; }
+  renderAccount();
+  startListSync();
+  if (authView === 'verify') { closeAuth(); toast('Email verified, My List is synced'); }
+  return true;
+}
+
+// Coming back from a verification / email-change email
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || !authUser) return;
+  if (!canSync(authUser)) refreshVerified();
+  else if (emailChangeTo) checkEmailChanged();
+});
+
+// Confirming a new email revokes the account's sessions, so the reload fails
+// and the user signs in again — now with that email instead of the username
+let emailChangeTo = null;
+
+async function checkEmailChanged() {
+  const u = fb.auth.currentUser;
+  try {
+    await u.reload();
+    if (u.email !== emailChangeTo) return;
+    emailChangeTo = null;
+    renderAccount();
+    toast('Email added');
+  } catch (err) {
+    if (err.code === 'auth/network-request-failed') return;
+    const email = emailChangeTo;
+    emailChangeTo = null;
+    await fb.a.signOut(fb.auth).catch(() => {});
+    showAuth('form', 'signin');
+    $('auth-id').value = email;
+    setAuthMsg('Email confirmed. Sign in with your email and password.', true);
+  }
+}
+
+function renderAccount() {
+  const u = authUser;
+  const btn = $('account-btn');
+  btn.classList.toggle('signed-in', !!u);
+  btn.classList.toggle('unverified', !!u && !canSync(u));
+  btn.title = u ? accountName(u) : 'Sign in to sync My List';
+  $('account-initial').textContent = u ? accountName(u)[0].toUpperCase() : '';
+  accountMenu.innerHTML = u ? `
+    <div class="account-head">
+      <div class="account-head-avatar">${esc(accountName(u)[0].toUpperCase())}</div>
+      <div class="account-head-name">${esc(accountName(u))}</div>
+    </div>
+    ${canSync(u) ? '' : '<div class="server-item account-item" data-act="verify"><div class="s-dot warn"></div><span>Verify Email</span></div>'}
+    <div class="server-item account-item" data-act="account"><span>My Account</span></div>
+    <div class="server-item account-item" data-act="calendar"><span>Calendar</span></div>
+    <div class="server-item account-item" data-act="signout"><span>Sign Out</span></div>` : '';
+  if (authView === 'account') renderAccountCard();
+}
+
+function renderAccountCard() {
+  const u = fb.auth.currentUser;
+  const username = isUsernameAccount(u);
+  const n = Object.keys(myList).length;
+  $('acct-avatar').textContent = accountName(u)[0].toUpperCase();
+  $('acct-name').textContent = accountName(u);
+  $('acct-kind').textContent = username ? 'Username account' : 'Email account';
+  $('acct-info').innerHTML = `
+    ${username ? `<div class="acct-row"><span>Username</span><span>${esc(accountName(u))}</span></div>` : ''}
+    <div class="acct-row"><span>Email</span><span>${username ? '<span class="acct-badge warn">Not added</span>'
+      : `${esc(u.email)}${u.emailVerified ? '<span class="acct-badge ok">Verified</span>' : '<span class="acct-badge warn">Not verified</span>'}`}</span></div>
+    <div class="acct-row"><span>Password recovery</span><span>${username ? 'Not available' : 'By email'}</span></div>
+    <div class="acct-row"><span>My List</span><span>${n} title${n !== 1 ? 's' : ''}</span></div>`;
+  $('acct-actions').innerHTML = `
+    ${!username && !u.emailVerified ? `<button class="acct-action" data-act="verify" type="button">
+      <span class="acct-action-label"><span class="s-dot warn"></span>Verify your email</span>
+    </button>` : ''}
+    ${username ? '<button class="acct-action" data-act="add-email" type="button">Add email</button>' : ''}
+    <button class="acct-action${username ? ' disabled' : ''}" data-act="password" type="button">
+      <span class="acc-label">Change password</span><span class="acc-hint">Only available with an email</span>
+    </button>
+    <button class="acct-action danger" data-act="delete" type="button">Delete account</button>`;
+}
+
+$('acct-actions').addEventListener('click', e => {
+  const action = e.target.closest('.acct-action');
+  if (action && !action.classList.contains('disabled')) showAuth(action.dataset.act);
+});
+
+$('account-btn').addEventListener('click', async e => {
+  e.stopPropagation();
+  serverMenu.classList.remove('open');
+  if (!authUser) {
+    try { await ensureFirebase(); }
+    catch { toast("Couldn't reach the account service"); return; }
+  }
+  if (authUser) accountMenu.classList.toggle('open');
+  else showAuth('form', 'signin');
+});
+
+accountMenu.addEventListener('click', e => {
+  const item = e.target.closest('.account-item');
+  if (!item) { e.stopPropagation(); return; }   // the name header: keep the menu open
+  if (item.dataset.act === 'signout') signOutUser();
+  else showAuth(item.dataset.act);
+});
+
+async function signOutUser() {
+  await fb.a.signOut(fb.auth);
+  toast('Signed out');
+}
+
+const AUTH_VIEWS = ['form', 'verify', 'merge', 'account', 'calendar', 'add-email', 'password', 'delete'];
+const AUTH_TEXT = {
+  account:     ['My Account', ''],
+  calendar:    ['Calendar', 'New episodes and digital releases for titles in My List.'],
+  'add-email': ['Add email', "Use it to recover your password. Once you confirm it, you'll sign in with your email instead of your username."],
+  password:    ['Change password', 'Enter your current password, then the new one.'],
+  delete:      ['Delete account?', "This permanently deletes your account and My List. It can't be undone."],
+};
+let authBackTo = null;   // view the top-left Back returns to, if any
+
+function showAuth(view, mode = authMode) {
+  // Pages opened from My Account get a Back button to it
+  if (view !== authView) authBackTo = authView === 'account' && view !== 'account' ? 'account' : null;
+  authView = view;
+  authMode = mode;
+  for (const v of AUTH_VIEWS) $(`auth-${v}`).hidden = v !== view;
+  $('auth-back').hidden = !authBackTo;
+  $('auth-dialog').classList.toggle('has-back', !!authBackTo);
+  $('auth-dialog').classList.toggle('wide', view === 'calendar');
+  $('auth-dialog').querySelectorAll('.auth-msg').forEach(m => { m.textContent = ''; });
+
+  if (view === 'account') renderAccountCard();
+  if (view === 'calendar') openCalendar();
+  if (AUTH_TEXT[view]) {
+    [$('auth-title').textContent, $('auth-sub').textContent] = AUTH_TEXT[view];
+    $('auth-password').querySelector('[autocomplete=username]').value = fb.auth.currentUser.email;   // for password managers
+    $('delete-forgot').classList.toggle('disabled', isUsernameAccount(fb.auth.currentUser));
+  } else if (view === 'form') {
+    const up = mode === 'signup';
+    $('auth-title').textContent  = up ? 'Create account' : 'Sign in';
+    $('auth-sub').textContent    = up ? 'Pick a username, or use your email.' : 'Keep My List in sync on every device.';
+    $('auth-submit').textContent = up ? 'Create account' : 'Sign in';
+    $('auth-switch').textContent = up ? 'Have an account? Sign in' : 'New here? Create an account';
+    $('auth-pass').autocomplete  = up ? 'new-password' : 'current-password';
+    $('auth-note').hidden   = !up;
+    $('auth-forgot').hidden = up;
+  } else if (view === 'verify') {
+    $('auth-title').textContent = 'Check your inbox';
+    $('auth-sub').textContent = `We sent a verification link to ${fb.auth.currentUser.email}. Open it to turn on My List sync.`;
+  }
+
+  $('auth-backdrop').classList.add('open');
+  const first = $(`auth-${view}`).querySelector('input:not([hidden]), button');
+  if (document.documentElement.classList.contains('keynav')) window.__knavFocus(first);
+  else if (first.tagName === 'INPUT' && matchMedia('(hover: hover)').matches) first.focus();
+}
+
+function closeAuth() {
+  if (!authIsOpen()) return;
+  $('auth-backdrop').classList.remove('open');
+  authView = null;
+  pendingMerge = null;
+  $('auth-dialog').querySelectorAll('input[type=password]').forEach(i => { i.value = ''; });
+  if (document.activeElement && $('auth-dialog').contains(document.activeElement)) document.activeElement.blur();
+  window.__knavFocus($('account-btn'));
+}
+
+function setAuthMsg(text, ok = false, id = 'auth-msg') {
+  $(id).textContent = text;
+  $(id).classList.toggle('ok', ok);
+}
+
+function validateAuthId(v) {
+  if (!v) return 'Enter a username or email.';
+  if (v.includes('@')) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return "That email doesn't look right.";
+    if (v.endsWith('@' + USER_DOMAIN)) return "That email can't be used.";
+    return '';
+  }
+  if (!/^[a-z0-9_.]{3,20}$/.test(v)) return 'Usernames are 3–20 characters: letters, numbers, _ and .';
+  return '';
+}
+
+function authErrorText(err, isEmail) {
+  switch (err && err.code) {
+    case 'auth/email-already-in-use':
+      return isEmail ? 'This email is already registered. If it\'s yours, sign in and use "Forgot password?".'
+                     : 'That username is taken.';
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':     return 'Wrong username/email or password.';
+    case 'auth/weak-password':      return 'Password must be at least 6 characters.';
+    case 'auth/invalid-email':      return "That email doesn't look right.";
+    case 'auth/too-many-requests':  return 'Too many attempts. Try again in a few minutes.';
+    case 'auth/network-request-failed': return 'Network error. Check your connection.';
+    default: return 'Something went wrong. Try again.';
+  }
+}
+
+$('auth-switch').addEventListener('click', () => showAuth('form', authMode === 'signup' ? 'signin' : 'signup'));
+$('auth-close').addEventListener('click', closeAuth);
+$('auth-back').addEventListener('click', () => showAuth(authBackTo));
+$('auth-backdrop').addEventListener('click', e => { if (e.target === $('auth-backdrop')) closeAuth(); });
+
+$('auth-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = $('auth-id').value.trim().toLowerCase();
+  const pass = $('auth-pass').value;
+  const isEmail = id.includes('@');
+  const problem = validateAuthId(id) || (!pass && 'Enter your password.');
+  if (problem) { setAuthMsg(problem); return; }
+
+  const email = isEmail ? id : `${id}@${USER_DOMAIN}`;
+  const submit = $('auth-submit');
+  submit.disabled = true;
+  setAuthMsg('');
+  try {
+    await ensureFirebase();
+    const { a, auth } = fb;
+    const { user } = authMode === 'signup'
+      ? await a.createUserWithEmailAndPassword(auth, email, pass)
+      : await a.signInWithEmailAndPassword(auth, email, pass);
+    $('auth-pass').value = '';
+    if (authMode === 'signup' && isEmail) {
+      await withContinueLink(s => a.sendEmailVerification(user, s)).catch(() => {});   // "Resend" covers a failure
+      showAuth('verify');
+    } else if (!canSync(user) && !(await refreshVerified())) {
+      showAuth('verify');
+    } else {
+      if (authView === 'form') closeAuth();
+      toast(authMode === 'signup' ? `Welcome, ${accountName(user)}` : `Signed in as ${accountName(user)}`);
+    }
+  } catch (err) {
+    setAuthMsg(authErrorText(err, isEmail));
+  } finally {
+    submit.disabled = false;
+  }
+});
+
+$('auth-forgot').addEventListener('click', async () => {
+  const id = $('auth-id').value.trim().toLowerCase();
+  if (!id.includes('@')) {
+    setAuthMsg(id ? "Accounts without an email can't be recovered." : 'Enter the email you signed up with first.');
+    return;
+  }
+  const problem = validateAuthId(id);
+  if (problem) { setAuthMsg(problem); return; }
+  try {
+    await ensureFirebase();
+    await withContinueLink(s => fb.a.sendPasswordResetEmail(fb.auth, id, s));
+    setAuthMsg(`If an account uses ${id}, a reset link is on its way.`, true);
+  } catch (err) {
+    setAuthMsg(authErrorText(err, true));
+  }
+});
+
+$('verify-check').addEventListener('click', async () => {
+  if (!(await refreshVerified()))
+    setAuthMsg('Not verified yet. Open the link in the email, then try again.', false, 'verify-msg');
+});
+
+$('verify-resend').addEventListener('click', async () => {
+  try {
+    await withContinueLink(s => fb.a.sendEmailVerification(fb.auth.currentUser, s));
+    setAuthMsg('Sent! Check your inbox (and spam folder).', true, 'verify-msg');
+  } catch (err) {
+    setAuthMsg(authErrorText(err, true), false, 'verify-msg');
+  }
+});
+
+$('verify-signout').addEventListener('click', async () => {
+  await signOutUser();
+  showAuth('form', 'signin');
+});
+
+/* Account settings forms. Firebase only allows these changes right after a
+   sign-in, so each one confirms the current password first. */
+async function reauth(password) {
+  const { a, auth } = fb;
+  const u = auth.currentUser;
+  await a.reauthenticateWithCredential(u, a.EmailAuthProvider.credential(u.email, password));
+  return u;
+}
+
+// Wires a settings form: busy state, and errors shown in its own message line
+function onAccountForm(view, handler) {
+  const form = $(`auth-${view}`);
+  const msg = form.querySelector('.auth-msg').id;
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const submit = form.querySelector('[type=submit]');
+    submit.disabled = true;
+    setAuthMsg('', false, msg);
+    try {
+      await handler(text => setAuthMsg(text, false, msg), text => setAuthMsg(text, true, msg));
+    } catch (err) {
+      const code = err && err.code;
+      setAuthMsg(code === 'auth/invalid-credential' || code === 'auth/wrong-password' ? 'Wrong password.'
+               : code === 'auth/email-already-in-use'
+                 ? 'This email is already registered to another account. If it\'s yours, sign out and sign in with it, using "Forgot password?" if needed.'
+               : authErrorText(err, true), false, msg);
+    } finally {
+      submit.disabled = false;
+    }
+  });
+}
+
+onAccountForm('add-email', async (fail, ok) => {
+  const email = $('add-email-input').value.trim().toLowerCase();
+  const problem = email.includes('@') ? validateAuthId(email) : "That email doesn't look right.";
+  if (problem) return fail(problem);
+  if (!$('add-email-pass').value) return fail('Enter your current password.');
+  const u = await reauth($('add-email-pass').value);
+  await withContinueLink(s => fb.a.verifyBeforeUpdateEmail(u, email, s));
+  emailChangeTo = email;
+  $('add-email-pass').value = '';
+  ok(`Link sent to ${email}. Open it to confirm, then sign in again with ${email} and your password.`);
+});
+
+onAccountForm('password', async fail => {
+  const current = $('password-current').value, next = $('password-new').value;
+  if (!current || !next) return fail('Fill in both passwords.');
+  const u = await reauth(current);
+  await fb.a.updatePassword(u, next);
+  $('password-current').value = $('password-new').value = '';
+  showAuth('account');
+  toast('Password changed');
+});
+
+$('delete-forgot').addEventListener('click', async () => {
+  const u = fb.auth.currentUser;
+  if ($('delete-forgot').classList.contains('disabled')) return;
+  try {
+    await withContinueLink(s => fb.a.sendPasswordResetEmail(fb.auth, u.email, s));
+    setAuthMsg(`Reset link sent to ${u.email}. Set a new password, then enter it here.`, true, 'delete-msg');
+  } catch (err) {
+    setAuthMsg(authErrorText(err, true), false, 'delete-msg');
+  }
+});
+
+onAccountForm('delete', async fail => {
+  if (!$('delete-pass').value) return fail('Enter your password to confirm.');
+  const u = await reauth($('delete-pass').value);
+  if (myListRef) await fb.f.deleteDoc(myListRef);   // the rules only allow this while signed in
+  await u.delete();
+  closeAuth();
+  toast('Account deleted');
+});
+
+/* ─── CALENDAR ───
+   Month view of release dates for titles in My List: new episodes of saved
+   shows and digital releases of saved movies, all from TMDB. Show details,
+   seasons and release dates stay cached for the session, so paging months
+   only fetches seasons not seen yet. Weeks start on Monday. */
+let calMonth = null;      // 1st of the month on show
+let calSelected = null;   // 'YYYY-MM-DD'
+let calEvents = {};       // 'YYYY-MM-DD' -> [{ kind, entry, label }]
+let calToken = 0;         // drops results from a month the user already left
+let calLoading = false;
+
+const isoDay = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const pad2 = n => String(n).padStart(2, '0');
+
+// Runs fn over items with at most n requests in flight; failures become null
+async function mapLimit(items, n, fn) {
+  const out = [];
+  let next = 0;
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => {
+    while (next < items.length) {
+      const i = next++;
+      try { out[i] = await fn(items[i]); } catch { out[i] = null; }
+    }
+  }));
+  return out;
+}
+
+// Always six weeks (padded with the neighbouring months' days), so the grid
+// keeps its size from month to month
+function calDays() {
+  const lead = (calMonth.getDay() + 6) % 7;
+  return Array.from({ length: 42 }, (_, i) =>
+    new Date(calMonth.getFullYear(), calMonth.getMonth(), 1 - lead + i));
+}
+
+async function episodesBetween(entry, from, to) {
+  let details = tvDetails[entry.id];
+  if (!details) { details = await tmdb(`/tv/${entry.id}`); tvDetails[entry.id] = details; }
+  const seasons = (details.seasons || []).filter(s => s.season_number > 0)
+    .sort((a, b) => a.season_number - b.season_number);
+  // A season runs from its premiere until the next one starts
+  const wanted = seasons.filter((s, i) => {
+    const next = seasons[i + 1];
+    if (!s.air_date) return i === seasons.length - 1;   // announced, no date yet
+    return s.air_date <= to && (!next || !next.air_date || next.air_date > from);
+  });
+  const events = [];
+  for (const s of wanted) {
+    const key = `${entry.id}-${s.season_number}`;
+    let data = seasonCache[key];
+    if (!data) { data = await tmdb(`/tv/${entry.id}/season/${s.season_number}`); seasonCache[key] = data; }
+    for (const ep of data.episodes || []) {
+      if (!ep.air_date || ep.air_date < from || ep.air_date > to) continue;
+      events.push({ date: ep.air_date, kind: 'episode', entry,
+        label: `S${pad2(ep.season_number)}E${pad2(ep.episode_number)}${ep.name ? ` · ${ep.name}` : ''}` });
+    }
+  }
+  return events;
+}
+
+async function digitalReleaseBetween(entry, from, to) {
+  const date = (await fetchDigitalData(entry.id) || '').slice(0, 10);
+  return date && date >= from && date <= to ? [{ date, kind: 'digital', entry, label: 'Digital release' }] : [];
+}
+
+// Opens on today's month with today selected
+function openCalendar() {
+  const now = new Date();
+  calMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  calSelected = isoDay(now);
+  loadCalendar();
+}
+
+async function loadCalendar() {
+  const token = ++calToken;
+  const days = calDays();
+  const from = isoDay(days[0]), to = isoDay(days[days.length - 1]);
+  calEvents = {};
+  renderCalendar(true);
+  const found = await mapLimit(Object.values(myList), 6, e =>
+    e.media_type === 'tv' ? episodesBetween(e, from, to) : digitalReleaseBetween(e, from, to));
+  if (token !== calToken) return;
+  for (const ev of found.flat()) if (ev) (calEvents[ev.date] ||= []).push(ev);
+  renderCalendar(false);
+}
+
+function renderCalendar(loading) {
+  const today = isoDay(new Date());
+  const month = calMonth.getMonth();
+  calLoading = loading;
+  $('cal-month').textContent = calMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  $('cal-grid').classList.toggle('loading', loading);
+  $('cal-grid').innerHTML =
+    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => `<div class="cal-wd">${d}</div>`).join('') +
+    calDays().map(d => {
+      const key = isoDay(d);
+      const evs = calEvents[key] || [];
+      const cls = ['cal-cell', d.getMonth() !== month && 'other', key === today && 'today', key === calSelected && 'selected']
+        .filter(Boolean).join(' ');
+      return `<button class="${cls}" data-day="${key}" type="button">
+        <span class="cal-num">${d.getDate()}</span>
+        ${evs.slice(0, 2).map(ev => `<span class="cal-chip ${ev.kind}">${esc(ev.entry.title || ev.entry.name)}</span>`).join('')}
+        ${evs.length > 2 ? `<span class="cal-more">+${evs.length - 2} more</span>` : ''}
+      </button>`;
+    }).join('');
+  renderCalendarDay(loading);
+}
+
+function renderCalendarDay(loading) {
+  const evs = calEvents[calSelected] || [];
+  const title = new Date(`${calSelected}T00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  let body;
+  if (loading) body = '<div class="cal-empty">Loading release dates…</div>';
+  else if (!Object.keys(myList).length) body = '<div class="cal-empty">Add shows and movies to My List to see their release dates here.</div>';
+  else if (!evs.length) body = '<div class="cal-empty">Nothing from My List comes out on this day.</div>';
+  else body = evs.map((ev, i) => {
+    const src = poster(ev.entry.poster_path, 'w92');
+    return `<button class="cal-item" data-i="${i}" type="button">
+      ${src ? `<img class="cal-item-poster" src="${src}" alt="" loading="lazy">` : '<span class="cal-item-poster"></span>'}
+      <span class="cal-item-text">
+        <span class="cal-item-title">${esc(ev.entry.title || ev.entry.name)}</span>
+        <span class="cal-item-sub">${esc(ev.label)}</span>
+      </span>
+      <span class="cal-badge ${ev.kind}">${ev.kind === 'episode' ? 'Episode' : 'Digital'}</span>
+    </button>`;
+  }).join('');
+  $('cal-day').innerHTML = `<div class="cal-day-title">${title}</div>${body}`;
+}
+
+function shiftCalendar(months, selectDay) {
+  calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + months, 1);
+  const today = new Date();
+  calSelected = selectDay || (calMonth.getMonth() === today.getMonth() && calMonth.getFullYear() === today.getFullYear()
+    ? isoDay(today) : isoDay(calMonth));
+  loadCalendar();
+}
+
+$('cal-prev').addEventListener('click', () => shiftCalendar(-1));
+$('cal-next').addEventListener('click', () => shiftCalendar(1));
+$('cal-today').addEventListener('click', openCalendar);
+
+$('cal-grid').addEventListener('click', e => {
+  const cell = e.target.closest('.cal-cell');
+  if (!cell) return;
+  const day = cell.dataset.day;
+  if (cell.classList.contains('other')) {   // a neighbouring month's day: go to that month
+    const d = new Date(`${day}T00:00`);
+    shiftCalendar((d.getFullYear() - calMonth.getFullYear()) * 12 + d.getMonth() - calMonth.getMonth(), day);
+    return;
+  }
+  // Only restyle the cells, so a focused cell (TV remote) stays put
+  calSelected = day;
+  $('cal-grid').querySelectorAll('.cal-cell').forEach(c => c.classList.toggle('selected', c.dataset.day === day));
+  renderCalendarDay(calLoading);
+});
+
+$('cal-day').addEventListener('click', e => {
+  const item = e.target.closest('.cal-item');
+  const ev = item && (calEvents[calSelected] || [])[item.dataset.i];
+  if (!ev) return;
+  closeAuth();
+  openModal(ev.entry);
+});
+
 /* ─── INIT ─── */
 (async function init() {
+  renderMyList();
+  if (localStorage.getItem(SIGNED_IN_KEY)) ensureFirebase().catch(err => console.warn('Account restore failed', err));
   loadGenres();
   await loadHero();
   loadTop10();
+  loadMyListRow();
   for (const cfg of CATEGORY_ROWS) loadRow(cfg);
 })();
 </script>
@@ -1901,6 +3056,19 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   }
 
   function getSections() {
+    // Account dialog open (it sits above the modal) → controls on the same
+    // line form one row, so ←/→ walk a calendar week or the footer links
+    if (authIsOpen()) {
+      const rows = [];
+      for (const el of [...$('auth-dialog').querySelectorAll('button, input')].filter(vis)) {
+        const r = el.getBoundingClientRect();
+        const row = rows.find(x => Math.abs(x.top - r.top) < 12);
+        if (row) row.items.push(el); else rows.push({ top: r.top, items: [el] });
+      }
+      rows.sort((a, b) => a.top - b.top);
+      rows.forEach(x => x.items.sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left));
+      return rows.map(x => ({ key: null, items: x.items }));
+    }
     // Modal open → trap focus inside it
     if ($('modal-backdrop').classList.contains('open')) {
       const s = [{ key: null, items: [$('modal-back'), $('modal-close')].filter(vis) }];
@@ -1923,16 +3091,18 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
       }
       if ($('tv-selectors').style.display !== 'none')
         s.push({ key: null, items: [$('season-select'), $('episode-select')] });
-      s.push({ key: null, items: [$('modal-watch-btn')] });
+      s.push({ key: null, items: [$('modal-watch-btn'), $('modal-list-btn')] });
       return s;
     }
     // Server dropdown open → trap focus on its items (one per "section",
     // so Up/Down walks the vertical list)
     if (serverMenu.classList.contains('open'))
       return [...serverMenu.querySelectorAll('.server-item')].map(i => ({ key: null, items: [i] }));
+    if (accountMenu.classList.contains('open'))
+      return [...accountMenu.querySelectorAll('.account-item')].map(i => ({ key: null, items: [i] }));
 
     const secs = [];
-    const header = [...document.querySelectorAll('.nav-link'), searchInput, $('support-btn'), serverBtn].filter(vis);
+    const header = [...document.querySelectorAll('.nav-link'), searchInput, $('support-btn'), serverBtn, $('account-btn')].filter(vis);
     if (header.length) secs.push({ key: 'header', items: header });
 
     if ($('search-results-section').classList.contains('visible')) {
@@ -1947,7 +3117,8 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
     }
 
     const heroPlay = document.querySelector('.hero-slide.active .hero-play');
-    if (heroPlay && vis(heroPlay)) secs.push({ key: 'hero', items: [heroPlay] });
+    if (heroPlay && vis(heroPlay))
+      secs.push({ key: 'hero', items: [heroPlay, document.querySelector('.hero-slide.active .hero-list')] });
 
     document.querySelectorAll('#rows-container .scroller').forEach(sc => {
       const items = [...sc.children]
@@ -1970,9 +3141,10 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   }
 
   function move(dx, dy) {
-    // The hero auto-rotates: re-attach to the now-active slide's button
-    if (cur && cur.classList.contains('hero-play') && !vis(cur)) {
-      const p = document.querySelector('.hero-slide.active .hero-play');
+    // The hero auto-rotates: re-attach to the same button on the now-active slide
+    const heroBtn = cur && ['hero-play', 'hero-list'].find(c => cur.classList.contains(c));
+    if (heroBtn && !cur.closest('.hero-slide.active')) {
+      const p = document.querySelector(`.hero-slide.active .${heroBtn}`);
       if (p) setFocus(p, false);
     }
     const secs = getSections();
@@ -1983,9 +3155,12 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
     const ii = sec.items.indexOf(cur);
 
     if (dx) {
-      if (sec.key === 'hero') {            // ←/→ on the hero switch slides
+      if (sec.key === 'hero') {
+        // ←/→ move between Play and My List; past either end they switch slides
+        if (ii + dx >= 0 && ii + dx < sec.items.length) { setFocus(sec.items[ii + dx], false); return; }
+        const btn = cur.classList.contains('hero-list') ? 'hero-list' : 'hero-play';
         goToHero(heroIndex + dx);
-        const p = document.querySelector('.hero-slide.active .hero-play');
+        const p = document.querySelector(`.hero-slide.active .${btn}`);
         if (p) setFocus(p, false);
         return;
       }
@@ -2025,6 +3200,7 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
 
     if (k === 'Escape') {
       if (serverMenu.classList.contains('open')) { serverMenu.classList.remove('open'); setFocus(serverBtn, false); }
+      else if (accountMenu.classList.contains('open')) { accountMenu.classList.remove('open'); setFocus($('account-btn'), false); }
       else if (typing) ae.blur();
       return;                       // modal Escape: the page's own handler closes it
     }
@@ -2042,13 +3218,18 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
         if (typeof cur.showPicker === 'function') { e.preventDefault(); try { cur.showPicker(); } catch (err) {} }
         return;
       }
-      if (cur === searchInput) { e.preventDefault(); searchInput.focus(); return; }
+      if (cur.tagName === 'INPUT') { e.preventDefault(); cur.focus(); return; }
       e.preventDefault();
       const el = cur;
       el.click();
       requestAnimationFrame(() => {
         if (serverMenu.classList.contains('open'))
           setFocus(serverMenu.querySelector('.server-item.active') || serverMenu.querySelector('.server-item'), false);
+        else if (accountMenu.classList.contains('open')) {
+          // Opened from the button → first item; a disabled item keeps focus
+          if (!el.classList.contains('account-item')) setFocus(accountMenu.querySelector('.account-item'), false);
+        }
+        else if (el.classList.contains('account-item')) { if (!authIsOpen()) setFocus($('account-btn'), false); }
         else if (el.classList.contains('server-item')) setFocus(serverBtn, false);
         else if (el.classList.contains('nav-link') && el.dataset.nav && el.dataset.nav !== 'home') {
           // Jump straight into the row the nav link scrolled to
@@ -2080,6 +3261,8 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
     if (!el) mem.delete($('cast-scroller'));
     focusInitial();
   };
+  /* The account dialog moves focus into itself on open and back on close */
+  window.__knavFocus = el => { if (active && vis(el)) setFocus(el, false); };
   window.__knavModalClosed = () => {
     if (!active) return;
     if (lastCard && vis(lastCard)) setFocus(lastCard); else focusInitial();

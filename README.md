@@ -17,6 +17,8 @@ It lets users discover movies and TV shows and stream them directly within the w
 - 📄 View details such as title, release date, and poster
 - ▶️ Stream directly within TFLIX
 - 📡 Choose from multiple predefined streaming servers
+- ➕ Save titles to **My List**, optionally synced across devices with a free account
+- 📅 **Calendar** of upcoming episodes and digital releases for titles in your list
 - 🖥️ Use it as a native **Windows desktop app** with no ads
 
 ## Desktop App (Windows)
@@ -55,4 +57,5 @@ and sideload it (on TV: install via a file-manager app or `adb install`).
 - [Electron](https://www.electronjs.org/) (Windows desktop app)
 - [Kotlin](https://kotlinlang.org/) (Android phone + TV app)
 - [TMDB API](https://developers.themoviedb.org/)
+- [Firebase](https://firebase.google.com/) (accounts + My List sync)
 - [GitHub Pages](https://pages.github.com/)
