@@ -2544,9 +2544,11 @@ function renderAccount() {
   const btn = $('account-btn');
   btn.classList.toggle('signed-in', !!u);
   btn.classList.toggle('unverified', !!u && !canSync(u));
-  btn.title = u ? accountName(u) : 'Sign in to sync My List';
+  btn.title = u ? accountName(u) : 'Calendar & sign in';
   $('account-initial').textContent = u ? accountName(u)[0].toUpperCase() : '';
-  accountMenu.innerHTML = u ? `
+  accountMenu.innerHTML = !u ? `
+    <div class="server-item account-item" data-act="calendar"><span>Calendar</span></div>
+    <div class="server-item account-item" data-act="signin"><span>Sign In</span></div>` : `
     <div class="account-head">
       <div class="account-head-avatar">${esc(accountName(u)[0].toUpperCase())}</div>
       <div class="account-head-name">${esc(accountName(u))}</div>
@@ -2554,7 +2556,7 @@ function renderAccount() {
     ${canSync(u) ? '' : '<div class="server-item account-item" data-act="verify"><div class="s-dot warn"></div><span>Verify Email</span></div>'}
     <div class="server-item account-item" data-act="account"><span>My Account</span></div>
     <div class="server-item account-item" data-act="calendar"><span>Calendar</span></div>
-    <div class="server-item account-item" data-act="signout"><span>Sign Out</span></div>` : '';
+    <div class="server-item account-item" data-act="signout"><span>Sign Out</span></div>`;
   if (authView === 'account') renderAccountCard();
 }
 
@@ -2587,22 +2589,23 @@ $('acct-actions').addEventListener('click', e => {
   if (action && !action.classList.contains('disabled')) showAuth(action.dataset.act);
 });
 
-$('account-btn').addEventListener('click', async e => {
+$('account-btn').addEventListener('click', e => {
   e.stopPropagation();
   serverMenu.classList.remove('open');
-  if (!authUser) {
-    try { await ensureFirebase(); }
-    catch { toast("Couldn't reach the account service"); return; }
-  }
-  if (authUser) accountMenu.classList.toggle('open');
-  else showAuth('form', 'signin');
+  accountMenu.classList.toggle('open');
 });
 
-accountMenu.addEventListener('click', e => {
+accountMenu.addEventListener('click', async e => {
   const item = e.target.closest('.account-item');
   if (!item) { e.stopPropagation(); return; }   // the name header: keep the menu open
-  if (item.dataset.act === 'signout') signOutUser();
-  else showAuth(item.dataset.act);
+  const act = item.dataset.act;
+  if (act === 'signout') { signOutUser(); return; }
+  if (act !== 'signin') { showAuth(act); return; }
+  // Firebase only loads now; it may also turn out this browser is still signed in
+  try { await ensureFirebase(); }
+  catch { toast("Couldn't reach the account service"); return; }
+  if (authUser) toast(`Signed in as ${accountName(authUser)}`);
+  else showAuth('form', 'signin');
 });
 
 async function signOutUser() {
@@ -2635,8 +2638,11 @@ function showAuth(view, mode = authMode) {
   if (view === 'calendar') openCalendar();
   if (AUTH_TEXT[view]) {
     [$('auth-title').textContent, $('auth-sub').textContent] = AUTH_TEXT[view];
-    $('auth-password').querySelector('[autocomplete=username]').value = fb.auth.currentUser.email;   // for password managers
-    $('delete-forgot').classList.toggle('disabled', isUsernameAccount(fb.auth.currentUser));
+    const u = fb && fb.auth.currentUser;   // none for a guest opening the calendar
+    if (u) {
+      $('auth-password').querySelector('[autocomplete=username]').value = u.email;   // for password managers
+      $('delete-forgot').classList.toggle('disabled', isUsernameAccount(u));
+    }
   } else if (view === 'form') {
     const up = mode === 'signup';
     $('auth-title').textContent  = up ? 'Create account' : 'Sign in';
@@ -3016,6 +3022,7 @@ $('cal-day').addEventListener('click', e => {
 /* ─── INIT ─── */
 (async function init() {
   renderMyList();
+  renderAccount();   // guest menu until Firebase reports a signed-in user
   if (localStorage.getItem(SIGNED_IN_KEY)) ensureFirebase().catch(err => console.warn('Account restore failed', err));
   loadGenres();
   await loadHero();
