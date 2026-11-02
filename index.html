@@ -757,12 +757,22 @@
     }
     .auth-backdrop.open { opacity: 1; pointer-events: all; }
     .auth-dialog {
-      position: relative; width: 100%; max-width: 400px;
+      --pad-x: 2rem;
+      position: relative; width: 100%; max-width: 400px; max-height: 92vh;
+      display: flex; flex-direction: column;
       background: var(--bg-elev); border: 1px solid var(--line);
       border-radius: var(--radius-lg); box-shadow: 0 30px 90px rgba(0,0,0,0.85);
-      padding: 2.2rem 2rem 1.8rem;
+      padding: 2.2rem var(--pad-x) 1.8rem;
       transform: translateY(20px) scale(0.97); transition: transform .3s var(--ease);
     }
+    /* The contents scroll inside the card, so ✕ and Back stay in its corners.
+       It spans the card's full width (and a few px up) so hover lifts and
+       focus outlines aren't clipped. */
+    .auth-body {
+      min-height: 0; overflow-y: auto; scrollbar-width: none;
+      margin: -6px calc(-1 * var(--pad-x)) 0; padding: 6px var(--pad-x) 0;
+    }
+    .auth-body::-webkit-scrollbar { display: none; }
     .auth-backdrop.open .auth-dialog { transform: none; }
     .auth-title {
       font-family: 'Bricolage Grotesque', sans-serif;
@@ -798,11 +808,7 @@
     .auth-sub:empty { display: none; }
     /* Pinned to the top: the day list below the grid changes height, and
        re-centring would move the month arrows under the cursor */
-    .auth-dialog.wide {
-      max-width: 780px; max-height: 92vh; overflow-y: auto; scrollbar-width: none;
-      align-self: flex-start; margin-top: 4vh;
-    }
-    .auth-dialog.wide::-webkit-scrollbar { display: none; }
+    .auth-dialog.wide { max-width: 780px; align-self: flex-start; margin-top: 4vh; }
 
     /* Calendar card */
     .cal-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem; }
@@ -933,7 +939,7 @@
     .merge-poster { width: 34px; aspect-ratio: 2/3; border-radius: 4px; object-fit: cover; flex-shrink: 0; background: var(--card); }
     .merge-title { font-size: 0.9rem; font-weight: 600; line-height: 1.25; }
     .merge-meta { font-size: 0.74rem; color: var(--muted); margin-top: 1px; }
-    @media (max-width: 560px) { .auth-dialog { padding: 2rem 1.3rem 1.5rem; } }
+    @media (max-width: 560px) { .auth-dialog { --pad-x: 1.3rem; padding: 2rem var(--pad-x) 1.5rem; } }
 
     /* ─────────────── TOAST ─────────────── */
     #toast {
@@ -1155,6 +1161,7 @@
       <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
     <button class="modal-close" id="auth-close" aria-label="Close">✕</button>
+    <div class="auth-body">
     <div class="auth-title" id="auth-title"></div>
     <div class="auth-sub" id="auth-sub"></div>
 
@@ -1248,6 +1255,7 @@
         </button>
       </div>
     </form>
+    </div>
   </div>
 </div>
 
