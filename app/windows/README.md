@@ -12,15 +12,19 @@ to open, so browsing and playback stay inside the app window — no stray browse
 
 ## Install
 
-📥 Download the latest installer (`TFLIX Setup <version>.exe`) from the
+📥 Download the latest installer (`tflix-windows.setup.<version>.exe`) from the
 [latest release](https://github.com/TomasTNunes/tflix/releases/latest), then run it.
 
 ## Update
 
 TFLIX doesn't auto-update — you update it by downloading the newest installer and
-running it. Grab the latest `TFLIX Setup <version>.exe` from the
+running it. Grab the latest `tflix-windows.setup.<version>.exe` from the
 [latest release](https://github.com/TomasTNunes/tflix/releases/latest) and run it;
 there's **no need to uninstall the old version first**.
+
+> **Updating from 1.1.x:** TFLIX moved to `tflix.stream`, and version 1.2.0 is the first to use
+> the new address — older versions can't open it. After updating you may need to sign in again;
+> a My List saved to your account comes right back.
 
 The installer detects your existing install and upgrades it in place: it replaces the
 old version, keeps your desktop/Start-menu shortcuts, and **preserves your saved settings**
@@ -62,7 +66,8 @@ npm install
 npm run build
 ```
 
-The NSIS installer (`TFLIX Setup <version>.exe`) is written to `app/windows/dist/`. The app
+The NSIS installer (`tflix-windows.setup.<version>.exe`) is written to `app/windows/dist/`.
+To change the app version, edit `version` in `package.json`. The app
 ships as a thin shell — it loads the site over the network, so no site files are bundled.
 
 ## Project layout

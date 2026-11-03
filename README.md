@@ -19,7 +19,7 @@ It lets users discover movies and TV shows and stream them directly within the w
 - 📡 Choose from multiple predefined streaming servers
 - ➕ Save titles to **My List**, optionally synced across devices with a free account
 - 📅 **Calendar** of upcoming episodes and digital releases for titles in your list
-- 🖥️ Use it as a native **Windows desktop app** with no ads
+- 🖥️ Use it as a native **Windows desktop app** or **Android app** (phone + TV) with no ads
 
 ## Desktop App (Windows)
 
@@ -36,7 +36,7 @@ Prefer a real app over a browser tab? TFLIX is also available as a native **Wind
 
 👉 See the [Windows app guide](app/windows/README.md) for more info.
 
-<!-- ## Android App (Phone + Android TV)
+## Android App (Phone + Android TV)
 
 TFLIX is also available as a native **Android app** — one APK that works on phones,
 tablets, and **Android TV** (it shows up in the TV launcher).
@@ -49,7 +49,9 @@ tablets, and **Android TV** (it shows up in the TV launcher).
 📥 Download the APK from the [latest release](https://github.com/TomasTNunes/tflix/releases/latest)
 and sideload it (on TV: install via a file-manager app or `adb install`).
 
-👉 See the [Android app guide](app/android/README.md) for more info. -->
+🔄 Already installed? Install the newest APK over it to update — no uninstall needed. See [Update](app/android/README.md#update) for details.
+
+👉 See the [Android app guide](app/android/README.md) for more info.
 
 ## Tech Stack
 

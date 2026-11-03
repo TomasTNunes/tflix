@@ -12,7 +12,9 @@ Its job is to **block all pop-ups and ad redirects** that the third-party stream
 try to open:
 
 - every `window.open` / `target="_blank"` is denied → no popunder ad ever opens
-- the top frame is pinned to the TFLIX origin → ad scripts can't hijack the page
+  (except links to `github.com/TomasTNunes/tflix`, which open in the system browser)
+- the top frame is pinned to TFLIX's domains (`tflix.stream`, `nunesnetwork.com` and their
+  subdomains, HTTPS only) → ad scripts can't hijack the page
 - the stream `<iframe>`s still navigate freely (blocking them breaks the embeds)
 
 It also presents a plain-Chrome User-Agent (the WebView default carries `; wv` /
@@ -25,6 +27,17 @@ It also presents a plain-Chrome User-Agent (the WebView default carries `; wv` /
 2. **Phone/tablet**: open the APK and allow "install unknown apps" when prompted.
 3. **Android TV**: install via a file manager app (e.g. *Send files to TV*, *X-plore*)
    or with adb: `adb install tflix-android.<version>.apk`.
+
+## Update
+
+Download the newest `tflix-android.<version>.apk` from the
+[latest release](https://github.com/TomasTNunes/tflix/releases/latest) and install it the same
+way — it installs over the old version, **no need to uninstall first** (with adb:
+`adb install -r tflix-android.<version>.apk`).
+
+> **Updating from 1.0.0:** TFLIX moved to `tflix.stream`, and version 1.1.0 is the first to use
+> the new address — older versions can't open it. After updating you may need to sign in again;
+> a My List saved to your account comes right back.
 
 ## Build
 
