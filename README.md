@@ -4,10 +4,10 @@
 </div>
 <br/>
 
-[TFLIX](https://tflix.nunesnetwork.com/) is a simple movie and TV show search website powered by the TMDB API.
+[TFLIX](https://tflix.stream/) is a simple movie and TV show search website powered by the TMDB API.
 It lets users discover movies and TV shows and stream them directly within the website.
 
-🌐 Live: [tflix.nunesnetwork.com](https://tflix.nunesnetwork.com/)
+🌐 Live: [tflix.stream](https://tflix.stream/)
 
 > **Alternative**: [TMDB-Player](https://github.com/TomasTNunes/TMDB-Player) — an open-source browser extension that lets you stream your favorite movies and TV shows directly through the TMDB website.
 

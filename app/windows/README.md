@@ -3,7 +3,7 @@
 A native Windows app that wraps the live TFLIX website using
 [Electron](https://www.electronjs.org/).
 
-The window loads the deployed site (<https://tflix.nunesnetwork.com>) directly, so it's
+The window loads the deployed site (<https://tflix.stream>) directly, so it's
 **always up to date** — new stream servers, fixed embeds, and any other site change appear
 instantly, with no app update needed.
 

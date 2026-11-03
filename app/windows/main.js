@@ -2,7 +2,7 @@
    TFLIX Desktop — Electron main process
 
    A thin native shell around the live TFLIX website
-   (https://tflix.nunesnetwork.com). The window loads the deployed
+   (https://tflix.stream). The window loads the deployed
    site directly, so any change to the site — new stream servers,
    fixed embeds — appears instantly, with no app rebuild or re-release.
 
@@ -15,9 +15,25 @@ const { app, BrowserWindow, Menu, ipcMain, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-/* ─── The live site this shell wraps ─── */
-const SITE_URL = 'https://tflix.nunesnetwork.com/';
-const SITE_ORIGIN = new URL(SITE_URL).origin;   // https://tflix.nunesnetwork.com
+/* ─── The live site this shell wraps ───
+   The app's own address: Cloudflare redirects it (302, so it's rechecked on
+   every launch) to https://tflix.stream/?app=windows. Pointing that redirect
+   elsewhere retires or redirects every installed copy without an update. */
+const SITE_URL = 'https://appwindows.tflix.stream/';
+
+/* The top frame may navigate anywhere on these domains or their subdomains
+   (over HTTPS) — the old and new TFLIX domains, so moving between them and
+   the redirect from one to the other keep working. */
+const ALLOWED_DOMAINS = ['nunesnetwork.com', 'tflix.stream'];
+
+function isAllowedSite(url) {
+  try {
+    const { protocol, hostname } = new URL(url);
+    return protocol === 'https:' && ALLOWED_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d));
+  } catch {
+    return false;
+  }
+}
 
 /* The site's Support button links here — the one pop-up we let through,
    handed to the system browser instead of opening an app window. */
@@ -59,14 +75,14 @@ function createMainWindow() {
   });
 
   // Keep the top frame pinned to the TFLIX site: ad scripts sometimes try to
-  // hijack the whole page via top.location = adURL. Allow only same-site nav.
+  // hijack the whole page via top.location = adURL. Allow only TFLIX's domains.
   //
   // IMPORTANT: only guard the MAIN frame. These events also fire for the
   // third-party stream <iframe>s, which legitimately navigate and (server-side)
   // redirect cross-origin to load their players. Blocking those left the embeds
   // black (Xayah/Ekko) or on the host's own 500 page (Naafiri).
   const blockNav = (e, url, _isInPlace, isMainFrame) => {
-    if (isMainFrame && !url.startsWith(SITE_ORIGIN)) e.preventDefault();
+    if (isMainFrame && !isAllowedSite(url)) e.preventDefault();
   };
   mainWindow.webContents.on('will-navigate', blockNav);
   mainWindow.webContents.on('will-redirect', blockNav);

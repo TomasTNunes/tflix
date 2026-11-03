@@ -4,7 +4,7 @@ A native Android app that wraps the live TFLIX website in a WebView — the Andr
 counterpart of the Windows desktop app. One APK works on **phones, tablets, and
 Android TV** (it registers both the regular and the Leanback TV launcher).
 
-The app loads the deployed site (<https://tflix.nunesnetwork.com>) directly, so it's
+The app loads the deployed site (<https://tflix.stream>) directly, so it's
 **always up to date** — new stream servers, fixed embeds, and any other site change
 appear instantly, with no app update needed.
 

@@ -2,7 +2,7 @@
    TFLIX Android — phone + Android TV
 
    A thin native shell around the live TFLIX website
-   (https://tflix.nunesnetwork.com), the Android counterpart of the
+   (https://tflix.stream), the Android counterpart of the
    Electron desktop app. The WebView loads the deployed site directly,
    so any change to the site — new stream servers, fixed embeds —
    appears instantly, with no app update.
@@ -22,6 +22,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.os.Message
 import android.view.KeyEvent
@@ -38,8 +39,21 @@ import android.webkit.WebViewClient
 class MainActivity : Activity() {
 
     companion object {
-        private const val SITE_URL = "https://tflix.nunesnetwork.com/"
-        private const val SITE_ORIGIN = "https://tflix.nunesnetwork.com"
+        // The app's own address: Cloudflare redirects it (302, so it's
+        // rechecked on every launch) to https://tflix.stream/?app=android.
+        // Pointing that redirect elsewhere retires or redirects every
+        // installed copy without an app update.
+        private const val SITE_URL = "https://appandroid.tflix.stream/"
+
+        // The top frame may navigate anywhere on these domains or their
+        // subdomains (over HTTPS) — the old and new TFLIX domains, so moving
+        // between them and the redirect from one to the other keep working.
+        private val ALLOWED_DOMAINS = listOf("nunesnetwork.com", "tflix.stream")
+
+        private fun isAllowedSite(uri: Uri): Boolean {
+            val host = uri.host ?: return false
+            return uri.scheme == "https" && ALLOWED_DOMAINS.any { host == it || host.endsWith(".$it") }
+        }
 
         // The site's Support button links here — the one pop-up we let
         // through, handed to the system browser (same as the desktop app).
@@ -97,7 +111,7 @@ class MainActivity : Activity() {
                 view: WebView,
                 request: WebResourceRequest,
             ): Boolean =
-                request.isForMainFrame && !request.url.toString().startsWith(SITE_ORIGIN)
+                request.isForMainFrame && !isAllowedSite(request.url)
         }
 
         webView.webChromeClient = object : WebChromeClient() {
@@ -174,7 +188,7 @@ class MainActivity : Activity() {
     }
 
     /* ─── D-pad Up/Down: drive the site's key-nav, not the WebView scroll ───
-       The site (tflix.nunesnetwork.com) ships its own arrow-key navigation
+       The site (tflix.stream) ships its own arrow-key navigation
        engine that highlights and "selects" posters. In a browser it works
        because keydown + preventDefault cancels the page scroll. On Android TV
        the WebView handles the hardware D-pad Up/Down natively and scrolls the

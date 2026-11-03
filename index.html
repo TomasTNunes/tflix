@@ -1219,6 +1219,11 @@
       <div class="cal-day" id="cal-day"></div>
     </div>
 
+    <div id="auth-moved" class="auth-actions">
+      <button class="btn btn-primary" id="moved-signin" type="button">Sign In</button>
+      <button class="btn btn-ghost" id="moved-later" type="button">Not now</button>
+    </div>
+
     <div id="auth-merge" class="auth-actions">
       <div class="merge-list" id="merge-list"></div>
       <button class="btn btn-primary" id="merge-add" type="button">Add to my list</button>
@@ -1303,8 +1308,97 @@ const CATEGORY_ROWS = [
   { title: 'Airing Today',        endpoint: '/tv/airing_today', media: 'tv',    anchor: 'airing' },
 ];
 
+/* ─── APP FLAG ───
+   The apps open appwindows./appandroid.tflix.stream, which Cloudflare
+   redirects here with ?app=windows|android. It's kept for the session
+   (sessionStorage survives the trip to the player and back), dropped from
+   the address, and exposed as <html data-app="…"> for app-only tweaks.
+   Cosmetic only: anyone can add the parameter. */
+const APP_KEY = 'tflix_app';
+const inApp = (() => {
+  const params = new URLSearchParams(location.search);
+  if (params.has('app')) {
+    const app = params.get('app');
+    try { if (app === 'windows' || app === 'android') sessionStorage.setItem(APP_KEY, app); } catch {}
+    params.delete('app');
+    const rest = params.toString();
+    history.replaceState(history.state, '', location.pathname + (rest ? `?${rest}` : '') + location.hash);
+  }
+  try { return sessionStorage.getItem(APP_KEY); } catch { return null; }
+})();
+if (inApp) document.documentElement.dataset.app = inApp;
+
 /* ─── STATE ─── */
-const STORAGE_KEY = 'tflix_server';
+// localStorage keys (kept per domain, hence the import below)
+const STORAGE_KEY   = 'tflix_server';
+const MYLIST_KEY    = 'tflix_mylist';
+const SIGNED_IN_KEY = 'tflix_signed_in';
+
+/* ─── IMPORT FROM THE OLD DOMAIN ───
+   tflix.nunesnetwork.com is now a redirect page (repo tflix-redirect). As
+   browsers keep localStorage per domain, it hands guests' saved data over
+   as #import=<base64url JSON { v, list, server }>. That's accepted once per
+   browser: the redirect sends it on every visit, and taking it again would
+   bring back titles removed here since. Titles are merged (ones already
+   here win) and the server only fills in an unset choice. A signed-in user
+   then gets the usual "Add N titles?" prompt once their list syncs.
+   Login sessions can't move domains, so someone who was signed in there
+   (signedIn) but isn't here is asked to sign in again.
+
+   Anyone can craft such a link, so every field must look like TMDB data
+   before it's kept: poster paths, dates etc. end up in the page's HTML. */
+const IMPORTED_KEY = 'tflix_imported';
+const isDate = v => /^\d{4}-\d{2}-\d{2}$/.test(v);
+const isImagePath = v => /^\/[\w.-]+$/.test(v);
+const IMPORT_FIELDS = {
+  title: v => typeof v === 'string',
+  name: v => typeof v === 'string',
+  overview: v => typeof v === 'string',
+  poster_path: isImagePath,
+  backdrop_path: isImagePath,
+  vote_average: v => Number.isFinite(v),
+  release_date: isDate,
+  first_air_date: isDate,
+  genre_ids: v => Array.isArray(v) && v.every(Number.isInteger),
+  original_language: v => /^[a-z]{2,3}$/.test(v),
+};
+
+// → { note, askSignIn } on the first import, else null
+const importResult = (() => {
+  const m = /^#import=([\w-]+)$/.exec(location.hash);
+  if (!m) return null;
+  history.replaceState(history.state, '', location.pathname + location.search);
+  try {
+    if (localStorage.getItem(IMPORTED_KEY)) return null;
+    const json = decodeURIComponent(escape(atob(m[1].replace(/-/g, '+').replace(/_/g, '/'))));
+    const data = JSON.parse(json);
+    if (!data || data.v !== 1) return null;
+
+    const list = readLocalList();
+    let added = 0;
+    for (const [key, e] of Object.entries(data.list || {})) {
+      const t = /^(movie|tv)_(\d+)$/.exec(key);
+      if (!t || list[key] || !e || e.id !== Number(t[2])) continue;
+      const entry = { id: e.id, media_type: t[1], addedAt: Number.isFinite(e.addedAt) ? e.addedAt : Date.now() };
+      for (const [f, ok] of Object.entries(IMPORT_FIELDS)) if (e[f] != null && ok(e[f])) entry[f] = e[f];
+      list[key] = entry;
+      added++;
+    }
+    if (added) saveLocalList(list);
+    if (!localStorage.getItem(STORAGE_KEY) && SERVERS.some(s => String(s.id) === String(data.server)))
+      localStorage.setItem(STORAGE_KEY, String(data.server));
+    localStorage.setItem(IMPORTED_KEY, String(Date.now()));
+    const signedInHere = !!localStorage.getItem(SIGNED_IN_KEY);
+    return {
+      // Signed-in users are asked about these titles instead, once their list syncs
+      note: added && !signedInHere ? `${added} title${added !== 1 ? 's' : ''} from tflix.nunesnetwork.com added to My List` : null,
+      askSignIn: data.signedIn === true && !signedInHere,
+    };
+  } catch {
+    return null;   // unreadable or blocked storage: carry on without it
+  }
+})();
+
 let currentServer = (() => {
   const saved = localStorage.getItem(STORAGE_KEY);
   return saved ? parseInt(saved, 10) : 1;
@@ -2284,7 +2378,6 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
    single read. Entries keep the TMDB fields makeCard/openModal use, so the
    row renders without refetching anything. The row and its nav link only
    show while the list has something in it. */
-const MYLIST_KEY = 'tflix_mylist';
 const MYLIST_FIELDS = ['id', 'title', 'name', 'poster_path', 'backdrop_path', 'vote_average',
   'release_date', 'first_air_date', 'overview', 'genre_ids', 'original_language'];
 const LIST_ICONS = `
@@ -2451,7 +2544,6 @@ $('modal-list-btn').addEventListener('click', () => {
    Email accounts must verify before My List syncs (the Firestore rules
    enforce the same). The SDK only loads when someone opens the account
    button, or on page load if this browser was signed in last time. */
-const SIGNED_IN_KEY = 'tflix_signed_in';
 const accountMenu = $('account-menu');
 
 let fb = null;          // { a: auth module, f: firestore module, auth, db }
@@ -2613,8 +2705,9 @@ async function signOutUser() {
   toast('Signed out');
 }
 
-const AUTH_VIEWS = ['form', 'verify', 'merge', 'account', 'calendar', 'add-email', 'password', 'delete'];
+const AUTH_VIEWS = ['form', 'verify', 'merge', 'moved', 'account', 'calendar', 'add-email', 'password', 'delete'];
 const AUTH_TEXT = {
+  moved:       ['Welcome to tflix.stream', "TFLIX has a new address, so you'll need to sign in again. Your My List is saved in your account and comes right back."],
   account:     ['My Account', ''],
   calendar:    ['Calendar', 'New episodes and digital releases for titles in My List.'],
   'add-email': ['Add email', "Use it to recover your password. Once you confirm it, you'll sign in with your email instead of your username."],
@@ -2780,6 +2873,15 @@ $('verify-signout').addEventListener('click', async () => {
   await signOutUser();
   showAuth('form', 'signin');
 });
+
+// "Welcome to tflix.stream" card, shown after the move from the old domain
+$('moved-signin').addEventListener('click', async () => {
+  try { await ensureFirebase(); }
+  catch { toast("Couldn't reach the account service"); return; }
+  if (authUser) { closeAuth(); toast(`Signed in as ${accountName(authUser)}`); }
+  else showAuth('form', 'signin');
+});
+$('moved-later').addEventListener('click', closeAuth);
 
 /* Account settings forms. Firebase only allows these changes right after a
    sign-in, so each one confirms the current password first. */
@@ -3021,6 +3123,8 @@ $('cal-day').addEventListener('click', e => {
 
 /* ─── INIT ─── */
 (async function init() {
+  if (importResult?.note) toast(importResult.note);
+  if (importResult?.askSignIn) showAuth('moved');
   renderMyList();
   renderAccount();   // guest menu until Firebase reports a signed-in user
   if (localStorage.getItem(SIGNED_IN_KEY)) ensureFirebase().catch(err => console.warn('Account restore failed', err));
