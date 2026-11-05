@@ -2917,26 +2917,54 @@ function loadAppReleases() { loadReleases().then(paintAppButtons); }
 const ANDROID_UNLABELLED = '1.1.0';
 let appVersionGuess = null;   // set once that's clear, see waitForAppVersion
 
-function installedAppVersion() {
-  const m = inApp && ($('tflix-version-label')?.textContent || '').match(/^v(\d+(?:\.\d+)*)$/);
-  return m ? m[1] : appVersionGuess;
-}
+// The label normally lands within ~50ms of the load event, but on the first
+// run after an Android install or update it can take 4–5s
+const LABEL_GRACE = 12000;
 
-// The label is added around page load (just after it, on Android), so wait
-// for it until a few seconds past the load event
+function labelVersion() {
+  const m = inApp && ($('tflix-version-label')?.textContent || '').match(/^v(\d+(?:\.\d+)*)$/);
+  return m ? m[1] : null;
+}
+const installedAppVersion = () => labelVersion() || appVersionGuess;
+
+// Wait for the label until LABEL_GRACE past the load event. An Android app
+// that still has none is taken for 1.1.0, but keep watching: if the label was
+// only late, correctAppUpdate puts right what that guess showed.
 function waitForAppVersion() {
   return new Promise(resolve => {
-    if (!inApp || installedAppVersion()) return resolve(installedAppVersion());
+    if (!inApp || labelVersion()) return resolve(labelVersion());
     let t;
-    const done = v => { mo.disconnect(); clearTimeout(t); resolve(v); };
-    const mo = new MutationObserver(() => { const v = installedAppVersion(); if (v) done(v); });
+    const mo = new MutationObserver(() => {
+      if (!labelVersion()) return;
+      mo.disconnect(); clearTimeout(t);
+      if (appVersionGuess) { appVersionGuess = null; correctAppUpdate(); }
+      else resolve(labelVersion());
+    });
     mo.observe(document.body, { childList: true });
     const giveUp = () => { t = setTimeout(() => {
       if (inApp === 'android') appVersionGuess = ANDROID_UNLABELLED;
-      done(installedAppVersion());
-    }, 4000); };
+      else mo.disconnect();
+      resolve(installedAppVersion());
+    }, LABEL_GRACE); };
     if (document.readyState === 'complete') giveUp(); else addEventListener('load', giveUp, { once: true });
   });
+}
+
+// The label turned up after the 1.1.0 guess: if this app is in fact current,
+// take back the dot and the pop-up; if not, show the right "You have" version
+function correctAppUpdate() {
+  if (!appUpdate) return;   // the check hasn't finished; it re-reads the version itself
+  const installed = labelVersion();
+  if (cmpVersion(installed, appUpdate.version) < 0) {
+    appUpdate.installed = installed;
+    $('update-pop-text').innerHTML = `TFLIX <b>v${esc(appUpdate.version)}</b> for Android is out. You have v${esc(installed)}.`;
+  } else {
+    appUpdate = null;
+    const pop = $('update-pop');
+    if (pop.classList.contains('show')) { pop.classList.remove('show'); setTimeout(() => { pop.hidden = true; }, 300); }
+  }
+  renderAccount();
+  if (authView === 'apps') loadAppReleases();
 }
 
 /* ─── APP UPDATE ───
@@ -2955,8 +2983,9 @@ async function checkAppUpdate() {
   let launch = false;
   try { launch = !sessionStorage.getItem(UPDATE_SEEN_KEY); sessionStorage.setItem(UPDATE_SEEN_KEY, '1'); } catch {}
   const latest = (await loadReleases(launch ? 0 : RELEASES_TTL))[inApp];
-  if (!latest || cmpVersion(installed, latest.version) >= 0) return;
-  appUpdate = { version: latest.version, installed };
+  const now = installedAppVersion() || installed;   // a late label may have replaced the guess meanwhile
+  if (!latest || cmpVersion(now, latest.version) >= 0) return;
+  appUpdate = { version: latest.version, installed: now };
   renderAccount();
   let skipped = null;
   try { skipped = localStorage.getItem(UPDATE_SKIP_KEY); } catch {}
