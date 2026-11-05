@@ -12,15 +12,24 @@ to open, so browsing and playback stay inside the app window — no stray browse
 
 ## Install
 
-📥 Download the latest installer (`tflix-windows.setup.<version>.exe`) from the
-[latest release](https://github.com/TomasTNunes/tflix/releases/latest), then run it.
+📥 Download the latest installer (`tflix-windows.setup.<version>.exe`) from **Get Apps** in the
+site's profile menu, or from the [latest release](https://github.com/TomasTNunes/tflix/releases/latest),
+then run it.
+
+The installer isn't code-signed, so the browser may say it "isn't commonly downloaded" (choose
+**Keep**) and Windows may show **Windows protected your PC** (click **More info → Run anyway**).
 
 ## Update
 
-TFLIX doesn't auto-update — you update it by downloading the newest installer and
-running it. Grab the latest `tflix-windows.setup.<version>.exe` from the
-[latest release](https://github.com/TomasTNunes/tflix/releases/latest) and run it;
-there's **no need to uninstall the old version first**.
+TFLIX doesn't auto-update, but it tells you when an update is out: a pop-up when the app
+opens (with **Don't show again for this update**; it closes itself after 20 seconds) and a
+yellow dot on the profile icon until you update.
+
+To update, click **Update** — in that pop-up, or on the Windows card in **Get Apps** (profile
+menu). The new installer downloads in your browser; run it. You can also grab the latest
+`tflix-windows.setup.<version>.exe` from the
+[latest release](https://github.com/TomasTNunes/tflix/releases/latest).
+There's **no need to uninstall the old version first**.
 
 > **Updating from 1.1.x:** TFLIX moved to `tflix.stream`, and version 1.2.0 is the first to use
 > the new address — older versions can't open it. After updating you may need to sign in again;

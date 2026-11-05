@@ -12,7 +12,10 @@ Its job is to **block all pop-ups and ad redirects** that the third-party stream
 try to open:
 
 - every `window.open` / `target="_blank"` is denied → no popunder ad ever opens
-  (except links to `github.com/TomasTNunes/tflix`, which open in the system browser)
+  (except links to `github.com/TomasTNunes/tflix`, which open in the system browser;
+  release downloads from the site's **Get Apps** menu are saved to Downloads by the
+  system Download Manager instead — tap the finished notification to install/update; on
+  Android TV the installer opens by itself once the download finishes)
 - the top frame is pinned to TFLIX's domains (`tflix.stream`, `nunesnetwork.com` and their
   subdomains, HTTPS only) → ad scripts can't hijack the page
 - the stream `<iframe>`s still navigate freely (blocking them breaks the embeds)
@@ -22,18 +25,33 @@ It also presents a plain-Chrome User-Agent (the WebView default carries `; wv` /
 
 ## Install (sideload)
 
-1. Download `tflix-android.<version>.apk` from the
-   [latest release](https://github.com/TomasTNunes/tflix/releases/latest).
+1. Download `tflix-android.<version>.apk` from **Get Apps** in the site's profile menu, or from
+   the [latest release](https://github.com/TomasTNunes/tflix/releases/latest).
 2. **Phone/tablet**: open the APK and allow "install unknown apps" when prompted.
 3. **Android TV**: install via a file manager app (e.g. *Send files to TV*, *X-plore*)
    or with adb: `adb install tflix-android.<version>.apk`.
 
 ## Update
 
-Download the newest `tflix-android.<version>.apk` from the
+The app tells you when an update is out: a pop-up when it opens (with **Don't show again for this
+update**; it closes itself after 20 seconds) and a yellow dot on the profile icon until you update.
+
+Tap **Update** — in that pop-up, or on the Android card in **Get Apps** (profile menu). The APK
+downloads with Android's Download Manager, no browser needed:
+
+- **Phone/tablet**: tap the finished download notification to install it over the old version.
+- **Android TV**: the installer opens by itself when the download finishes (if TFLIX is still
+  open). The first time, Android asks you to allow TFLIX to install apps — allow it, come
+  back and tap **Update** again.
+
+It installs over the old version, **no need to uninstall first**. You can also download the newest
+`tflix-android.<version>.apk` from the
 [latest release](https://github.com/TomasTNunes/tflix/releases/latest) and install it the same
-way — it installs over the old version, **no need to uninstall first** (with adb:
-`adb install -r tflix-android.<version>.apk`).
+way as the first time (with adb: `adb install -r tflix-android.<version>.apk`).
+
+> **Updating from 1.1.0:** that version can't download in the app — **Update** opens your
+> browser instead (on a TV without one, install the new APK with a file manager or adb).
+> From then on, updates download in the app.
 
 > **Updating from 1.0.0:** TFLIX moved to `tflix.stream`, and version 1.1.0 is the first to use
 > the new address — older versions can't open it. After updating you may need to sign in again;
