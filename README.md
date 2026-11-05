@@ -51,7 +51,7 @@ tablets, and **Android TV** (it shows up in the TV launcher).
 [latest release](https://github.com/TomasTNunes/tflix/releases/latest), and sideload it
 (on TV: install via a file-manager app or `adb install`).
 
-🔄 Already installed? The app tells you when an update is out. Tap **Update** in Get Apps: the APK downloads without a browser, then tap the finished download to install it over the old version (on Android TV the installer opens by itself; the first time, allow TFLIX to install apps and tap **Update** again) — no uninstall needed. See [Update](app/android/README.md#update) for details.
+🔄 Already installed? The app tells you when an update is out. Tap **Update** in Get Apps: the APK downloads without a browser, then tap the finished download to install it over the old version (on Android TV the installer opens by itself; the first time, allow the install source and tap **Update** again) — no uninstall needed. See [Update](app/android/README.md#update) for details.
 
 👉 See the [Android app guide](app/android/README.md) for more info.
 

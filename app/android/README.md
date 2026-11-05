@@ -40,6 +40,8 @@ Tap **Update** — in that pop-up, or on the Android card in **Get Apps** (profi
 downloads with Android's Download Manager, no browser needed:
 
 - **Phone/tablet**: tap the finished download notification to install it over the old version.
+  The first time, Android asks you to allow installs from Download Manager (or your Files app) —
+  allow it, come back and tap **Update** again.
 - **Android TV**: the installer opens by itself when the download finishes (if TFLIX is still
   open). The first time, Android asks you to allow TFLIX to install apps — allow it, come
   back and tap **Update** again.

@@ -1362,7 +1362,7 @@
               <li>TFLIX then shows up in the TV's app list.</li>
             </ol>
             <div class="app-howto-head">Updating</div>
-            <p>If a new version is out, a notice appears when you open the app and your profile icon gets a yellow dot. Tap <b>Update</b> here and the new APK downloads, no browser needed. On a phone or tablet, tap the finished download to install it over the old version. On a TV the installer opens by itself. The first time, Android asks you to allow TFLIX to install apps: allow it, come back and tap <b>Update</b> again. There's no need to uninstall.</p>
+            <p>If a new version is out, a notice appears when you open the app and your profile icon gets a yellow dot. Tap <b>Update</b> here and the new APK downloads, no browser needed. On a phone or tablet, tap the finished download to install it over the old version. On a TV the installer opens by itself. The first time, Android asks you to allow installs from that source (your Downloads or Files app on a phone, TFLIX on a TV): allow it, come back and tap <b>Update</b> again. There's no need to uninstall.</p>
           </div>
         </div>
       </div>
@@ -3129,7 +3129,9 @@ function showAuth(view, mode = authMode) {
   }
 
   $('auth-backdrop').classList.add('open');
-  const first = $(`auth-${view}`).querySelector('input:not([hidden]), button, a[href]');
+  // In an app, Get Apps starts on that app's card (Update / Download), not Windows
+  const first = (view === 'apps' && inApp && document.querySelector(`.app-dl[data-app="${inApp}"]`))
+             || $(`auth-${view}`).querySelector('input:not([hidden]), button, a[href]');
   if (document.documentElement.classList.contains('keynav')) window.__knavFocus(first);
   else if (first.tagName === 'INPUT' && matchMedia('(hover: hover)').matches) first.focus();
 }
