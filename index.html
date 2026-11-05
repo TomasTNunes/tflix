@@ -921,6 +921,7 @@
     .app-howto b { color: var(--text); font-weight: 700; }
     .app-howto-head { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.35rem; }
     .app-howto p { margin: 0; }
+    .app-howto ol + .app-howto-head { margin-top: 0.2rem; }
     @media (max-width: 420px) {
       .app-row { flex-wrap: wrap; }
       .app-howto-btn { margin-left: 1rem; }
@@ -1324,14 +1325,15 @@
             </div>
             <a class="btn btn-primary app-dl" data-app="windows" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
           </div>
-          <button class="app-howto-btn" type="button" aria-expanded="false" aria-controls="howto-windows"><span>How to install</span><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
+          <button class="app-howto-btn" type="button" aria-expanded="false" aria-controls="howto-windows"><span>How to install &amp; update</span><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
           <div class="app-howto" id="howto-windows" hidden>
             <ol>
               <li>Download the installer and open it.</li>
               <li>If your browser says the file isn't commonly downloaded, choose <b>Keep</b>. If Windows shows <b>Windows protected your PC</b>, click <b>More info → Run anyway</b>.</li>
               <li>Click through the setup (<b>Next → Install</b>), then open TFLIX from the desktop or Start menu.</li>
             </ol>
-            <p><b>Updating:</b> run the new installer over the old version. There's no need to uninstall, and your settings are kept.</p>
+            <div class="app-howto-head">Updating</div>
+            <p>If a new version is out, a notice appears when you open the app and your profile icon gets a yellow dot. Click <b>Update</b> here and run the new installer over the old version. There's no need to uninstall, and your settings are kept.</p>
           </div>
         </div>
         <div class="app-card">
@@ -1345,11 +1347,11 @@
             </div>
             <a class="btn btn-primary app-dl" data-app="android" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
           </div>
-          <button class="app-howto-btn" type="button" aria-expanded="false" aria-controls="howto-android"><span>How to install</span><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
+          <button class="app-howto-btn" type="button" aria-expanded="false" aria-controls="howto-android"><span>How to install &amp; update</span><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
           <div class="app-howto" id="howto-android" hidden>
             <div class="app-howto-head">Phone or tablet</div>
             <ol>
-              <li>Download the APK and open it from the notification or your Downloads.</li>
+              <li>Download the APK, then open it from the download notification or your Downloads folder.</li>
               <li>When asked, allow <b>Install unknown apps</b> for your browser or Files app.</li>
               <li>Tap <b>Install</b>, then open TFLIX.</li>
             </ol>
@@ -1359,7 +1361,8 @@
               <li>Get the APK onto the TV with it (or download it on the TV), open it and allow unknown apps when asked.</li>
               <li>TFLIX then shows up in the TV's app list.</li>
             </ol>
-            <p><b>Updating:</b> install the new APK over the old one. There's no need to uninstall first.</p>
+            <div class="app-howto-head">Updating</div>
+            <p>If a new version is out, a notice appears when you open the app and your profile icon gets a yellow dot. Tap <b>Update</b> here and the new APK downloads, no browser needed. On a phone or tablet, tap the finished download to install it over the old version. On a TV the installer opens by itself. The first time, Android asks you to allow TFLIX to install apps: allow it, come back and tap <b>Update</b> again. There's no need to uninstall.</p>
           </div>
         </div>
       </div>
@@ -1669,7 +1672,7 @@ SERVERS.forEach(s => {
     document.querySelectorAll('.server-item').forEach(i => i.classList.remove('active'));
     el.classList.add('active');
     serverMenu.classList.remove('open');
-    toast(`Now streaming from ${s.name}`);
+    toast(`Default streaming server set to ${s.name}`);
   });
   serverMenu.appendChild(el);
 });
@@ -2908,19 +2911,31 @@ function loadAppReleases() { loadReleases().then(paintAppButtons); }
 // Inside an app: the installed version, from the small "v1.2.3" label the
 // app adds to the page (app/windows/preload-main.js, app/android's
 // assets/version-label.js). Null in a browser or an app without the label.
+// The Android app only added the label after 1.1.0, so an Android app that
+// never adds one is 1.1.0. (Every Windows version that can open tflix.stream
+// has it.)
+const ANDROID_UNLABELLED = '1.1.0';
+let appVersionGuess = null;   // set once that's clear, see waitForAppVersion
+
 function installedAppVersion() {
   const m = inApp && ($('tflix-version-label')?.textContent || '').match(/^v(\d+(?:\.\d+)*)$/);
-  return m ? m[1] : null;
+  return m ? m[1] : appVersionGuess;
 }
 
-// The label is added around page load (after it, on Android), so wait for it
-function waitForAppVersion(timeout = 15000) {
+// The label is added around page load (just after it, on Android), so wait
+// for it until a few seconds past the load event
+function waitForAppVersion() {
   return new Promise(resolve => {
     if (!inApp || installedAppVersion()) return resolve(installedAppVersion());
+    let t;
     const done = v => { mo.disconnect(); clearTimeout(t); resolve(v); };
     const mo = new MutationObserver(() => { const v = installedAppVersion(); if (v) done(v); });
     mo.observe(document.body, { childList: true });
-    const t = setTimeout(() => done(null), timeout);
+    const giveUp = () => { t = setTimeout(() => {
+      if (inApp === 'android') appVersionGuess = ANDROID_UNLABELLED;
+      done(installedAppVersion());
+    }, 4000); };
+    if (document.readyState === 'complete') giveUp(); else addEventListener('load', giveUp, { once: true });
   });
 }
 
