@@ -903,6 +903,9 @@
     .app-name { font-size: 0.98rem; font-weight: 700; }
     .app-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 4px; font-size: 0.78rem; color: var(--muted); }
     .app-meta .acct-badge { margin-left: 0; }
+    .auth-dialog a.btn { text-decoration: none; }
+    .auth-dialog .btn.app-dl.update { background: var(--accent); color: #fff; }
+    .auth-dialog .btn.app-dl.update:hover { background: var(--accent-h); box-shadow: 0 6px 22px rgba(229,9,20,0.45); }
     .auth-dialog .btn.app-dl { width: auto; flex-shrink: 0; padding: 0.6rem 1.1rem; font-size: 0.88rem; text-decoration: none; }
     .app-howto-btn {
       display: flex; align-items: center; gap: 0.35rem; margin: 0 0 0.55rem calc(1rem + 44px + 0.9rem);
@@ -1306,6 +1309,11 @@
         </div>
       </div>
       <div class="auth-note">Already have the app? Install the new version over it to update. There's no need to uninstall.</div>
+    </div>
+
+    <div id="auth-apps-again" class="auth-actions">
+      <a class="btn btn-primary" id="again-download" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download anyway</a>
+      <button class="btn btn-ghost" id="again-cancel" type="button">Cancel</button>
     </div>
 
     <div id="auth-moved" class="auth-actions">
@@ -2825,19 +2833,54 @@ function loadAppReleases() {
       return best;
     })
     .catch(() => { appReleases = null; return {}; });   // retry next time the view opens
-  appReleases.then(best => {
-    for (const app of Object.keys(APP_ASSETS)) {
-      const a = best[app];
-      const link = document.querySelector(`.app-dl[data-app="${app}"]`);
-      if (a) link.href = a.url;
-      // A browser saves the file without leaving the page, so it needs no new
-      // tab (that only flashes open and shut). The apps block navigating away,
-      // so there it stays a pop-up: they download it, or hand it to the browser.
-      if (a && !inApp) link.removeAttribute('target');
-      document.querySelector(`.app-ver[data-app="${app}"]`).textContent = a ? 'v' + a.version : '';
-    }
-  });
+  appReleases.then(paintAppButtons);
 }
+
+// Inside an app: the installed version, from the small "v1.2.3" label the
+// app adds to the page (app/windows/preload-main.js, app/android's
+// assets/version-label.js). Null in a browser or an app without the label.
+function installedAppVersion() {
+  const m = inApp && ($('tflix-version-label')?.textContent || '').match(/^v(\d+(?:\.\d+)*)$/);
+  return m ? m[1] : null;
+}
+
+// In a browser every button reads Download. On the card of the app you're in,
+// it reads Update when a newer release exists (and downloads straight away),
+// or stays Download and asks first when you already have the latest.
+function paintAppButtons(best) {
+  const installed = installedAppVersion();
+  for (const app of Object.keys(APP_ASSETS)) {
+    const a = best[app];
+    const link = document.querySelector(`.app-dl[data-app="${app}"]`);
+    const ver = document.querySelector(`.app-ver[data-app="${app}"]`);
+    const mine = !!a && app === inApp && !!installed;
+    const outdated = mine && cmpVersion(installed, a.version) < 0;
+    if (a) link.href = a.url;
+    // A browser saves the file without leaving the page, so it needs no new
+    // tab (that only flashes open and shut). The apps block navigating away,
+    // so there it stays a pop-up, which they hand to the system browser.
+    if (a && !inApp) link.removeAttribute('target');
+    link.textContent = outdated ? 'Update' : 'Download';
+    link.classList.toggle('update', outdated);
+    link.dataset.state = !mine ? '' : outdated ? 'update' : 'latest';
+    ver.textContent = !a ? '' : outdated ? `v${a.version} · You have v${installed}`
+                               : mine ? `v${a.version} · Installed` : `v${a.version}`;
+  }
+}
+
+$('auth-apps').addEventListener('click', e => {
+  const link = e.target.closest('.app-dl');
+  if (!link || link.dataset.state !== 'latest') return;
+  e.preventDefault();
+  const name = link.dataset.app === 'windows' ? 'Windows' : 'Android';
+  showAuth('apps-again');
+  $('auth-sub').textContent = `You already have the latest version of TFLIX for ${name} (v${installedAppVersion()}). Download it again?`;
+  $('again-download').href = link.href;
+});
+// Download anyway opens the link itself (as a pop-up, like the card's), then
+// goes back to the list; Cancel just goes back
+$('again-download').addEventListener('click', () => setTimeout(() => showAuth('apps'), 0));
+$('again-cancel').addEventListener('click', () => showAuth('apps'));
 
 function setHowto(btn, open) {
   btn.setAttribute('aria-expanded', open);
@@ -2854,12 +2897,13 @@ async function signOutUser() {
   toast('Signed out');
 }
 
-const AUTH_VIEWS = ['form', 'verify', 'merge', 'moved', 'account', 'calendar', 'apps', 'add-email', 'password', 'delete'];
+const AUTH_VIEWS = ['form', 'verify', 'merge', 'moved', 'account', 'calendar', 'apps', 'apps-again', 'add-email', 'password', 'delete'];
 const AUTH_TEXT = {
   moved:       ['Welcome to tflix.stream', "TFLIX has a new address, so you'll need to sign in again. Your My List is saved in your account and comes right back."],
   account:     ['My Account', ''],
   calendar:    ['Calendar', 'New episodes and digital releases for titles in My List.'],
   apps:        ['Get the Apps', 'Watch TFLIX in its own app. The apps block the pop-ups and ad redirects (No Ads).'],
+  'apps-again': ["You're up to date", ''],   // the line below is filled in by confirmRedownload
   'add-email': ['Add email', "Use it to recover your password. Once you confirm it, you'll sign in with your email instead of your username."],
   password:    ['Change password', 'Enter your current password, then the new one.'],
   delete:      ['Delete account?', "This permanently deletes your account and My List. It can't be undone."],
@@ -2868,7 +2912,9 @@ let authBackTo = null;   // view the top-left Back returns to, if any
 
 function showAuth(view, mode = authMode) {
   // Pages opened from My Account get a Back button to it
-  if (view !== authView) authBackTo = authView === 'account' && view !== 'account' ? 'account' : null;
+  const from = authView;
+  if (view !== authView) authBackTo = authView === 'account' && view !== 'account' ? 'account'
+                                    : authView === 'apps' && view === 'apps-again' ? 'apps' : null;
   authView = view;
   authMode = mode;
   for (const v of AUTH_VIEWS) $(`auth-${v}`).hidden = v !== view;
@@ -2881,7 +2927,7 @@ function showAuth(view, mode = authMode) {
   if (view === 'account') renderAccountCard();
   if (view === 'calendar') openCalendar();
   if (view === 'apps') {
-    $('auth-apps').querySelectorAll('.app-howto-btn').forEach(b => setHowto(b, false));
+    if (from !== 'apps-again') $('auth-apps').querySelectorAll('.app-howto-btn').forEach(b => setHowto(b, false));
     loadAppReleases();
   }
   if (AUTH_TEXT[view]) {
