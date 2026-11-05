@@ -578,6 +578,24 @@
     .filter-tab:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
     .filter-tab.active { background: #fff; border-color: #fff; color: #0a0a0d; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem 0.9rem; }
+    /* People in search: a row above the titles under "All", a grid under "People" */
+    .sr-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.7rem; }
+    .sr-people { margin-bottom: 1.8rem; }
+    .people-row {
+      display: flex; gap: 1rem; overflow-x: auto; scrollbar-width: none;
+      padding: 0.45rem 0.3rem; margin: -0.45rem -0.3rem 0;
+    }
+    .people-row::-webkit-scrollbar { display: none; }
+    .person-card {
+      flex: 0 0 auto; width: 112px; padding: 0; text-align: center;
+      background: none; border: none; color: inherit; font-family: inherit; cursor: pointer;
+    }
+    .person-card .cast-photo { width: 96px; height: 96px; }
+    .person-card:hover .cast-photo { transform: scale(1.07); border-color: rgba(255,255,255,0.75); box-shadow: 0 8px 22px rgba(0,0,0,0.6); }
+    .person-card:hover .cast-name { color: var(--accent-h); }
+    .person-card .cast-name, .person-card .cast-character { display: -webkit-box; }
+    .grid.people-grid { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 1.4rem 0.9rem; }
+    .grid.people-grid .person-card { width: 100%; }
     .grid .card { width: 100%; }
     .grid .card:hover { transform: scale(1.05) translateY(-4px); }
 
@@ -1125,6 +1143,8 @@
     }
     html.keynav .cast-member.kf { outline: none; }
     html.keynav .cast-member.kf .cast-photo { outline: 3px solid var(--accent-h); outline-offset: 3px; }
+    html.keynav .person-card.kf { outline: none; }
+    html.keynav .person-card.kf .cast-photo { outline: 3px solid var(--accent-h); outline-offset: 3px; }
     html.keynav .modal-back.kf, html.keynav .modal-close.kf, html.keynav .account-btn.kf,
     html.keynav .menu-btn.kf, html.keynav .drawer-close.kf { border-radius: 50%; }
     html.keynav .card.kf .card-info { opacity: 1; transform: translate3d(0, 0, 0); }
@@ -1197,7 +1217,7 @@
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
       </button>
-      <input type="text" id="search" placeholder="Search movies &amp; TV shows…" autocomplete="off" spellcheck="false"/>
+      <input type="text" id="search" placeholder="Search movies, shows &amp; people…" autocomplete="off" spellcheck="false"/>
       <button id="search-clear" title="Clear">✕</button>
     </div>
 
@@ -1259,12 +1279,18 @@
     <button class="filter-tab active" data-filter="all">All</button>
     <button class="filter-tab" data-filter="movie">Movies</button>
     <button class="filter-tab" data-filter="tv">TV Shows</button>
+    <button class="filter-tab" data-filter="person">People</button>
   </div>
+  <div class="sr-people" id="sr-people" hidden>
+    <div class="sr-label">People</div>
+    <div class="people-row" id="people-row"></div>
+  </div>
+  <div class="sr-label" id="sr-titles-label" hidden>Titles</div>
   <div class="grid" id="search-grid"></div>
   <div id="search-spinner" class="spinner-wrap" style="display:none"><div class="spinner"></div></div>
   <div id="search-empty" class="empty" style="display:none">
     <div class="empty-icon">🎬</div>
-    <h3>No titles found</h3>
+    <h3 id="search-empty-title">No titles found</h3>
     <p>Try a different search term or check your spelling.</p>
   </div>
 </section>
@@ -1674,6 +1700,7 @@ let currentServer = (() => {
 })();
 let currentFilter = 'all';
 let searchResults = [];
+let searchPeople  = [];   // people matching the search (with a photo), in TMDB's order
 let currentModalItem = null;
 let tvDetails = {};
 let genreMap = {};
@@ -2610,6 +2637,7 @@ function resetSearch() {
   $('main').style.display = '';
   $('hero').style.display = heroSlides.length ? '' : 'none';
   searchResults = [];
+  searchPeople = [];
   currentFilter = 'all';
   document.querySelectorAll('.filter-tab').forEach(t => t.classList.toggle('active', t.dataset.filter === 'all'));
 }
@@ -2621,6 +2649,7 @@ async function doSearch(q) {
   $('search-term').textContent = `"${q}"`;
   $('search-spinner').style.display = 'flex';
   $('search-grid').innerHTML = '';
+  $('sr-people').hidden = $('sr-titles-label').hidden = true;
   $('search-empty').style.display = 'none';
   $('search-count').textContent = '';
   window.scrollTo({ top: 0 });
@@ -2634,13 +2663,15 @@ async function doSearch(q) {
     ]);
     const all = [...(p1.results||[]), ...(p2.results||[]), ...(p3.results||[])];
     const seen = new Set();
-    searchResults = all.filter(r => {
-      if (r.media_type !== 'movie' && r.media_type !== 'tv') return false;
+    const unique = all.filter(r => {
       const key = `${r.media_type}-${r.id}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
+    searchResults = unique.filter(r => r.media_type === 'movie' || r.media_type === 'tv');
+    // People without a photo are mostly obscure crew: they'd only clutter the results
+    searchPeople = unique.filter(r => r.media_type === 'person' && r.profile_path);
     $('search-spinner').style.display = 'none';
     renderSearchResults();
   } catch {
@@ -2649,18 +2680,52 @@ async function doSearch(q) {
   }
 }
 
+const PEOPLE_IN_ALL = 6;   // people shown above the titles under "All"
+const countText = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+function personCard(p) {
+  return `
+    <button class="person-card" type="button" data-id="${p.id}">
+      <img class="cast-photo" src="${poster(p.profile_path, 'w185')}" alt="" loading="lazy">
+      <span class="cast-name">${esc(p.name)}</span>
+      ${p.known_for_department ? `<span class="cast-character">${esc(p.known_for_department)}</span>` : ''}
+    </button>`;
+}
+
 function renderSearchResults() {
   const grid = $('search-grid');
   grid.innerHTML = '';
+  const peopleTab = currentFilter === 'person';
+  grid.classList.toggle('people-grid', peopleTab);
+  const showRow = currentFilter === 'all' && searchPeople.length > 0;
+  $('sr-people').hidden = !showRow;
+  $('people-row').innerHTML = showRow ? searchPeople.slice(0, PEOPLE_IN_ALL).map(personCard).join('') : '';
+  $('people-row').scrollLeft = 0;
+
+  if (peopleTab) {
+    $('sr-titles-label').hidden = true;
+    $('search-count').textContent = countText(searchPeople.length, 'person', 'people');
+    $('search-empty-title').textContent = 'No people found';
+    $('search-empty').style.display = searchPeople.length ? 'none' : 'block';
+    grid.innerHTML = searchPeople.map(personCard).join('');
+    return;
+  }
+
   const filtered = currentFilter === 'all'
     ? searchResults
     : searchResults.filter(r => r.media_type === currentFilter);
-
-  $('search-count').textContent = `${filtered.length} title${filtered.length !== 1 ? 's' : ''}`;
-  if (!filtered.length) { $('search-empty').style.display = 'block'; return; }
-  $('search-empty').style.display = 'none';
+  $('search-count').textContent = countText(filtered.length, 'title', 'titles')
+    + (showRow ? ` · ${countText(searchPeople.length, 'person', 'people')}` : '');
+  $('sr-titles-label').hidden = !(showRow && filtered.length);
+  $('search-empty-title').textContent = 'No titles found';
+  $('search-empty').style.display = filtered.length || showRow ? 'none' : 'block';
   filtered.forEach(item => grid.appendChild(makeCard(item)));
 }
+
+$('search-results-section').addEventListener('click', e => {
+  const card = e.target.closest('.person-card');
+  if (card) openPerson(+card.dataset.id);
+});
 
 document.querySelectorAll('.filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
@@ -3771,8 +3836,10 @@ $('cal-day').addEventListener('click', e => {
     if ($('search-results-section').classList.contains('visible')) {
       const tabs = [...document.querySelectorAll('.filter-tab')].filter(vis);
       if (tabs.length) secs.push({ key: 'tabs', items: tabs });
+      const people = [...$('people-row').querySelectorAll('.person-card')].filter(vis);
+      if (people.length) secs.push({ key: $('people-row'), items: people });
       const grid = $('search-grid');
-      const cards = [...grid.querySelectorAll('.card')];
+      const cards = [...grid.querySelectorAll('.card, .person-card')];
       const cols = (getComputedStyle(grid).gridTemplateColumns || '').split(' ').filter(Boolean).length || 1;
       for (let i = 0; i < cards.length; i += cols)
         secs.push({ key: null, items: cards.slice(i, i + cols) });
@@ -3794,7 +3861,7 @@ $('cal-day').addEventListener('click', e => {
 
   function focusInitial() {
     if ($('modal-backdrop').classList.contains('open')) {
-      setFocus(vis($('person-view')) ? $('modal-back') : $('modal-watch-btn'), false);
+      setFocus(vis($('person-view')) ? (vis($('modal-back')) ? $('modal-back') : $('modal-close')) : $('modal-watch-btn'), false);
       return;
     }
     const secs = getSections();
@@ -3916,7 +3983,7 @@ $('cal-day').addEventListener('click', e => {
     if (!active) return;
     lastCard = cur;
     mem.delete($('cast-scroller'));  // new title, new cast: start from the first actor
-    setFocus($('modal-watch-btn'), false);
+    setFocus(vis($('modal-watch-btn')) ? $('modal-watch-btn') : $('modal-close'), false);
   };
   /* Moving between views inside the modal: Back returns to the element that
      opened the next view (when it's still there), forward starts fresh */
