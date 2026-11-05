@@ -82,5 +82,6 @@ To change the app version, edit `versionCode` and `versionName` in
 | File | Purpose |
 |------|---------|
 | `app/src/main/java/.../MainActivity.kt` | The whole app — WebView, pop-up/ad blocking, fullscreen video, back handling |
+| `app/src/main/assets/version-label.js` | The small version label (lower-left, at the bottom of the page) — the site's Get Apps menu reads it to offer updates |
 | `app/src/main/AndroidManifest.xml` | Phone + TV (Leanback) launcher entries, TV feature flags |
 | `app/src/main/res/` | Launcher icons, TV banner, dark theme |

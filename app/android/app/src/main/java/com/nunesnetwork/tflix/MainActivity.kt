@@ -14,6 +14,10 @@
      • the top frame is pinned to the TFLIX origin; the stream
        <iframe>s still navigate/redirect freely — blocking those
        breaks the embeds (same lesson as the desktop app)
+
+   It also adds the desktop app's small version label to the browse
+   pages (assets/version-label.js), which the site's Get Apps menu
+   reads to offer an update.
    ─────────────────────────────────────────────────────────────── */
 
 package com.nunesnetwork.tflix
@@ -61,6 +65,14 @@ class MainActivity : Activity() {
     }
 
     private lateinit var webView: WebView
+
+    /* The version label script, with this install's version filled in */
+    private val versionLabelJs: String by lazy {
+        @Suppress("DEPRECATION")
+        val version = packageManager.getPackageInfo(packageName, 0).versionName ?: ""
+        assets.open("version-label.js").bufferedReader().use { it.readText() }
+            .replace("__APP_VERSION__", version)
+    }
 
     /* Fullscreen video state (onShowCustomView) */
     private var customView: View? = null
@@ -112,6 +124,11 @@ class MainActivity : Activity() {
                 request: WebResourceRequest,
             ): Boolean =
                 request.isForMainFrame && !isAllowedSite(request.url)
+
+            // Version label (lower-left corner), like the desktop app's.
+            override fun onPageFinished(view: WebView, url: String) {
+                if (isAllowedSite(Uri.parse(url))) view.evaluateJavascript(versionLabelJs, null)
+            }
         }
 
         webView.webChromeClient = object : WebChromeClient() {
