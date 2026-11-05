@@ -97,6 +97,60 @@
     .logo:hover { transform: scale(1.04); }
 
     .nav-links { display: flex; align-items: center; gap: 1.4rem; flex-shrink: 0; }
+
+    /* Menu button + side drawer: the way to the sections once the nav links
+       are hidden (narrow screens). The button only shows then. */
+    .menu-btn {
+      display: none; place-items: center; flex-shrink: 0;
+      width: 38px; height: 38px; margin-right: calc(-1 * clamp(0.4rem, 1.2vw, 1.2rem)); padding: 0;
+      background: transparent; border: none; border-radius: 50%;
+      color: var(--text); cursor: pointer; transition: background .2s;
+    }
+    .menu-btn:hover { background: rgba(255,255,255,0.08); }
+    .drawer-backdrop {
+      position: fixed; inset: 0; z-index: 440;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(3px);
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .drawer-backdrop.open { opacity: 1; pointer-events: all; }
+    .nav-drawer {
+      position: fixed; top: 0; bottom: 0; left: 0; z-index: 450;
+      width: min(280px, 82vw); padding: 0 0.75rem 1.5rem;
+      display: flex; flex-direction: column; gap: 0.2rem;
+      background: var(--bg-elev); border-right: 1px solid var(--line);
+      box-shadow: 24px 0 60px rgba(0,0,0,0.6);
+      transform: translateX(-102%); visibility: hidden;
+      transition: transform .3s var(--ease), visibility 0s linear .3s;
+    }
+    .nav-drawer.open { transform: none; visibility: visible; transition: transform .3s var(--ease); }
+    .drawer-head {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 70px; padding: 0 0.25rem 0 0.75rem; margin-bottom: 0.4rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .drawer-head .logo { cursor: default; }
+    .drawer-head .logo:hover { transform: none; }
+    .drawer-close {
+      width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+      background: transparent; border: none; color: var(--muted); cursor: pointer;
+      font-size: 1.15rem; line-height: 1; transition: background .2s, color .2s;
+    }
+    .drawer-close:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+    .drawer-link {
+      position: relative; display: flex; align-items: center; gap: 0.85rem;
+      width: 100%; padding: 0.8rem 0.9rem; border-radius: 8px;
+      background: none; border: none; text-align: left;
+      color: var(--muted); font-size: 0.98rem; font-weight: 500; cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .drawer-link[hidden] { display: none; }
+    .drawer-link svg { flex-shrink: 0; }
+    .drawer-link:hover { background: var(--card-h); color: var(--text); }
+    .drawer-link.active { color: var(--text); font-weight: 700; background: rgba(229,9,20,0.1); }
+    .drawer-link.active::before {
+      content: ''; position: absolute; left: 0; top: 0.6rem; bottom: 0.6rem;
+      width: 3px; border-radius: 3px; background: var(--accent);
+    }
     .nav-link {
       font-size: 0.86rem; font-weight: 500; color: var(--muted);
       cursor: pointer; transition: color .2s; position: relative; padding: 4px 0;
@@ -1071,7 +1125,8 @@
     }
     html.keynav .cast-member.kf { outline: none; }
     html.keynav .cast-member.kf .cast-photo { outline: 3px solid var(--accent-h); outline-offset: 3px; }
-    html.keynav .modal-back.kf, html.keynav .modal-close.kf, html.keynav .account-btn.kf { border-radius: 50%; }
+    html.keynav .modal-back.kf, html.keynav .modal-close.kf, html.keynav .account-btn.kf,
+    html.keynav .menu-btn.kf, html.keynav .drawer-close.kf { border-radius: 50%; }
     html.keynav .card.kf .card-info { opacity: 1; transform: translate3d(0, 0, 0); }
     html.keynav .rank-card.kf-parent .card {
       transform: scale(1.09) translateY(-4px);
@@ -1086,6 +1141,7 @@
     /* ─────────────── RESPONSIVE ─────────────── */
     @media (max-width: 860px) {
       .nav-links { display: none; }
+      .menu-btn { display: grid; }
       #hero { height: 78vh; min-height: 460px; }
       .hero-content { bottom: 14vh; max-width: 90%; }
       .hero-dots { display: none; }
@@ -1093,6 +1149,12 @@
     }
     @media (max-width: 560px) {
       .logo { font-size: 1.35rem; }
+      header { gap: 0.9rem; }
+      .nav-right { gap: 0.45rem; }
+      /* Room for the menu button: typing already searches, so the
+         magnifier goes and the box keeps the space */
+      .search-toggle { display: none; }
+      .search-wrap.open #search { padding: 0 1.9rem 0 0.85rem; }
       .server-btn span.s-name { display: none; }
       .btn { padding: 0.7rem 1.4rem; font-size: 0.9rem; }
       .modal-body { padding: 1.2rem 1.3rem 1.5rem; }
@@ -1115,6 +1177,9 @@
 
 <!-- ─────────────── NAVBAR ─────────────── -->
 <header id="header">
+  <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
   <div class="logo" id="logo">TFLIX</div>
 
   <nav class="nav-links">
@@ -1148,7 +1213,7 @@
         <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="server-menu" id="server-menu">
-        <div class="server-menu-header">Streaming Servers</div>
+        <div class="server-menu-header">Default Server</div>
       </div>
     </div>
 
@@ -1161,6 +1226,20 @@
     </div>
   </div>
 </header>
+
+<!-- ─────────────── SIDE DRAWER (narrow screens) ─────────────── -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<nav class="nav-drawer" id="nav-drawer" aria-label="Sections">
+  <div class="drawer-head">
+    <div class="logo">TFLIX</div>
+    <button class="drawer-close" id="drawer-close" type="button" aria-label="Close menu">✕</button>
+  </div>
+  <button class="drawer-link active" type="button" data-nav="home"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h5v-6h4v6h5V9.5"/></svg>Home</button>
+  <button class="drawer-link" type="button" data-nav="trending"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Trending</button>
+  <button class="drawer-link" type="button" data-nav="mylist" id="drawer-mylist" hidden><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h12v17l-6-4-6 4z"/></svg>My List</button>
+  <button class="drawer-link" type="button" data-nav="movies"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>Movies</button>
+  <button class="drawer-link" type="button" data-nav="tv"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M8 2.5 12 6l4-3.5"/></svg>TV Shows</button>
+</nav>
 
 <!-- ─────────────── HERO ─────────────── -->
 <section id="hero" class="empty"></section>
@@ -1655,8 +1734,9 @@ function scrollToSection(anchor) {
   window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
 }
 
-document.querySelectorAll('.nav-link').forEach(link => {
+document.querySelectorAll('.nav-link, .drawer-link').forEach(link => {
   link.addEventListener('click', () => {
+    closeDrawer(false);
     resetSearch();
     const nav = link.dataset.nav;
     if (nav === 'home') {
@@ -1682,13 +1762,42 @@ function updateActiveNav() {
       if (el.getBoundingClientRect().top <= NAV_OFFSET + 40) active = anchor;
     }
     const navKey = { trending: 'trending', mylist: 'mylist', movies: 'movies', tv: 'tv' }[active] || 'home';
-    document.querySelectorAll('.nav-link').forEach(l =>
+    document.querySelectorAll('.nav-link, .drawer-link').forEach(l =>
       l.classList.toggle('active', l.dataset.nav === navKey)
     );
   });
 }
 
 window.addEventListener('scroll', updateActiveNav, { passive: true });
+
+/* ─── SIDE DRAWER ─── */
+const drawer = $('nav-drawer');
+const drawerIsOpen = () => drawer.classList.contains('open');
+function openDrawer() {
+  serverMenu.classList.remove('open');
+  accountMenu.classList.remove('open');
+  drawer.classList.add('open');
+  $('drawer-backdrop').classList.add('open');
+  $('menu-btn').setAttribute('aria-expanded', 'true');
+  document.body.style.overflow = document.documentElement.style.overflow = 'hidden';
+  window.__knavFocus(drawer.querySelector('.drawer-link.active:not([hidden])') || drawer.querySelector('.drawer-link'));
+}
+// refocus: put the key-nav highlight back on the menu button (not after
+// picking a section, which moves it into that row instead)
+function closeDrawer(refocus = true) {
+  if (!drawerIsOpen()) return;
+  drawer.classList.remove('open');
+  $('drawer-backdrop').classList.remove('open');
+  $('menu-btn').setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = document.documentElement.style.overflow = '';
+  if (document.activeElement && drawer.contains(document.activeElement)) document.activeElement.blur();
+  if (refocus) window.__knavFocus($('menu-btn'));
+}
+$('menu-btn').addEventListener('click', e => { e.stopPropagation(); openDrawer(); });
+$('drawer-close').addEventListener('click', () => closeDrawer());
+$('drawer-backdrop').addEventListener('click', () => closeDrawer());
+// Widening the window brings the nav links back: no drawer needed
+matchMedia('(min-width: 861px)').addEventListener('change', e => { if (e.matches) closeDrawer(false); });
 
 /* ─── SERVER DROPDOWN ─── */
 const serverMenu  = $('server-menu');
@@ -2427,7 +2536,8 @@ $('modal-close').addEventListener('click', closeModal);
 $('modal-backdrop').addEventListener('click', e => { if (e.target === $('modal-backdrop')) closeModal(); });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
-  if (authIsOpen()) closeAuth(); else closeModal();
+  if (drawerIsOpen()) closeDrawer();
+  else if (authIsOpen()) closeAuth(); else closeModal();
 });
 // Go through history so the pushed entry is consumed; popstate below does the actual step back
 $('modal-back').addEventListener('click', () => history.back());
@@ -2514,7 +2624,7 @@ async function doSearch(q) {
   $('search-empty').style.display = 'none';
   $('search-count').textContent = '';
   window.scrollTo({ top: 0 });
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.nav === 'home'));
+  document.querySelectorAll('.nav-link, .drawer-link').forEach(l => l.classList.toggle('active', l.dataset.nav === 'home'));
 
   try {
     const [p1, p2, p3] = await Promise.all([
@@ -2705,7 +2815,7 @@ function popListBtn(btn) {
 
 function renderMyList() {
   const entries = Object.values(myList).sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
-  $('nav-mylist').hidden = !entries.length;
+  $('nav-mylist').hidden = $('drawer-mylist').hidden = !entries.length;
   if (myListScroller) {
     myListScroller.closest('.row').hidden = !entries.length;
     // Reuse the cards already there so the row keeps its scroll position and focus
@@ -3640,6 +3750,9 @@ $('cal-day').addEventListener('click', e => {
       s.push({ key: null, items: [$('modal-watch-btn'), $('modal-list-btn')] });
       return s;
     }
+    // Side drawer open → its links, top to bottom, with ✕ first
+    if (drawerIsOpen())
+      return [$('drawer-close'), ...drawer.querySelectorAll('.drawer-link')].filter(vis).map(i => ({ key: null, items: [i] }));
     // Server dropdown open → trap focus on its items (one per "section",
     // so Up/Down walks the vertical list)
     if (serverMenu.classList.contains('open'))
@@ -3652,7 +3765,7 @@ $('cal-day').addEventListener('click', e => {
       secs.push({ key: null, items: [$('update-pop-skip')] });
       secs.push({ key: null, items: [$('update-pop-go'), $('update-pop-close')] });
     }
-    const header = [...document.querySelectorAll('.nav-link'), searchInput, $('calendar-btn'), serverBtn, $('account-btn')].filter(vis);
+    const header = [$('menu-btn'), ...document.querySelectorAll('.nav-link'), searchInput, $('calendar-btn'), serverBtn, $('account-btn')].filter(vis);
     if (header.length) secs.push({ key: 'header', items: header });
 
     if ($('search-results-section').classList.contains('visible')) {
@@ -3781,11 +3894,14 @@ $('cal-day').addEventListener('click', e => {
         }
         else if (el.classList.contains('account-item')) { if (!authIsOpen()) setFocus($('account-btn'), false); }
         else if (el.classList.contains('server-item')) setFocus(serverBtn, false);
-        else if (el.classList.contains('nav-link') && el.dataset.nav && el.dataset.nav !== 'home') {
+        else if (drawerIsOpen()) { if (el === $('menu-btn')) return; }   // openDrawer already focused a link
+        else if (el.classList.contains('drawer-link') && el.dataset.nav === 'home') setFocus($('menu-btn'), false);
+        else if ((el.classList.contains('nav-link') || el.classList.contains('drawer-link')) && el.dataset.nav && el.dataset.nav !== 'home') {
           // Jump straight into the row the nav link scrolled to
           const sc = document.querySelector(`.row[data-anchor="${el.dataset.nav}"] .scroller`);
           const first = sc && sc.querySelector('.card');
           if (first) setFocus(first);
+          else if (el.classList.contains('drawer-link')) setFocus($('menu-btn'), false);
         }
         else if (!cur || !vis(cur)) focusInitial();
       });
