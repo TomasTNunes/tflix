@@ -10,7 +10,9 @@
    The app's only job is ad-blocking:
      • every window.open / target=_blank is denied (onCreateWindow),
        so the popunder ads the stream embeds fire never open — except
-       the site's Support link, which opens in the system browser
+       the site's Support link, which opens in the system browser, and
+       the Get Apps download links, which the system Download Manager
+       saves to Downloads (notification → tap to install/update)
      • the top frame is pinned to the TFLIX origin; the stream
        <iframe>s still navigate/redirect freely — blocking those
        breaks the embeds (same lesson as the desktop app)
@@ -24,10 +26,18 @@ package com.nunesnetwork.tflix
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.DownloadManager
+import android.app.UiModeManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Message
 import android.view.KeyEvent
 import android.view.View
@@ -39,6 +49,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 
 class MainActivity : Activity() {
 
@@ -62,6 +73,10 @@ class MainActivity : Activity() {
         // The site's Support button links here — the one pop-up we let
         // through, handed to the system browser (same as the desktop app).
         private const val SUPPORT_URL = "https://github.com/TomasTNunes/tflix"
+
+        // Release files (the site's Get Apps buttons) live under here. They're
+        // downloaded in place instead of opening a browser, which many TVs lack.
+        private const val RELEASE_DOWNLOAD_URL = "$SUPPORT_URL/releases/download/"
     }
 
     private lateinit var webView: WebView
@@ -73,6 +88,10 @@ class MainActivity : Activity() {
         assets.open("version-label.js").bufferedReader().use { it.readText() }
             .replace("__APP_VERSION__", version)
     }
+
+    /* TV: APK downloads whose installer opens as soon as they finish */
+    private val pendingInstalls = mutableSetOf<Long>()
+    private var downloadReceiver: BroadcastReceiver? = null
 
     /* Fullscreen video state (onShowCustomView) */
     private var customView: View? = null
@@ -149,12 +168,11 @@ class MainActivity : Activity() {
                         v: WebView,
                         request: WebResourceRequest,
                     ): Boolean {
-                        if (request.url.toString().startsWith(SUPPORT_URL)) {
-                            try {
-                                startActivity(Intent(Intent.ACTION_VIEW, request.url))
-                            } catch (_: Exception) {
-                                // No browser on this device (some TVs) — drop it.
-                            }
+                        val url = request.url.toString()
+                        if (url.startsWith(RELEASE_DOWNLOAD_URL)) {
+                            downloadRelease(request.url)
+                        } else if (url.startsWith(SUPPORT_URL)) {
+                            openInBrowser(request.url)
                         }
                         v.destroy()
                         return true  // the probe never loads anything
@@ -193,6 +211,106 @@ class MainActivity : Activity() {
 
         // TV: give the WebView focus so the D-pad works immediately.
         webView.requestFocus()
+    }
+
+    private fun openInBrowser(uri: Uri) {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, uri))
+        } catch (_: Exception) {
+            // No browser on this device (some TVs) — drop it.
+        }
+    }
+
+    /* ─── Get Apps downloads ───
+       Handed to the system Download Manager: it shows the usual progress
+       notification and, once done, tapping it opens the installer (the APK
+       is tagged as one), so an update installs over the current app. No
+       permission needed: Android 10+ lets the Download Manager write to the
+       public Downloads folder; older versions get the app's own Downloads
+       folder, which the notification opens just the same.
+
+       On a TV that notification usually can't be opened, so there the app
+       opens the installer itself once the APK is in (installWhenDone). That
+       is the only use of REQUEST_INSTALL_PACKAGES: the first time, Android
+       asks to allow TFLIX to install apps. Phones never trigger it — their
+       installs start from the notification, i.e. from the Downloads app. */
+    private fun downloadRelease(uri: Uri) {
+        val name = uri.lastPathSegment ?: "tflix-download"
+        try {
+            val request = DownloadManager.Request(uri)
+                .setTitle(name)
+                .setDescription("TFLIX")
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            if (name.endsWith(".apk")) request.setMimeType("application/vnd.android.package-archive")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name)
+            } else {
+                request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, name)
+            }
+            val id = (getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
+            val autoInstall = isTv() && name.endsWith(".apk")
+            if (autoInstall) installWhenDone(id)
+            val msg = if (autoInstall) "Downloading $name… The installer opens when it's done."
+                      else "Downloading $name…"
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+        } catch (_: Exception) {
+            // Download Manager missing or disabled (some TV builds): try a browser.
+            openInBrowser(uri)
+        }
+    }
+
+    private fun isTv(): Boolean =
+        (getSystemService(Context.UI_MODE_SERVICE) as UiModeManager).currentModeType ==
+            Configuration.UI_MODE_TYPE_TELEVISION
+
+    private fun installWhenDone(id: Long) {
+        pendingInstalls.add(id)
+        if (downloadReceiver != null) return
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val done = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+                if (pendingInstalls.remove(done)) openInstaller(done)
+            }
+        }
+        val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        // Sent by the Download Manager (another app), hence exported
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(receiver, filter)
+        }
+        downloadReceiver = receiver
+    }
+
+    private fun openInstaller(id: Long) {
+        val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        var ok = false
+        var localUri: String? = null
+        dm.query(DownloadManager.Query().setFilterById(id))?.use { c ->
+            if (c.moveToFirst()) {
+                ok = c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS)) ==
+                    DownloadManager.STATUS_SUCCESSFUL
+                localUri = c.getString(c.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI))
+            }
+        }
+        if (!ok) {
+            Toast.makeText(this, "The download failed. Try again.", Toast.LENGTH_LONG).show()
+            return
+        }
+        // Android 7+ installs from the Download Manager's content:// URI;
+        // older versions only take the file:// path
+        val apk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) dm.getUriForDownloadedFile(id)
+                  else localUri?.let(Uri::parse)
+        if (apk == null) return
+        try {
+            startActivity(
+                Intent(Intent.ACTION_VIEW)
+                    .setDataAndType(apk, "application/vnd.android.package-archive")
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+        } catch (_: Exception) {
+            Toast.makeText(this, "Downloaded to Downloads. Open it with a file manager to install.", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun exitFullscreenVideo() {
@@ -281,6 +399,7 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
+        downloadReceiver?.let { unregisterReceiver(it) }
         webView.destroy()
         super.onDestroy()
     }
