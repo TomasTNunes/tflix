@@ -92,8 +92,8 @@
     }
     .now-title .ep-tag { color: var(--muted); font-weight: 500; }
 
-    /* Same support pill as the main page navbar */
-    .support-btn {
+    /* Same pill as the main page navbar (Calendar there) */
+    .help-btn {
       display: flex; align-items: center; gap: 0.5rem;
       padding: 0.45rem 1rem;
       background: linear-gradient(135deg, rgba(229,9,20,0.18), rgba(229,9,20,0.04));
@@ -103,17 +103,17 @@
       cursor: pointer; white-space: nowrap; flex-shrink: 0;
       transition: background .2s, border-color .2s, box-shadow .25s, transform .15s var(--ease);
     }
-    .support-btn:hover {
+    .help-btn:hover {
       background: linear-gradient(135deg, rgba(229,9,20,0.32), rgba(229,9,20,0.1));
       border-color: rgba(255,34,46,0.7);
       box-shadow: 0 4px 22px rgba(229,9,20,0.35);
       transform: translateY(-1px);
     }
-    .support-btn:active { transform: scale(.96); }
-    .support-btn svg { flex-shrink: 0; }
+    .help-btn:active { transform: scale(.96); }
+    .help-btn svg { flex-shrink: 0; }
     @media (max-width: 560px) {
-      .support-btn span.s-name { display: none; }
-      .support-btn { padding: 0.45rem 0.6rem; }
+      .help-btn span.s-name { display: none; }
+      .help-btn { padding: 0.45rem 0.6rem; }
     }
 
     /* ─── LAYOUT ─── */
@@ -213,6 +213,77 @@
     .server-card .s-note { font-size: 0.72rem; color: var(--muted); line-height: 1.25; }
     .server-card.selected .s-name { color: #fff; }
 
+    /* ─── HELP DIALOG (same card as the main page's profile menu → Help) ─── */
+    .help-backdrop {
+      position: fixed; inset: 0; z-index: 700;
+      background: rgba(0,0,0,0.78); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center; padding: 1rem;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .help-backdrop.open { opacity: 1; pointer-events: all; }
+    .help-dialog {
+      --pad-x: 2rem;
+      position: relative; width: 100%; max-width: 520px; max-height: 92vh;
+      display: flex; flex-direction: column;
+      background: var(--bg-elev); border: 1px solid var(--line);
+      border-radius: var(--radius-lg); box-shadow: 0 30px 90px rgba(0,0,0,0.85);
+      padding: 2.2rem var(--pad-x) 1.8rem;
+      transform: translateY(20px) scale(0.97); transition: transform .3s var(--ease);
+    }
+    .help-backdrop.open .help-dialog { transform: none; }
+    .help-close {
+      position: absolute; top: 1rem; right: 1rem; z-index: 3;
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.15);
+      color: #fff; cursor: pointer; font-size: 1.3rem; line-height: 1;
+      display: grid; place-items: center; transition: background .2s;
+    }
+    .help-close:hover { background: rgba(0,0,0,0.85); }
+    /* The FAQ scrolls inside the card; the close button and GitHub link stay put */
+    .help-body {
+      min-height: 0; overflow-y: auto; scrollbar-width: none;
+      margin: -6px calc(-1 * var(--pad-x)) 0; padding: 6px var(--pad-x) 0;
+    }
+    .help-body::-webkit-scrollbar { display: none; }
+    .help-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em;
+      margin-bottom: 0.35rem; padding-right: 2.5rem;
+    }
+    .help-sub { font-size: 0.9rem; line-height: 1.5; color: var(--muted); margin-bottom: 1.4rem; }
+    .faq-list { display: flex; flex-direction: column; gap: 0.5rem; padding-bottom: 0.2rem; }
+    .faq-item { background: var(--card); border: 1px solid var(--line); border-radius: 10px; transition: border-color .15s; }
+    .faq-item:has(.faq-q[aria-expanded="true"]) { border-color: rgba(255,255,255,0.18); }
+    .faq-q {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+      width: 100%; padding: 0.8rem 1rem; text-align: left;
+      background: none; border: none; border-radius: 10px; color: var(--text);
+      font-family: inherit; font-size: 0.92rem; font-weight: 600; line-height: 1.35; cursor: pointer;
+    }
+    .faq-q:hover { background: var(--card-h); }
+    .faq-q svg { flex-shrink: 0; color: var(--muted); transition: transform .2s var(--ease); }
+    .faq-q[aria-expanded="true"] svg { transform: rotate(180deg); color: var(--text); }
+    .faq-a { margin: 0 1rem; padding: 0.7rem 0 0.9rem; border-top: 1px solid var(--line); font-size: 0.86rem; line-height: 1.55; color: rgba(255,255,255,0.78); }
+    .faq-a[hidden] { display: none; }
+    .faq-a b { color: var(--text); font-weight: 700; }
+    .help-foot { flex-shrink: 0; margin: 1rem calc(-1 * var(--pad-x)) 0; padding: 1rem var(--pad-x) 0; border-top: 1px solid var(--line); }
+    .help-foot-text { font-size: 0.8rem; line-height: 1.45; color: var(--muted); margin-bottom: 0.75rem; }
+    .help-foot-src { margin-top: 0.75rem; text-align: center; font-size: 0.74rem; color: var(--muted); }
+    .help-foot-src a { color: var(--text); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(255,255,255,0.3); transition: color .2s; }
+    .help-foot-src a:hover { color: var(--accent-h); text-decoration-color: currentColor; }
+    .help-gh {
+      display: flex; align-items: center; justify-content: center; gap: 0.55rem; width: 100%;
+      padding: 0.8rem 1.9rem; border-radius: 7px;
+      background: #fff; color: #0a0a0d; font-size: 0.98rem; font-weight: 700;
+      transition: transform .15s var(--ease), background .2s;
+    }
+    .help-gh:hover { background: rgba(255,255,255,0.82); transform: translateY(-2px); }
+    .help-gh:active { transform: scale(.97); }
+    @media (max-width: 560px) {
+      .help-dialog { --pad-x: 1.3rem; padding: 2rem var(--pad-x) 1.5rem; }
+      .help-gh { padding: 0.7rem 1.4rem; font-size: 0.9rem; }
+    }
+
     /* Toast */
     #toast {
       position: fixed; bottom: 1.6rem; left: 50%;
@@ -241,7 +312,7 @@
        while html.keynav is set, i.e. when navigating with arrows/remote. */
     html.keynav .kf { outline: 3px solid var(--accent-h); outline-offset: 2px; border-radius: 8px; }
     html.keynav .server-card.kf { border-color: var(--accent); background: var(--card-h); }
-    html.keynav .back-btn.kf { outline-offset: 1px; border-radius: 50%; }
+    html.keynav .back-btn.kf, html.keynav .help-close.kf { outline-offset: 1px; border-radius: 50%; }
     html.keynav .player-wrap.kf { outline: 3px solid var(--accent); outline-offset: 3px; }
 
     /* ─── RESPONSIVE ─── */
@@ -265,10 +336,10 @@
     </button>
     <div class="logo" id="logo">TFLIX</div>
     <div class="now-title" id="now-title">Loading…</div>
-    <a class="support-btn" id="support-btn" href="https://github.com/TomasTNunes/tflix/issues" target="_blank" rel="noopener noreferrer" title="Report an issue or get support on GitHub">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-      <span class="s-name">Support</span>
-    </a>
+    <button class="help-btn" id="help-btn" type="button" title="Help and FAQ">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.5-2.7 4.1"/><circle cx="12" cy="17.6" r=".6" fill="currentColor"/></svg>
+      <span class="s-name">Help</span>
+    </button>
   </header>
 
   <main id="main">
@@ -304,6 +375,26 @@
 
   <div id="toast"></div>
 
+  <div class="help-backdrop" id="help-backdrop">
+    <div class="help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <button class="help-close" id="help-close" aria-label="Close">✕</button>
+      <div class="help-body" id="help-body">
+        <div class="help-title" id="help-title">Help</div>
+        <div class="help-sub">Answers to common questions about watching on TFLIX.</div>
+        <div class="faq-list" id="faq-list"></div>
+      </div>
+      <div class="help-foot">
+        <div class="help-foot-text">Didn't find your answer? Report a problem, suggest a feature or ask a question.</div>
+        <a class="help-gh" id="help-issues" href="https://github.com/TomasTNunes/tflix/issues" target="_blank" rel="noopener noreferrer">
+          <svg width="17" height="17" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          Open an issue on GitHub
+        </a>
+        <div class="help-foot-src">TFLIX is open source · <a id="help-src" href="https://github.com/TomasTNunes/tflix" target="_blank" rel="noopener noreferrer">View the code</a></div>
+      </div>
+    </div>
+  </div>
+
+<script src="../assets/help.js"></script>
 <script>
 /* ─── CONFIG ─── */
 const API_BASE = "https://api.themoviedb.org/3";
@@ -589,6 +680,26 @@ $('back-btn').addEventListener('click', () => {
   else location.href = '/';
 });
 
+/* ─── HELP ─── */
+const helpIsOpen = () => $('help-backdrop').classList.contains('open');
+renderFaq($('faq-list'));
+function openHelp() {
+  collapseFaq($('faq-list'));
+  $('help-body').scrollTop = 0;
+  $('help-backdrop').classList.add('open');
+  window.__knavFocus(document.querySelector('.faq-q'));
+}
+function closeHelp() {
+  if (!helpIsOpen()) return;
+  $('help-backdrop').classList.remove('open');
+  if (document.activeElement && $('help-backdrop').contains(document.activeElement)) document.activeElement.blur();
+  window.__knavFocus($('help-btn'));
+}
+$('help-btn').addEventListener('click', openHelp);
+$('help-close').addEventListener('click', closeHelp);
+$('help-backdrop').addEventListener('click', e => { if (e.target === $('help-backdrop')) closeHelp(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHelp(); });
+
 /* ─── INIT ─── */
 (async function init() {
   state = readParams();
@@ -612,7 +723,7 @@ $('back-btn').addEventListener('click', () => {
 
 /* ─── TV / D-PAD NAVIGATION ───
    Same model as the main page: arrow keys + Enter (what a TV remote sends)
-   walk the page's controls — back/support buttons → season/episode →
+   walk the page's controls — back/help buttons → season/episode →
    next episode → server cards. Activates on the first arrow key, deactivates on mouse or
    touch, so pointer users never see it. Back itself is handled outside the
    page (browser/back gesture/Android app). */
@@ -632,8 +743,11 @@ $('back-btn').addEventListener('click', () => {
   }
 
   function getSections() {
+    // Help open → only its controls, top to bottom
+    if (helpIsOpen())
+      return [$('help-close'), ...document.querySelectorAll('.faq-q'), $('help-issues'), $('help-src')].map(el => ({ items: [el] }));
     const secs = [];
-    const header = [$('back-btn'), $('support-btn')].filter(vis);
+    const header = [$('back-btn'), $('help-btn')].filter(vis);
     if (header.length) secs.push({ items: header });
     const tv = $('tv-panel');
     if (tv && !tv.hidden) {
@@ -651,6 +765,9 @@ $('back-btn').addEventListener('click', () => {
     document.querySelectorAll('.server-card').forEach(c => { if (vis(c)) secs.push({ items: [c] }); });
     return secs;
   }
+
+  /* The help dialog moves focus into itself on open and back on close */
+  window.__knavFocus = el => { if (active && vis(el)) setFocus(el, false); };
 
   function focusInitial() {
     const sel = document.querySelector('.server-card.selected');

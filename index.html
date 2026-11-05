@@ -143,7 +143,7 @@
     }
     .search-wrap.open #search-clear.visible { display: block; }
 
-    .support-btn {
+    .pill-btn {
       display: flex; align-items: center; gap: 0.5rem;
       padding: 0.45rem 1rem;
       background: linear-gradient(135deg, rgba(229,9,20,0.18), rgba(229,9,20,0.04));
@@ -153,17 +153,17 @@
       cursor: pointer; white-space: nowrap; flex-shrink: 0;
       transition: background .2s, border-color .2s, box-shadow .25s, transform .15s var(--ease);
     }
-    .support-btn:hover {
+    .pill-btn:hover {
       background: linear-gradient(135deg, rgba(229,9,20,0.32), rgba(229,9,20,0.1));
       border-color: rgba(255,34,46,0.7);
       box-shadow: 0 4px 22px rgba(229,9,20,0.35);
       transform: translateY(-1px);
     }
-    .support-btn:active { transform: scale(.96); }
-    .support-btn svg { flex-shrink: 0; }
+    .pill-btn:active { transform: scale(.96); }
+    .pill-btn svg { flex-shrink: 0; }
     @media (max-width: 560px) {
-      .support-btn span.s-name { display: none; }
-      .support-btn { padding: 0.45rem 0.6rem; }
+      .pill-btn span.s-name { display: none; }
+      .pill-btn { padding: 0.45rem 0.6rem; }
     }
 
     .server-wrap { position: relative; flex-shrink: 0; }
@@ -928,6 +928,28 @@
       .auth-dialog .btn.app-dl { width: 100%; }
     }
 
+    /* Help: FAQ list, with the GitHub link pinned under it */
+    .auth-dialog.help { max-width: 520px; }
+    .faq-list { display: flex; flex-direction: column; gap: 0.5rem; padding-bottom: 0.2rem; }
+    .faq-item { background: var(--card); border: 1px solid var(--line); border-radius: 10px; transition: border-color .15s; }
+    .faq-item:has(.faq-q[aria-expanded="true"]) { border-color: rgba(255,255,255,0.18); }
+    .faq-q {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+      width: 100%; padding: 0.8rem 1rem; text-align: left;
+      background: none; border: none; border-radius: 10px; color: var(--text);
+      font-family: inherit; font-size: 0.92rem; font-weight: 600; line-height: 1.35; cursor: pointer;
+    }
+    .faq-q:hover { background: var(--card-h); }
+    .faq-q svg { flex-shrink: 0; color: var(--muted); transition: transform .2s var(--ease); }
+    .faq-q[aria-expanded="true"] svg { transform: rotate(180deg); color: var(--text); }
+    .faq-a { margin: 0 1rem; padding: 0.7rem 0 0.9rem; border-top: 1px solid var(--line); font-size: 0.86rem; line-height: 1.55; color: rgba(255,255,255,0.78); }
+    .faq-a b { color: var(--text); font-weight: 700; }
+    .help-foot { flex-shrink: 0; margin: 1rem calc(-1 * var(--pad-x)) 0; padding: 1rem var(--pad-x) 0; border-top: 1px solid var(--line); }
+    .help-foot-text { font-size: 0.8rem; line-height: 1.45; color: var(--muted); margin-bottom: 0.75rem; }
+    .help-foot-src, .apps-src { margin-top: 0.75rem; text-align: center; font-size: 0.74rem; color: var(--muted); }
+    .help-foot-src a, .apps-src a { color: var(--text); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(255,255,255,0.3); transition: color .2s; }
+    .help-foot-src a:hover, .apps-src a:hover { color: var(--accent-h); text-decoration-color: currentColor; }
+
     /* My Account card */
     .acct-head { display: flex; align-items: center; gap: 0.9rem; margin: 0.4rem 0 1.2rem; }
     .acct-avatar {
@@ -1114,10 +1136,10 @@
       <button id="search-clear" title="Clear">✕</button>
     </div>
 
-    <a class="support-btn" id="support-btn" href="https://github.com/TomasTNunes/tflix/issues" target="_blank" rel="noopener noreferrer" title="Report an issue or get support on GitHub">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-      <span class="s-name">Support</span>
-    </a>
+    <button class="pill-btn" id="calendar-btn" type="button" title="New episodes and releases for My List">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>
+      <span class="s-name">Calendar</span>
+    </button>
 
     <div class="server-wrap">
       <button class="server-btn" id="server-btn">
@@ -1367,7 +1389,10 @@
         </div>
       </div>
       <div class="auth-note">Already have the app? Install the new version over it to update. There's no need to uninstall.</div>
+      <div class="apps-src">Older versions and what's new · <a id="apps-releases" href="https://github.com/TomasTNunes/tflix/releases" target="_blank" rel="noopener noreferrer">View all releases</a></div>
     </div>
+
+    <div id="auth-help" class="faq-list"></div>
 
     <div id="auth-apps-again" class="auth-actions">
       <a class="btn btn-primary" id="again-download" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download anyway</a>
@@ -1416,12 +1441,22 @@
       </div>
     </form>
     </div>
+    <!-- Help: outside the scrolling body, so the GitHub link always shows -->
+    <div class="help-foot" id="help-foot" hidden>
+      <div class="help-foot-text">Didn't find your answer? Report a problem, suggest a feature or ask a question.</div>
+      <a class="btn btn-primary" id="help-issues" href="https://github.com/TomasTNunes/tflix/issues" target="_blank" rel="noopener noreferrer">
+        <svg width="17" height="17" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        Open an issue on GitHub
+      </a>
+      <div class="help-foot-src">TFLIX is open source · <a id="help-src" href="https://github.com/TomasTNunes/tflix" target="_blank" rel="noopener noreferrer">View the code</a></div>
+    </div>
   </div>
 </div>
 
 <!-- ─────────────── TOAST ─────────────── -->
 <div id="toast"></div>
 
+<script src="./assets/help.js"></script>
 <script>
 /* ─── CONFIG ─── */
 const API_BASE = "https://api.themoviedb.org/3";
@@ -2798,6 +2833,7 @@ function renderAccount() {
   accountMenu.innerHTML = !u ? `
     <div class="server-item account-item" data-act="calendar"><span>Calendar</span></div>
     ${appsItem}
+    <div class="server-item account-item" data-act="help"><span>Help</span></div>
     <div class="server-item account-item" data-act="signin"><span>Sign In</span></div>` : `
     <div class="account-head">
       <div class="account-head-avatar">${esc(accountName(u)[0].toUpperCase())}</div>
@@ -2807,6 +2843,7 @@ function renderAccount() {
     <div class="server-item account-item" data-act="account"><span>My Account</span></div>
     <div class="server-item account-item" data-act="calendar"><span>Calendar</span></div>
     ${appsItem}
+    <div class="server-item account-item" data-act="help"><span>Help</span></div>
     <div class="server-item account-item" data-act="signout"><span>Sign Out</span></div>`;
   if (authView === 'account') renderAccountCard();
 }
@@ -3074,11 +3111,12 @@ async function signOutUser() {
   toast('Signed out');
 }
 
-const AUTH_VIEWS = ['form', 'verify', 'merge', 'moved', 'account', 'calendar', 'apps', 'apps-again', 'add-email', 'password', 'delete'];
+const AUTH_VIEWS = ['form', 'verify', 'merge', 'moved', 'account', 'calendar', 'help', 'apps', 'apps-again', 'add-email', 'password', 'delete'];
 const AUTH_TEXT = {
   moved:       ['Welcome to tflix.stream', "TFLIX has a new address, so you'll need to sign in again. Your My List is saved in your account and comes right back."],
   account:     ['My Account', ''],
   calendar:    ['Calendar', 'New episodes and digital releases for titles in My List.'],
+  help:        ['Help', 'Answers to common questions about watching on TFLIX.'],
   apps:        ['Get the Apps', 'Watch TFLIX in its own app. The apps block the pop-ups and ad redirects (No Ads).'],
   'apps-again': ["You're up to date", ''],   // the line below is filled in by confirmRedownload
   'add-email': ['Add email', "Use it to recover your password. Once you confirm it, you'll sign in with your email instead of your username."],
@@ -3086,6 +3124,7 @@ const AUTH_TEXT = {
   delete:      ['Delete account?', "This permanently deletes your account and My List. It can't be undone."],
 };
 let authBackTo = null;   // view the top-left Back returns to, if any
+let authOpener = null;   // header button that opened the dialog, focused again on close
 
 function showAuth(view, mode = authMode) {
   // Pages opened from My Account get a Back button to it
@@ -3099,10 +3138,13 @@ function showAuth(view, mode = authMode) {
   $('auth-dialog').classList.toggle('has-back', !!authBackTo);
   $('auth-dialog').classList.toggle('wide', view === 'calendar');
   $('auth-dialog').classList.toggle('apps', view === 'apps');
+  $('auth-dialog').classList.toggle('help', view === 'help');
+  $('help-foot').hidden = view !== 'help';
   $('auth-dialog').querySelectorAll('.auth-msg').forEach(m => { m.textContent = ''; });
 
   if (view === 'account') renderAccountCard();
   if (view === 'calendar') openCalendar();
+  if (view === 'help' && from !== 'help') { collapseFaq($('auth-help')); $('auth-help').closest('.auth-body').scrollTop = 0; }
   if (view === 'apps') {
     if (from !== 'apps-again') $('auth-apps').querySelectorAll('.app-howto-btn').forEach(b => setHowto(b, false));
     loadAppReleases();
@@ -3143,7 +3185,8 @@ function closeAuth() {
   pendingMerge = null;
   $('auth-dialog').querySelectorAll('input[type=password]').forEach(i => { i.value = ''; });
   if (document.activeElement && $('auth-dialog').contains(document.activeElement)) document.activeElement.blur();
-  window.__knavFocus($('account-btn'));
+  window.__knavFocus(authOpener || $('account-btn'));
+  authOpener = null;
 }
 
 function setAuthMsg(text, ok = false, id = 'auth-msg') {
@@ -3177,6 +3220,9 @@ function authErrorText(err, isEmail) {
     default: return 'Something went wrong. Try again.';
   }
 }
+
+renderFaq($('auth-help'));
+$('calendar-btn').addEventListener('click', () => { showAuth('calendar'); authOpener = $('calendar-btn'); });
 
 $('auth-switch').addEventListener('click', () => showAuth('form', authMode === 'signup' ? 'signin' : 'signup'));
 $('auth-close').addEventListener('click', closeAuth);
@@ -3606,7 +3652,7 @@ $('cal-day').addEventListener('click', e => {
       secs.push({ key: null, items: [$('update-pop-skip')] });
       secs.push({ key: null, items: [$('update-pop-go'), $('update-pop-close')] });
     }
-    const header = [...document.querySelectorAll('.nav-link'), searchInput, $('support-btn'), serverBtn, $('account-btn')].filter(vis);
+    const header = [...document.querySelectorAll('.nav-link'), searchInput, $('calendar-btn'), serverBtn, $('account-btn')].filter(vis);
     if (header.length) secs.push({ key: 'header', items: header });
 
     if ($('search-results-section').classList.contains('visible')) {
