@@ -890,6 +890,40 @@
     }
     .auth-dialog.has-back { padding-top: 4.2rem; }
 
+    /* Get Apps */
+    .auth-dialog.apps { max-width: 480px; }
+    .app-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .app-card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+    .app-row { display: flex; align-items: center; gap: 0.9rem; padding: 0.9rem 1rem 0.55rem; }
+    .app-icon {
+      width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+      display: grid; place-items: center; background: rgba(255,255,255,0.07); color: var(--text);
+    }
+    .app-info { flex: 1; min-width: 0; }
+    .app-name { font-size: 0.98rem; font-weight: 700; }
+    .app-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 4px; font-size: 0.78rem; color: var(--muted); }
+    .app-meta .acct-badge { margin-left: 0; }
+    .auth-dialog .btn.app-dl { width: auto; flex-shrink: 0; padding: 0.6rem 1.1rem; font-size: 0.88rem; text-decoration: none; }
+    .app-howto-btn {
+      display: flex; align-items: center; gap: 0.35rem; margin: 0 0 0.55rem calc(1rem + 44px + 0.9rem);
+      padding: 0.15rem 0; background: none; border: none; color: var(--muted);
+      font-family: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: color .2s;
+    }
+    .app-howto-btn:hover { color: var(--text); }
+    .app-howto-btn svg { transition: transform .2s var(--ease); }
+    .app-howto-btn[aria-expanded="true"] { color: var(--text); }
+    .app-howto-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+    .app-howto { margin: 0 1rem 0.9rem; padding-top: 0.75rem; border-top: 1px solid var(--line); font-size: 0.84rem; line-height: 1.5; color: rgba(255,255,255,0.78); }
+    .app-howto ol { margin: 0 0 0.75rem; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.3rem; }
+    .app-howto b { color: var(--text); font-weight: 700; }
+    .app-howto-head { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.35rem; }
+    .app-howto p { margin: 0; }
+    @media (max-width: 420px) {
+      .app-row { flex-wrap: wrap; }
+      .app-howto-btn { margin-left: 1rem; }
+      .auth-dialog .btn.app-dl { width: 100%; }
+    }
+
     /* My Account card */
     .acct-head { display: flex; align-items: center; gap: 0.9rem; margin: 0.4rem 0 1.2rem; }
     .acct-avatar {
@@ -1217,6 +1251,61 @@
       </div>
       <div class="cal-grid" id="cal-grid"></div>
       <div class="cal-day" id="cal-day"></div>
+    </div>
+
+    <div id="auth-apps">
+      <div class="app-list">
+        <div class="app-card">
+          <div class="app-row">
+            <div class="app-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5l7.5-1.05V11.5H3v-6zm0 13l7.5 1.05V12.5H3v6zm8.5 1.2L21 21v-8.5h-9.5v7.2zm0-15.4v7.2H21V3l-9.5 1.3z"/></svg>
+            </div>
+            <div class="app-info">
+              <div class="app-name">Windows</div>
+              <div class="app-meta"><span class="acct-badge ok">No Ads</span><span class="app-ver" data-app="windows"></span></div>
+            </div>
+            <a class="btn btn-primary app-dl" data-app="windows" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
+          </div>
+          <button class="app-howto-btn" type="button" aria-expanded="false" aria-controls="howto-windows"><span>How to install</span><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="app-howto" id="howto-windows" hidden>
+            <ol>
+              <li>Download the installer and open it.</li>
+              <li>If your browser says the file isn't commonly downloaded, choose <b>Keep</b>. If Windows shows <b>Windows protected your PC</b>, click <b>More info → Run anyway</b>.</li>
+              <li>Click through the setup (<b>Next → Install</b>), then open TFLIX from the desktop or Start menu.</li>
+            </ol>
+            <p><b>Updating:</b> run the new installer over the old version. There's no need to uninstall, and your settings are kept.</p>
+          </div>
+        </div>
+        <div class="app-card">
+          <div class="app-row">
+            <div class="app-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v7c0 .83.67 1.5 1.5 1.5S5 17.33 5 16.5v-7C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zm-4.97-5.84l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48A5.84 5.84 0 0 0 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31A5.98 5.98 0 0 0 6 7h12c0-1.99-.97-3.75-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/></svg>
+            </div>
+            <div class="app-info">
+              <div class="app-name">Android &amp; Android TV</div>
+              <div class="app-meta"><span class="acct-badge ok">No Ads</span><span class="app-ver" data-app="android"></span></div>
+            </div>
+            <a class="btn btn-primary app-dl" data-app="android" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
+          </div>
+          <button class="app-howto-btn" type="button" aria-expanded="false" aria-controls="howto-android"><span>How to install</span><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="app-howto" id="howto-android" hidden>
+            <div class="app-howto-head">Phone or tablet</div>
+            <ol>
+              <li>Download the APK and open it from the notification or your Downloads.</li>
+              <li>When asked, allow <b>Install unknown apps</b> for your browser or Files app.</li>
+              <li>Tap <b>Install</b>, then open TFLIX.</li>
+            </ol>
+            <div class="app-howto-head">Android TV</div>
+            <ol>
+              <li>Install a file manager from the Play Store, such as <b>Send files to TV</b> or <b>X-plore</b>.</li>
+              <li>Get the APK onto the TV with it (or download it on the TV), open it and allow unknown apps when asked.</li>
+              <li>TFLIX then shows up in the TV's app list.</li>
+            </ol>
+            <p><b>Updating:</b> install the new APK over the old one. There's no need to uninstall first.</p>
+          </div>
+        </div>
+      </div>
+      <div class="auth-note">Already have the app? Install the new version over it to update. There's no need to uninstall.</div>
     </div>
 
     <div id="auth-moved" class="auth-actions">
@@ -2640,6 +2729,7 @@ function renderAccount() {
   $('account-initial').textContent = u ? accountName(u)[0].toUpperCase() : '';
   accountMenu.innerHTML = !u ? `
     <div class="server-item account-item" data-act="calendar"><span>Calendar</span></div>
+    <div class="server-item account-item" data-act="apps"><span>Get Apps</span></div>
     <div class="server-item account-item" data-act="signin"><span>Sign In</span></div>` : `
     <div class="account-head">
       <div class="account-head-avatar">${esc(accountName(u)[0].toUpperCase())}</div>
@@ -2648,6 +2738,7 @@ function renderAccount() {
     ${canSync(u) ? '' : '<div class="server-item account-item" data-act="verify"><div class="s-dot warn"></div><span>Verify Email</span></div>'}
     <div class="server-item account-item" data-act="account"><span>My Account</span></div>
     <div class="server-item account-item" data-act="calendar"><span>Calendar</span></div>
+    <div class="server-item account-item" data-act="apps"><span>Get Apps</span></div>
     <div class="server-item account-item" data-act="signout"><span>Sign Out</span></div>`;
   if (authView === 'account') renderAccountCard();
 }
@@ -2700,16 +2791,75 @@ accountMenu.addEventListener('click', async e => {
   else showAuth('form', 'signin');
 });
 
+/* ─── GET APPS ───
+   Release assets carry the version in their name and a release may ship only
+   one of the apps, so a fixed /releases/latest/download link can't work: list
+   the releases and take the newest asset per app. Until that answers (or if
+   it fails) the buttons open the latest release page in a new tab. */
+const RELEASES_API = 'https://api.github.com/repos/TomasTNunes/tflix/releases?per_page=50';
+const APP_ASSETS = {
+  windows: /^tflix-windows\.setup\.(\d+(?:\.\d+)*)\.exe$/,
+  android: /^tflix-android\.(\d+(?:\.\d+)*)\.apk$/,   // not the .debug. build
+};
+let appReleases = null;
+
+const cmpVersion = (a, b) => {
+  const x = a.split('.').map(Number), y = b.split('.').map(Number);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) - (y[i] || 0);
+  return 0;
+};
+
+function loadAppReleases() {
+  appReleases ||= fetch(RELEASES_API)
+    .then(r => r.ok ? r.json() : Promise.reject(new Error(r.status)))
+    .then(list => {
+      const best = {};
+      for (const rel of list) {
+        if (rel.draft || rel.prerelease) continue;
+        for (const asset of rel.assets || []) for (const [app, re] of Object.entries(APP_ASSETS)) {
+          const m = asset.name.match(re);
+          if (m && (!best[app] || cmpVersion(m[1], best[app].version) > 0))
+            best[app] = { version: m[1], url: asset.browser_download_url };
+        }
+      }
+      return best;
+    })
+    .catch(() => { appReleases = null; return {}; });   // retry next time the view opens
+  appReleases.then(best => {
+    for (const app of Object.keys(APP_ASSETS)) {
+      const a = best[app];
+      const link = document.querySelector(`.app-dl[data-app="${app}"]`);
+      if (a) link.href = a.url;
+      // A browser saves the file without leaving the page, so it needs no new
+      // tab (that only flashes open and shut). The apps block navigating away,
+      // so there it stays a pop-up: they download it, or hand it to the browser.
+      if (a && !inApp) link.removeAttribute('target');
+      document.querySelector(`.app-ver[data-app="${app}"]`).textContent = a ? 'v' + a.version : '';
+    }
+  });
+}
+
+function setHowto(btn, open) {
+  btn.setAttribute('aria-expanded', open);
+  $(btn.getAttribute('aria-controls')).hidden = !open;
+}
+
+$('auth-apps').addEventListener('click', e => {
+  const btn = e.target.closest('.app-howto-btn');
+  if (btn) setHowto(btn, btn.getAttribute('aria-expanded') !== 'true');
+});
+
 async function signOutUser() {
   await fb.a.signOut(fb.auth);
   toast('Signed out');
 }
 
-const AUTH_VIEWS = ['form', 'verify', 'merge', 'moved', 'account', 'calendar', 'add-email', 'password', 'delete'];
+const AUTH_VIEWS = ['form', 'verify', 'merge', 'moved', 'account', 'calendar', 'apps', 'add-email', 'password', 'delete'];
 const AUTH_TEXT = {
   moved:       ['Welcome to tflix.stream', "TFLIX has a new address, so you'll need to sign in again. Your My List is saved in your account and comes right back."],
   account:     ['My Account', ''],
   calendar:    ['Calendar', 'New episodes and digital releases for titles in My List.'],
+  apps:        ['Get the Apps', 'Watch TFLIX in its own app. The apps block the pop-ups and ad redirects (No Ads).'],
   'add-email': ['Add email', "Use it to recover your password. Once you confirm it, you'll sign in with your email instead of your username."],
   password:    ['Change password', 'Enter your current password, then the new one.'],
   delete:      ['Delete account?', "This permanently deletes your account and My List. It can't be undone."],
@@ -2725,10 +2875,15 @@ function showAuth(view, mode = authMode) {
   $('auth-back').hidden = !authBackTo;
   $('auth-dialog').classList.toggle('has-back', !!authBackTo);
   $('auth-dialog').classList.toggle('wide', view === 'calendar');
+  $('auth-dialog').classList.toggle('apps', view === 'apps');
   $('auth-dialog').querySelectorAll('.auth-msg').forEach(m => { m.textContent = ''; });
 
   if (view === 'account') renderAccountCard();
   if (view === 'calendar') openCalendar();
+  if (view === 'apps') {
+    $('auth-apps').querySelectorAll('.app-howto-btn').forEach(b => setHowto(b, false));
+    loadAppReleases();
+  }
   if (AUTH_TEXT[view]) {
     [$('auth-title').textContent, $('auth-sub').textContent] = AUTH_TEXT[view];
     const u = fb && fb.auth.currentUser;   // none for a guest opening the calendar
@@ -2751,7 +2906,7 @@ function showAuth(view, mode = authMode) {
   }
 
   $('auth-backdrop').classList.add('open');
-  const first = $(`auth-${view}`).querySelector('input:not([hidden]), button');
+  const first = $(`auth-${view}`).querySelector('input:not([hidden]), button, a[href]');
   if (document.documentElement.classList.contains('keynav')) window.__knavFocus(first);
   else if (first.tagName === 'INPUT' && matchMedia('(hover: hover)').matches) first.focus();
 }
@@ -3179,7 +3334,7 @@ $('cal-day').addEventListener('click', e => {
     // line form one row, so ←/→ walk a calendar week or the footer links
     if (authIsOpen()) {
       const rows = [];
-      for (const el of [...$('auth-dialog').querySelectorAll('button, input')].filter(vis)) {
+      for (const el of [...$('auth-dialog').querySelectorAll('button, input, a[href]')].filter(vis)) {
         const r = el.getBoundingClientRect();
         const row = rows.find(x => Math.abs(x.top - r.top) < 12);
         if (row) row.items.push(el); else rows.push({ top: r.top, items: [el] });
