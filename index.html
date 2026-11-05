@@ -269,8 +269,9 @@
     }
     .account-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
     .account-btn:active { transform: scale(.94); }
-    .account-btn.signed-in { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 16px rgba(229,9,20,0.4); }
-    .account-btn.signed-in:hover { background: var(--accent-h); }
+    /* Signed in: the same soft red initial as next to the name in the menu */
+    .account-btn.signed-in { background: rgba(229,9,20,0.18); border-color: rgba(229,9,20,0.3); color: var(--accent-h); }
+    .account-btn.signed-in:hover { background: rgba(229,9,20,0.28); border-color: rgba(229,9,20,0.5); }
     .account-btn.signed-in svg { display: none; }
     /* Email not verified yet (My List isn't syncing), or this app is out of date */
     .account-btn.unverified::after, .account-btn.app-outdated::after {
