@@ -45,6 +45,16 @@
     waitForHead.observe(document, { childList: true, subtree: true });
   }
 
+  /* The players on Xayah and Ryze keep laying a transparent, full-size ad link
+     over the video (their PopUnder code, id "dontfoid"), which takes the next
+     tap. Hide it. A stylesheet, because this runs before there is a page to
+     find the link in, and the link is added and removed all the time. */
+  try {
+    var sheet = new CSSStyleSheet();
+    sheet.replaceSync('#dontfoid { display: none !important; }');
+    document.adoptedStyleSheets = document.adoptedStyleSheets.concat(sheet);
+  } catch (e) {}
+
   ['preventDefault', 'stopPropagation', 'stopImmediatePropagation'].forEach(function (method) {
     var original = Event.prototype[method];
     Event.prototype[method] = function () {
@@ -57,13 +67,28 @@
     };
   });
 
-  /* The players on Xayah and Ryze keep laying a transparent, full-size ad link
-     over the video (their PopUnder code, id "dontfoid"), which takes the next
-     tap. Hide it. A stylesheet, because this runs before there is a page to
-     find the link in, and the link is added and removed all the time. */
-  try {
-    var sheet = new CSSStyleSheet();
-    sheet.replaceSync('#dontfoid { display: none !important; }');
-    document.adoptedStyleSheets = document.adoptedStyleSheets.concat(sheet);
-  } catch (e) {}
+  /* The TV remote's media keys (MainActivity sends these down to the embed). The
+     video may be in a nested iframe, so each frame also passes them further in.
+     Some players relay every message to their own iframes as well, so one key
+     press can arrive several times: each press has an id, and repeats are ignored. */
+  var SKIP_SECONDS = 10;
+  window.addEventListener('message', function (e) {
+    var command = e.data && e.data.tflixPlayer;
+    if (!command || e.source !== window.parent) return;
+    if (window.__tflixLastPress === e.data.press) return;
+    window.__tflixLastPress = e.data.press;
+    var video = null, largest = 0;
+    document.querySelectorAll('video').forEach(function (v) {
+      var r = v.getBoundingClientRect(), area = r.width * r.height;
+      if (area > largest) { largest = area; video = v; }
+    });
+    if (video) {
+      if (command === 'toggle') { if (video.paused) video.play(); else video.pause(); }
+      else if (command === 'play') video.play();
+      else if (command === 'pause') video.pause();
+      else if (command === 'forward') video.currentTime += SKIP_SECONDS;
+      else if (command === 'rewind') video.currentTime -= SKIP_SECONDS;
+    }
+    for (var i = 0; i < window.frames.length; i++) window.frames[i].postMessage(e.data, '*');
+  });
 })();

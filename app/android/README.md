@@ -102,12 +102,17 @@ To change the app version, edit `versionCode` and `versionName` in
   touch hardware (`touchscreen required=false`).
 - D-pad navigation quality depends on the **website's** focus handling — improving
   remote/focus navigation is web-side work on the site itself, not app work.
+- The players' own buttons can't be reached by key navigation, because they're in iframes, so
+  the app has a cursor for them: press **OK** on the highlighted player, then **arrows** move
+  it, **OK** clicks and **Back** turns it off. Play/pause, fast-forward and rewind keys work
+  directly, if the remote has them.
 
 ## Project layout
 
 | File | Purpose |
 |------|---------|
 | `app/src/main/java/.../MainActivity.kt` | The whole app — WebView, pop-up/ad blocking, fullscreen video, back handling |
+| `app/src/main/java/.../PlayerCursor.kt` | Android TV: the remote-driven cursor over the player |
 | `app/src/main/assets/version-label.js` | The small version label (lower-left, at the bottom of the page) — the site's Get Apps menu reads it to offer updates |
 | `app/src/main/assets/embed-guard.js` | Runs inside the stream embeds before their scripts — blocks outside scripts except the player libraries it lists, and stops ad scripts and invisible ad links swallowing taps |
 | `app/src/main/assets/ad-hosts.txt` | The ad networks whose requests get an empty response (check what a host serves before adding it: video comes from odd-looking domains too) |

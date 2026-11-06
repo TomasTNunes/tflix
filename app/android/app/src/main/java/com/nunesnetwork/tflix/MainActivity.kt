@@ -37,6 +37,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -121,6 +122,9 @@ class MainActivity : Activity() {
     private val pendingInstalls = mutableSetOf<Long>()
     private var downloadReceiver: BroadcastReceiver? = null
 
+    /* TVs only: the remote-driven cursor over the player (PlayerCursor.kt) */
+    private var playerCursor: PlayerCursor? = null
+
     /* Fullscreen video state (onShowCustomView) */
     private var customView: View? = null
     private var customViewCallback: WebChromeClient.CustomViewCallback? = null
@@ -153,6 +157,7 @@ class MainActivity : Activity() {
             }
         }
         setContentView(root)
+        if (isTv()) playerCursor = PlayerCursor(this, webView)
 
         val s = webView.settings
         s.javaScriptEnabled = true
@@ -205,6 +210,11 @@ class MainActivity : Activity() {
                 } else {
                     null
                 }
+
+            // A new page: the cursor belonged to the old page's player.
+            override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+                playerCursor?.exit()
+            }
 
             // Version label (lower-left corner), like the desktop app's.
             override fun onPageFinished(view: WebView, url: String) {
@@ -260,6 +270,7 @@ class MainActivity : Activity() {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                 )
                 hideSystemBars()
+                playerCursor?.onFullscreenChanged(true)
             }
 
             override fun onHideCustomView() = exitFullscreenVideo()
@@ -392,6 +403,7 @@ class MainActivity : Activity() {
         customViewCallback?.onCustomViewHidden()
         customViewCallback = null
         showSystemBars()
+        playerCursor?.onFullscreenChanged(false)
     }
 
     /* ─── D-pad Up/Down: drive the site's key-nav, not the WebView scroll ───
@@ -410,6 +422,31 @@ class MainActivity : Activity() {
        Note: while the on-screen keyboard (IME) is up, D-pad events go to the
        IME window first and never reach here, so search-field typing is fine. */
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // TV remote: the cursor over the player, and the remote's media keys
+        // (they reach the video without needing the cursor).
+        playerCursor?.let { cursor ->
+            if (cursor.handleKey(event)) return true
+            val command = when (event.keyCode) {
+                KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> "toggle"
+                KeyEvent.KEYCODE_MEDIA_PLAY -> "play"
+                KeyEvent.KEYCODE_MEDIA_PAUSE -> "pause"
+                KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> "forward"
+                KeyEvent.KEYCODE_MEDIA_REWIND -> "rewind"
+                else -> null
+            }
+            if (command != null) {
+                if (event.action == KeyEvent.ACTION_DOWN) {
+                    // embed-guard.js receives this inside the embed and acts on the video.
+                    webView.evaluateJavascript(
+                        "(function () { var f = document.getElementById('player');" +
+                            " if (f) f.contentWindow.postMessage({ tflixPlayer: '$command', press: ${event.eventTime} }, '*'); })();",
+                        null,
+                    )
+                }
+                return true
+            }
+        }
+
         val key = when (event.keyCode) {
             KeyEvent.KEYCODE_DPAD_UP -> "ArrowUp"
             KeyEvent.KEYCODE_DPAD_DOWN -> "ArrowDown"
@@ -427,11 +464,12 @@ class MainActivity : Activity() {
         return true  // consume both DOWN and UP so the WebView never scrolls
     }
 
-    /* ─── Back: exit fullscreen video → page history → leave app ─── */
+    /* ─── Back: exit fullscreen video → TV cursor → page history → leave app ─── */
     @Deprecated("Deprecated in API 33; fine for a single-activity shell")
     override fun onBackPressed() {
         when {
             customView != null -> exitFullscreenVideo()
+            playerCursor?.active == true -> playerCursor?.exit()
             webView.canGoBack() -> webView.goBack()
             else -> super.onBackPressed()
         }
