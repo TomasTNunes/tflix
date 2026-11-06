@@ -1,0 +1,24 @@
+{
+  "_about": "Ad blocking lists for the Android app, read at launch and every 6 hours. A file with any invalid entry is ignored whole. adHosts: hosts to answer with nothing, check what a host serves before adding it, because video comes from odd-looking domains too. scriptLibraries: where the stream embeds may load scripts from besides their own domain, as plain https addresses; if a server stops playing because of a blocked script, add its source here.",
+  "adHosts": [
+    "spbgc.com",
+    "rtmark.net",
+    "bef77.com",
+    "anemonytahua.com",
+    "tectrixsnavvle.com",
+    "qk2fqqtx7p3r7nl.cfd",
+    "smockeddesmoid.qpon",
+    "ironelagettakinsen.cfd",
+    "f1nn1211ykik9f7h7q1gzzpebhz.rest",
+    "adexchangerapid.com",
+    "rapidadexchange.com",
+    "usrpubtrck.com",
+    "intellipopup.com",
+    "adsco.re"
+  ],
+  "scriptLibraries": [
+    "https://cdn.jsdelivr.net",
+    "https://cdn.jwplayer.com",
+    "https://*.gstatic.com"
+  ]
+}

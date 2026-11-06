@@ -19,8 +19,8 @@ try to open:
 - the top frame is pinned to TFLIX's domains (`tflix.stream`, `nunesnetwork.com` and their
   subdomains, HTTPS only) → ad scripts can't hijack the page
 - the stream `<iframe>`s still navigate freely (blocking them breaks the embeds)
-- requests to known ad networks (`assets/ad-hosts.txt`) come back empty → their in-player ads
-  have nothing to show
+- requests to known ad networks come back empty → their in-player ads have nothing to show.
+  The list lives on the site, see [Ad blocking lists](#ad-blocking-lists)
 - inside the embeds, scripts only run from the embed's own domain and a short list of player
   libraries, so ad scripts are stopped even on domains nobody has listed; video and subtitles
   are data, so they load from anywhere (`assets/embed-guard.js`)
@@ -96,6 +96,26 @@ To change the app version, edit `versionCode` and `versionName` in
 > Play Store upload, replace the `signingConfig` in `app/build.gradle.kts` with a real
 > release keystore.
 
+## Ad blocking lists
+
+[`assets/app-lists.json`](../../assets/app-lists.json) on the site holds two lists, so they can
+change without an app update:
+
+- `adHosts`: requests to these hosts, and anything under them, come back empty. Check what a host
+  serves before adding it: the embeds' video comes from equally odd-looking domains, and blocking
+  one of those stops playback.
+- `scriptLibraries`: where the embeds may load scripts from, besides their own domain. Every other
+  outside script is blocked, so if a server stops playing because of a blocked script, add its
+  source here, as a plain `https://` address.
+
+To change them, edit the file and run the Deploy Website workflow. Apps check at launch, and when
+a movie starts or the app comes back if their last check was over 6 hours ago. A file with any
+invalid entry is ignored whole, so a typo can't break the apps, and a new `scriptLibraries` list
+applies from the next page.
+
+Copy the file to `app/android/app/src/main/assets/app-lists.json` when you release a new version,
+so new installs start from the current lists.
+
 ## Android TV notes
 
 - The app appears in the TV launcher (Leanback intent + banner) and installs without
@@ -115,6 +135,7 @@ To change the app version, edit `versionCode` and `versionName` in
 | `app/src/main/java/.../PlayerCursor.kt` | Android TV: the remote-driven cursor over the player |
 | `app/src/main/assets/version-label.js` | The small version label (lower-left, at the bottom of the page) — the site's Get Apps menu reads it to offer updates |
 | `app/src/main/assets/embed-guard.js` | Runs inside the stream embeds before their scripts — blocks outside scripts except the player libraries it lists, and stops ad scripts and invisible ad links swallowing taps |
-| `app/src/main/assets/ad-hosts.txt` | The ad networks whose requests get an empty response (check what a host serves before adding it: video comes from odd-looking domains too) |
+| `app/src/main/java/.../AppLists.kt` | Keeps the ad blocking lists up to date from the site |
+| `app/src/main/assets/app-lists.json` | The lists the app starts with, until it has downloaded the site's copy |
 | `app/src/main/AndroidManifest.xml` | Phone + TV (Leanback) launcher entries, TV feature flags |
 | `app/src/main/res/` | Launcher icons, TV banner, dark theme |

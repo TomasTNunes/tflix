@@ -16,8 +16,9 @@
      • the top frame is pinned to the TFLIX origin; the stream
        <iframe>s still navigate/redirect freely — blocking those
        breaks the embeds (same lesson as the desktop app)
-     • requests to the ad networks in assets/ad-hosts.txt come back
-       empty, so their in-player ads have nothing to show
+     • requests to the ad networks in app-lists.json come back empty,
+       so their in-player ads have nothing to show (AppLists.kt keeps
+       the list up to date from the site)
      • assets/embed-guard.js keeps ad scripts and invisible ad links
        from swallowing taps on the players
 
@@ -58,6 +59,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.webkit.ScriptHandler
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import java.io.ByteArrayInputStream
@@ -100,22 +102,26 @@ class MainActivity : Activity() {
             .replace("__APP_VERSION__", version)
     }
 
-    /* Ad networks to answer with nothing (assets/ad-hosts.txt) */
-    private val adHosts: Set<String> by lazy {
-        assets.open("ad-hosts.txt").bufferedReader().useLines { lines ->
-            lines.map { it.substringBefore('#').trim() }.filter { it.isNotEmpty() }.toSet()
-        }
-    }
+    /* The ad hosts to answer with nothing and the embeds' script libraries */
+    private lateinit var lists: AppLists
+
+    /* The script run inside the embeds, while it's installed */
+    private var embedGuard: ScriptHandler? = null
 
     /* The host itself or any domain it's under: x.y.ads.com matches ads.com */
     private fun isAdHost(host: String?): Boolean {
         var h = host ?: return false
+        val adHosts = lists.adHosts
         while (true) {
             if (h in adHosts) return true
             val dot = h.indexOf('.')
             if (dot < 0) return false
             h = h.substring(dot + 1)
         }
+    }
+
+    private val embedGuardJs: String by lazy {
+        assets.open("embed-guard.js").bufferedReader().use { it.readText() }
     }
 
     /* TV: APK downloads whose installer opens as soon as they finish */
@@ -135,6 +141,8 @@ class MainActivity : Activity() {
 
         // Streaming app: don't let the screen sleep mid-episode.
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        lists = AppLists(this) { installEmbedGuard() }
 
         webView = WebView(this)
         webView.setBackgroundColor(Color.parseColor("#0a0a0d"))
@@ -214,6 +222,8 @@ class MainActivity : Activity() {
             // A new page: the cursor belonged to the old page's player.
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                 playerCursor?.exit()
+                // TV sticks can leave an app open for days: starting a movie rechecks the lists.
+                if (Uri.parse(url).path?.startsWith("/stream") == true) lists.refreshIfDue()
             }
 
             // Version label (lower-left corner), like the desktop app's.
@@ -276,15 +286,8 @@ class MainActivity : Activity() {
             override fun onHideCustomView() = exitFullscreenVideo()
         }
 
-        // Runs in every frame before the page's own scripts (it leaves the TFLIX
-        // site alone). WebViews too old for this keep the rest of the ad blocking.
-        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
-            WebViewCompat.addDocumentStartJavaScript(
-                webView,
-                assets.open("embed-guard.js").bufferedReader().use { it.readText() },
-                setOf("*"),
-            )
-        }
+        installEmbedGuard()
+        lists.refresh()
 
         // TV: lets embed-guard.js say when the cursor is over something clickable.
         // Every frame gets this, but it's one-way and only changes how the cursor looks.
@@ -302,6 +305,20 @@ class MainActivity : Activity() {
 
         // TV: give the WebView focus so the D-pad works immediately.
         webView.requestFocus()
+    }
+
+    /* Runs in every frame before the page's own scripts (it leaves the TFLIX site
+       alone). WebViews too old for this keep the rest of the ad blocking. Installed
+       again when the script libraries change, which applies from the next page. */
+    private fun installEmbedGuard() {
+        if (!WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) return
+        if (isDestroyed) return
+        embedGuard?.remove()
+        embedGuard = WebViewCompat.addDocumentStartJavaScript(
+            webView,
+            embedGuardJs.replace("__SCRIPT_LIBRARIES__", lists.scriptLibraries),
+            setOf("*"),
+        )
     }
 
     private fun openInBrowser(uri: Uri) {
@@ -514,6 +531,7 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
         webView.onResume()
+        lists.refreshIfDue()
     }
 
     override fun onDestroy() {

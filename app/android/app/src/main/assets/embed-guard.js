@@ -22,9 +22,10 @@
      is why data stays open to every domain.
 
      The libraries are the players' real ones: hls.js (Xayah), JW Player (Ryze)
-     and Chromecast (Xayah, Naafiri, Ekko). If a server stops working with a
-     "Refused to load the script" error, its script belongs in this list. */
-  var SCRIPT_LIBRARIES = 'https://cdn.jsdelivr.net https://cdn.jwplayer.com https://*.gstatic.com';
+     and Chromecast (Xayah, Naafiri, Ekko). MainActivity fills them in from
+     scriptLibraries in app-lists.json. If a server stops working with a "Refused
+     to load the script" error, its script belongs in that list, on the site. */
+  var SCRIPT_LIBRARIES = '__SCRIPT_LIBRARIES__';
   var POLICY = "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: " + SCRIPT_LIBRARIES + '; worker-src * blob: data:';
 
   function addPolicy() {
