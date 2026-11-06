@@ -16,6 +16,10 @@
      • the top frame is pinned to the TFLIX origin; the stream
        <iframe>s still navigate/redirect freely — blocking those
        breaks the embeds (same lesson as the desktop app)
+     • requests to the ad networks in assets/ad-hosts.txt come back
+       empty, so their in-player ads have nothing to show
+     • assets/embed-guard.js keeps ad scripts and invisible ad links
+       from swallowing taps on the players
 
    It also adds the desktop app's small version label to the browse
    pages (assets/version-label.js), which the site's Get Apps menu
@@ -42,14 +46,20 @@ import android.os.Message
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import android.view.WindowManager
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
+import java.io.ByteArrayInputStream
 
 class MainActivity : Activity() {
 
@@ -89,6 +99,24 @@ class MainActivity : Activity() {
             .replace("__APP_VERSION__", version)
     }
 
+    /* Ad networks to answer with nothing (assets/ad-hosts.txt) */
+    private val adHosts: Set<String> by lazy {
+        assets.open("ad-hosts.txt").bufferedReader().useLines { lines ->
+            lines.map { it.substringBefore('#').trim() }.filter { it.isNotEmpty() }.toSet()
+        }
+    }
+
+    /* The host itself or any domain it's under: x.y.ads.com matches ads.com */
+    private fun isAdHost(host: String?): Boolean {
+        var h = host ?: return false
+        while (true) {
+            if (h in adHosts) return true
+            val dot = h.indexOf('.')
+            if (dot < 0) return false
+            h = h.substring(dot + 1)
+        }
+    }
+
     /* TV: APK downloads whose installer opens as soon as they finish */
     private val pendingInstalls = mutableSetOf<Long>()
     private var downloadReceiver: BroadcastReceiver? = null
@@ -106,7 +134,25 @@ class MainActivity : Activity() {
 
         webView = WebView(this)
         webView.setBackgroundColor(Color.parseColor("#0a0a0d"))
-        setContentView(webView)
+
+        // Apps targeting Android 15+ are drawn behind the system bars, and the
+        // keyboard no longer shrinks them. Keep the page inside the free area.
+        // (Fullscreen video goes straight on the window, so it still fills it.)
+        val root = FrameLayout(this)
+        root.setBackgroundColor(Color.parseColor("#0a0a0d"))
+        root.addView(webView)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            root.setOnApplyWindowInsetsListener { v, insets ->
+                val free = insets.getInsets(
+                    WindowInsets.Type.systemBars() or
+                        WindowInsets.Type.displayCutout() or
+                        WindowInsets.Type.ime(),
+                )
+                v.setPadding(free.left, free.top, free.right, free.bottom)
+                WindowInsets.CONSUMED
+            }
+        }
+        setContentView(root)
 
         val s = webView.settings
         s.javaScriptEnabled = true
@@ -143,6 +189,22 @@ class MainActivity : Activity() {
                 request: WebResourceRequest,
             ): Boolean =
                 request.isForMainFrame && !isAllowedSite(request.url)
+
+            // Ad networks get an empty success rather than an error, so an embed
+            // checking that its ad script loaded has nothing to object to.
+            override fun shouldInterceptRequest(
+                view: WebView,
+                request: WebResourceRequest,
+            ): WebResourceResponse? =
+                if (isAdHost(request.url.host)) {
+                    WebResourceResponse(
+                        "text/plain", "utf-8", 200, "OK",
+                        mapOf("Access-Control-Allow-Origin" to "*"),
+                        ByteArrayInputStream(ByteArray(0)),
+                    )
+                } else {
+                    null
+                }
 
             // Version label (lower-left corner), like the desktop app's.
             override fun onPageFinished(view: WebView, url: String) {
@@ -201,6 +263,16 @@ class MainActivity : Activity() {
             }
 
             override fun onHideCustomView() = exitFullscreenVideo()
+        }
+
+        // Runs in every frame before the page's own scripts (it leaves the TFLIX
+        // site alone). WebViews too old for this keep the rest of the ad blocking.
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            WebViewCompat.addDocumentStartJavaScript(
+                webView,
+                assets.open("embed-guard.js").bufferedReader().use { it.readText() },
+                setOf("*"),
+            )
         }
 
         if (savedInstanceState != null) {

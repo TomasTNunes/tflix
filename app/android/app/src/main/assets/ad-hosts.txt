@@ -1,0 +1,31 @@
+# Ad networks the stream embeds load. MainActivity answers requests to these
+# hosts, and anything under them, with an empty response.
+#
+# Only list a host after checking what it serves: the embeds' video comes from
+# equally odd-looking domains, and blocking one of those stops playback.
+
+# Rakan (vixsrc): ad tag and its callbacks
+spbgc.com
+rtmark.net
+bef77.com
+
+# Bard (vidspark): ad tags
+anemonytahua.com
+tectrixsnavvle.com
+
+# Xayah, Naafiri: popunder script and its endpoints. This network moves to new
+# domains within hours, so the list will lag behind it; embed-guard.js is what
+# keeps taps working when it does.
+qk2fqqtx7p3r7nl.cfd
+smockeddesmoid.qpon
+ironelagettakinsen.cfd
+f1nn1211ykik9f7h7q1gzzpebhz.rest
+
+# Ekko: ad exchange its player's own code calls
+adexchangerapid.com
+
+# Xayah, Ryze: ad exchange, popups and their ad-fraud checks
+rapidadexchange.com
+usrpubtrck.com
+intellipopup.com
+adsco.re

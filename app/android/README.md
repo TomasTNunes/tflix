@@ -19,6 +19,12 @@ try to open:
 - the top frame is pinned to TFLIX's domains (`tflix.stream`, `nunesnetwork.com` and their
   subdomains, HTTPS only) → ad scripts can't hijack the page
 - the stream `<iframe>`s still navigate freely (blocking them breaks the embeds)
+- requests to known ad networks (`assets/ad-hosts.txt`) come back empty → their in-player ads
+  have nothing to show
+- inside the embeds, scripts only run from the embed's own domain and a short list of player
+  libraries, so ad scripts are stopped even on domains nobody has listed; video and subtitles
+  are data, so they load from anywhere (`assets/embed-guard.js`)
+- ad scripts and invisible ad links can't swallow taps on the players (`assets/embed-guard.js`)
 
 It also presents a plain-Chrome User-Agent (the WebView default carries `; wv` /
 `Version/4.0` tokens some embed hosts reject) and supports fullscreen video.
@@ -103,5 +109,7 @@ To change the app version, edit `versionCode` and `versionName` in
 |------|---------|
 | `app/src/main/java/.../MainActivity.kt` | The whole app — WebView, pop-up/ad blocking, fullscreen video, back handling |
 | `app/src/main/assets/version-label.js` | The small version label (lower-left, at the bottom of the page) — the site's Get Apps menu reads it to offer updates |
+| `app/src/main/assets/embed-guard.js` | Runs inside the stream embeds before their scripts — blocks outside scripts except the player libraries it lists, and stops ad scripts and invisible ad links swallowing taps |
+| `app/src/main/assets/ad-hosts.txt` | The ad networks whose requests get an empty response (check what a host serves before adding it: video comes from odd-looking domains too) |
 | `app/src/main/AndroidManifest.xml` | Phone + TV (Leanback) launcher entries, TV feature flags |
 | `app/src/main/res/` | Launcher icons, TV banner, dark theme |

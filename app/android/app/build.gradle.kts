@@ -13,8 +13,8 @@ android {
         targetSdk = 35
         // App version: bump BOTH on every release — versionName is what users
         // see; versionCode must strictly increase for Android to accept an update.
-        versionCode = 3
-        versionName = "1.2.0"
+        versionCode = 4
+        versionName = "1.2.1"
     }
 
     buildTypes {
@@ -45,4 +45,10 @@ android {
                 "tflix-android.$suffix.apk"
         }
     }
+}
+
+dependencies {
+    // WebViewCompat.addDocumentStartJavaScript: runs embed-guard.js inside the
+    // stream embeds' cross-origin iframes, before their own scripts.
+    implementation("androidx.webkit:webkit:1.12.1")
 }
