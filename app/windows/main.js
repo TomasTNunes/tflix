@@ -62,6 +62,11 @@ function createMainWindow() {
       preload: path.join(__dirname, 'preload-main.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      // The preload also runs inside the stream embeds, where it stops ad
+      // scripts from swallowing player clicks. Stays sandboxed: despite the
+      // option's name, no Node.js reaches those third-party frames.
+      nodeIntegrationInSubFrames: true,
+      sandbox: true,
     },
   });
 

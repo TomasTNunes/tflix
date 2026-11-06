@@ -84,5 +84,5 @@ ships as a thin shell — it loads the site over the network, so no site files a
 | File | Purpose |
 |------|---------|
 | `main.js` | Electron main process — window, menu, pop-up/ad blocking, loads the live site |
-| `preload-main.js` | Injects the version label + back-navigation state restore into the site |
+| `preload-main.js` | Injects the version label + back-navigation state restore into the site; stops ad scripts swallowing clicks inside the stream embeds |
 | `scripts/make-icon.js` | Builds `build/icon.ico` from `../../assets/icons/*.png` |
