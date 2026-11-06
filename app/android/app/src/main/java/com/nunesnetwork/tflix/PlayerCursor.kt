@@ -8,32 +8,43 @@
    any player, for any button.
 
      OK on the highlighted player   turn the cursor on
+     OK on a server card            pick that server, then turn it on
      Arrows                         move it (hold to go faster)
      OK                             tap
      Back                           leave fullscreen, then turn it off
 
-   While it's off, the remote works as it always did.
+   While it's off, the remote works as it always did. The cursor brightens
+   over anything clickable (embed-guard.js tells it, from inside the embed).
    ─────────────────────────────────────────────────────────────── */
 
 package com.nunesnetwork.tflix
 
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.drawable.GradientDrawable
 import android.os.SystemClock
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
-import android.widget.Toast
+import android.widget.FrameLayout
+import android.widget.TextView
+import kotlin.math.acos
+import kotlin.math.cos
 import kotlin.math.min
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 @SuppressLint("ViewConstructor")
 class PlayerCursor(
@@ -42,20 +53,29 @@ class PlayerCursor(
 ) : View(activity) {
 
     private companion object {
-        const val SIZE_DP = 40
+        const val VIEW_DP = 64          // room for the arrow, its shadow and rings
+        const val TIP_INSET_DP = 18     // where the arrow's tip sits inside the view
+        const val DROP_RADIUS_DP = 12.5f
+        const val DROP_CENTER_DP = 18f  // the teardrop circle's centre, right of and below the tip
         const val STEP_DP = 14          // one press
         const val STEP_GROWTH_DP = 4    // added per repeat while a key is held
         const val MAX_HOLD_REPEATS = 16
         const val HIDE_AFTER_MS = 3000L
         const val TAP_MS = 50L
+        const val HINT_MS = 5000L
+        const val AFTER_SERVER_PICK_MS = 250L
+        const val CLICKABLE_SCALE = 0.12f
+        const val PLAIN_RED = 0xFF8E0B13.toInt()
+        const val CLICKABLE_RED = 0xFFFF3B47.toInt()
 
-        // The player the site's key navigation has highlighted, if any
-        const val HIGHLIGHTED = ".player-wrap.kf"
+        // What the site's key navigation has highlighted, if anything
+        const val HIGHLIGHTED_PLAYER = ".player-wrap.kf"
+        const val HIGHLIGHTED_SERVER = ".server-card.kf"
         const val PLAYER = "#player-wrap"
     }
 
     private val density = resources.displayMetrics.density
-    private val sizePx = (SIZE_DP * density).toInt()
+    private val tipInset = TIP_INSET_DP * density
 
     private val cursorBounds = RectF()   // where the cursor may go, in window pixels
     private var cursorX = 0f
@@ -65,39 +85,125 @@ class PlayerCursor(
     var active = false
         private set
 
-    /* ─── Drawing: a white arrow with a dark edge, its tip at the view's corner ─── */
-    private val arrow = Path().apply {
-        val s = SIZE_DP * density / 30f
-        moveTo(1 * s, 1 * s)
-        lineTo(1 * s, 23 * s)
-        lineTo(7 * s, 18 * s)
-        lineTo(11 * s, 27 * s)
-        lineTo(15 * s, 25 * s)
-        lineTo(11 * s, 17 * s)
-        lineTo(19 * s, 17 * s)
+    /* ─── Drawing: a teardrop with its tip at the pointing spot ───
+       A circle down-right of the tip, joined to the tip by the two straight
+       lines that touch the circle. Dark red, light vivid red over anything clickable. */
+    private val drop = Path().apply {
+        val radius = DROP_RADIUS_DP * density
+        val center = DROP_CENTER_DP * density
+        val towardsTip = 225f   // degrees, from the circle's centre to the tip
+        val tangent = Math.toDegrees(acos(radius / (center * sqrt(2f))).toDouble()).toFloat()
+        val startAngle = towardsTip + tangent
+        val startRadians = Math.toRadians(startAngle.toDouble())
+        moveTo(0f, 0f)
+        lineTo(center + radius * cos(startRadians).toFloat(), center + radius * sin(startRadians).toFloat())
+        arcTo(RectF(center - radius, center - radius, center + radius, center + radius), startAngle, 360 - 2 * tangent)
         close()
     }
-    private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
-    private val edgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.BLACK
-        style = Paint.Style.STROKE
-        strokeWidth = 2 * density
+    private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL_AND_STROKE
+        strokeWidth = 1.5f * density       // with the round join, softens the tip
         strokeJoin = Paint.Join.ROUND
+        setShadowLayer(7 * density, 0f, 2.5f * density, 0x99000000.toInt())
     }
+    private val edgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeWidth = 1.2f * density
+        strokeJoin = Paint.Join.ROUND
+        color = 0x55FFFFFF                 // keeps the dark red visible on dark scenes
+    }
+    private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val colors = ArgbEvaluator()
+
+    private var clickableAmount = 0f   // 0 = plain, 1 = over something clickable
+    private var clickableAnimator: ValueAnimator? = null
+    private var pressAmount = 0f       // 0 = nothing, then runs 1 → 0 after a tap
+    private var pressAnimator: ValueAnimator? = null
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawPath(arrow, edgePaint)
-        canvas.drawPath(arrow, fillPaint)
+        // The ring a tap leaves behind
+        if (pressAmount > 0f) {
+            ringPaint.style = Paint.Style.STROKE
+            ringPaint.strokeWidth = 2 * density
+            ringPaint.color = Color.argb((pressAmount * 200).toInt(), 255, 255, 255)
+            canvas.drawCircle(tipInset, tipInset, (1 - pressAmount) * 15 * density + 3 * density, ringPaint)
+        }
+        val scale = 1 + clickableAmount * CLICKABLE_SCALE
+        fillPaint.color = colors.evaluate(clickableAmount, PLAIN_RED, CLICKABLE_RED) as Int
+        canvas.save()
+        canvas.translate(tipInset, tipInset)
+        canvas.scale(scale, scale)
+        canvas.drawPath(drop, fillPaint)
+        canvas.drawPath(drop, edgePaint)
+        canvas.restore()
+    }
+
+    /* Called from embed-guard.js as the cursor crosses a player's controls. */
+    fun setOverClickable(clickable: Boolean) {
+        val target = if (clickable && active) 1f else 0f
+        if (target == clickableAmount) return
+        clickableAnimator?.cancel()
+        clickableAnimator = ValueAnimator.ofFloat(clickableAmount, target).apply {
+            duration = 140
+            addUpdateListener {
+                clickableAmount = it.animatedValue as Float
+                invalidate()
+            }
+            start()
+        }
+    }
+
+    private fun showPress() {
+        pressAnimator?.cancel()
+        pressAnimator = ValueAnimator.ofFloat(1f, 0f).apply {
+            duration = 280
+            addUpdateListener {
+                pressAmount = it.animatedValue as Float
+                invalidate()
+            }
+            start()
+        }
+    }
+
+    /* ─── The hint shown when the cursor turns on ─── */
+    private val hint = TextView(activity).apply {
+        text = "Arrows move the cursor  ·  OK clicks  ·  Back leaves"
+        setTextColor(Color.WHITE)
+        setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+        val horizontal = (22 * density).toInt()
+        val vertical = (11 * density).toInt()
+        setPadding(horizontal, vertical, horizontal, vertical)
+        background = GradientDrawable().apply {
+            cornerRadius = 26 * density
+            setColor(0xEB15151B.toInt())
+            setStroke((1 * density).toInt(), 0x33FFFFFF)
+        }
+        visibility = GONE
+    }
+    private val hideHint = Runnable {
+        hint.animate().alpha(0f).setDuration(300).withEndAction { hint.visibility = GONE }
     }
 
     private val hide = Runnable { animate().alpha(0f).setDuration(400) }
 
     init {
+        // A shadow on a path needs software drawing; the view is small and rarely redraws.
+        setLayerType(LAYER_TYPE_SOFTWARE, null)
         // Never takes input itself: touches and hovers pass straight to what's under it.
         isClickable = false
         isFocusable = false
         visibility = GONE
-        (activity.window.decorView as ViewGroup).addView(this, ViewGroup.LayoutParams(sizePx, sizePx))
+        val size = (VIEW_DP * density).toInt()
+        val root = activity.window.decorView as ViewGroup
+        root.addView(this, ViewGroup.LayoutParams(size, size))
+        root.addView(
+            hint,
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL,
+            ).apply { bottomMargin = (96 * density).toInt() },  // above the players' control bars
+        )
     }
 
     /* ─── Remote keys. Returns true when the key was used up here. ─── */
@@ -107,8 +213,8 @@ class PlayerCursor(
             event.keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER
 
         if (!active) {
-            // The key still reaches the site, where OK on the player does nothing.
-            if (isOk && event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) enterIfHighlighted()
+            // The key still reaches the site: it picks a server card, and does nothing on the player.
+            if (isOk && event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) onOkOnSite()
             return false
         }
 
@@ -133,14 +239,30 @@ class PlayerCursor(
     }
 
     /* ─── Turning it on and off ─── */
-    private fun enterIfHighlighted() {
-        readPlayerBounds(HIGHLIGHTED) { found ->
+    private fun onOkOnSite() {
+        val js = "document.querySelector('$HIGHLIGHTED_SERVER') ? 'server' : " +
+            "document.querySelector('$HIGHLIGHTED_PLAYER') ? 'player' : ''"
+        webView.evaluateJavascript(js) { result ->
+            when (result) {
+                "\"player\"" -> enter()
+                // Let the site load the server first, then move its highlight to the player.
+                "\"server\"" -> postDelayed({
+                    webView.evaluateJavascript(
+                        "window.__knavFocus && window.__knavFocus(document.querySelector('$PLAYER'))",
+                    ) { enter() }
+                }, AFTER_SERVER_PICK_MS)
+            }
+        }
+    }
+
+    private fun enter() {
+        readPlayerBounds(HIGHLIGHTED_PLAYER) { found ->
             if (!found || active) return@readPlayerBounds
             active = true
             visibility = VISIBLE
             bringOnTop()
             moveTo(cursorBounds.centerX(), cursorBounds.centerY())
-            Toast.makeText(activity, "Arrows move the cursor, OK clicks, Back leaves", Toast.LENGTH_SHORT).show()
+            showHint()
         }
     }
 
@@ -150,9 +272,25 @@ class PlayerCursor(
         removeCallbacks(hide)
         animate().cancel()
         visibility = GONE
+        setOverClickable(false)
+        hideHintNow()
         sendHover(MotionEvent.ACTION_HOVER_EXIT)
         // Taps moved the focus into the iframe; hand the keys back to the site.
         webView.evaluateJavascript("if (document.activeElement) document.activeElement.blur(); window.focus();", null)
+    }
+
+    private fun showHint() {
+        hint.removeCallbacks(hideHint)
+        hint.animate().cancel()
+        hint.alpha = 1f
+        hint.visibility = VISIBLE
+        hint.postDelayed(hideHint, HINT_MS)
+    }
+
+    private fun hideHintNow() {
+        hint.removeCallbacks(hideHint)
+        hint.animate().cancel()
+        hint.visibility = GONE
     }
 
     /* The player's fullscreen goes straight on the window, above this view. */
@@ -170,7 +308,10 @@ class PlayerCursor(
     }
 
     private fun bringOnTop() {
-        (parent as? ViewGroup)?.bringChildToFront(this)
+        (parent as? ViewGroup)?.run {
+            bringChildToFront(hint)
+            bringChildToFront(this@PlayerCursor)
+        }
     }
 
     /* Asks the page where the player is, in window pixels. */
@@ -207,8 +348,8 @@ class PlayerCursor(
         // Keep the tip a little inside, so it can still reach the player's edge buttons.
         cursorX = x.coerceIn(cursorBounds.left, cursorBounds.right - 1)
         cursorY = y.coerceIn(cursorBounds.top, cursorBounds.bottom - 1)
-        translationX = cursorX
-        translationY = cursorY
+        translationX = cursorX - tipInset
+        translationY = cursorY - tipInset
         wake()
         // Players show their controls when a mouse moves over them.
         sendHover(MotionEvent.ACTION_HOVER_MOVE)
@@ -223,6 +364,7 @@ class PlayerCursor(
 
     private fun tap() {
         wake()
+        showPress()
         val downTime = SystemClock.uptimeMillis()
         sendTouch(downTime, downTime, MotionEvent.ACTION_DOWN)
         postDelayed({ sendTouch(downTime, SystemClock.uptimeMillis(), MotionEvent.ACTION_UP) }, TAP_MS)

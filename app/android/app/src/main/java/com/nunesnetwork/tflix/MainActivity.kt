@@ -286,6 +286,14 @@ class MainActivity : Activity() {
             )
         }
 
+        // TV: lets embed-guard.js say when the cursor is over something clickable.
+        // Every frame gets this, but it's one-way and only changes how the cursor looks.
+        if (playerCursor != null && WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            WebViewCompat.addWebMessageListener(webView, "tflixCursor", setOf("*")) { _, message, _, _, _ ->
+                playerCursor?.setOverClickable(message.data == "clickable")
+            }
+        }
+
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState)
         } else {

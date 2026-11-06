@@ -67,6 +67,33 @@
     };
   });
 
+  /* TV: tell the cursor when it's over something clickable, so it can change look.
+     Only MainActivity's listener provides window.tflixCursor. Something covering
+     most of the player doesn't count: some players make the whole video clickable,
+     and then the cursor would never look plain. */
+  if (window.tflixCursor) {
+    var CLICKABLE = 'a[href],button,input,select,label,summary,[onclick],[role=button],' +
+      '[role=link],[role=menuitem],[role=menuitemradio],[role=option],[role=slider],[role=tab]';
+    var overClickable = false;
+    var report = function (clickable) {
+      if (clickable === overClickable) return;
+      overClickable = clickable;
+      window.tflixCursor.postMessage(clickable ? 'clickable' : 'plain');
+    };
+    var isClickable = function (el) {
+      if (!el || !el.closest) return false;
+      var target = el.closest(CLICKABLE);
+      if (!target) {
+        if (getComputedStyle(el).cursor !== 'pointer') return false;
+        target = el;
+      }
+      var r = target.getBoundingClientRect();
+      return r.width * r.height < window.innerWidth * window.innerHeight * 0.5;
+    };
+    window.addEventListener('mousemove', function (e) { report(isClickable(e.target)); }, true);
+    window.addEventListener('mouseout', function (e) { if (!e.relatedTarget) report(false); }, true);
+  }
+
   /* The TV remote's media keys (MainActivity sends these down to the embed). The
      video may be in a nested iframe, so each frame also passes them further in.
      Some players relay every message to their own iframes as well, so one key

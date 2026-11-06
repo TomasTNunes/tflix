@@ -103,9 +103,9 @@ To change the app version, edit `versionCode` and `versionName` in
 - D-pad navigation quality depends on the **website's** focus handling — improving
   remote/focus navigation is web-side work on the site itself, not app work.
 - The players' own buttons can't be reached by key navigation, because they're in iframes, so
-  the app has a cursor for them: press **OK** on the highlighted player, then **arrows** move
-  it, **OK** clicks and **Back** turns it off. Play/pause, fast-forward and rewind keys work
-  directly, if the remote has them.
+  the app has a cursor for them: press **OK** on the highlighted player or on a server, then
+  **arrows** move it, **OK** clicks and **Back** turns it off. It brightens over anything
+  clickable. Play/pause, fast-forward and rewind keys work directly, if the remote has them.
 
 ## Project layout
 
