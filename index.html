@@ -1743,6 +1743,10 @@ let searchResults = [];
 let searchPeople  = [];   // people matching the search (with a photo), in TMDB's order
 let currentModalItem = null;
 let tvDetails = {};
+// The title card's season/episode pickers
+let pickerGen = 0;       // each new fill bumps it, so a slower old one gives way
+let tvFilling = false;   // a show's pickers are still filling in for the first time
+let tvLoad    = null;    // the pickers filling in, which Play waits for
 let genreMap = {};
 
 /* hero state */
@@ -2263,7 +2267,7 @@ async function showModalEntry(entry, dir) {
     }
   }
 
-  // Titles render before the switch so the old view stays up while TV seasons load
+  // Titles render before the switch; a show's season/episode pickers fill in afterwards
   if (entry.kind === 'title' && titleViewEntry !== entry) {
     titleViewEntry = entry;
     await renderTitle(entry.item);
@@ -2350,13 +2354,15 @@ async function renderTitle(item) {
   const tvSel = $('tv-selectors');
   const drEl  = $('modal-digital-release');
   if (isMovie) {
+    pickerGen++; tvFilling = false; tvLoad = null;
     tvSel.style.display = 'none';
     drEl.style.display = 'inline-flex';
     fetchDigitalReleaseBadge(item.id);
   } else {
     tvSel.style.display = 'block';
     drEl.style.display = 'none';
-    await loadTvSeasons(item.id);
+    // The card opens now; the pickers fill in when TMDB answers, and Play waits for them
+    tvLoad = loadTvSeasons(item.id).then(paintResume);
     paintResume();
   }
 }
@@ -2550,14 +2556,30 @@ async function loadCast(type, id) {
 const seasonCache = {};
 
 async function loadTvSeasons(id) {
+  const gen = ++pickerGen;
+  tvFilling = true;
+  try { await fillTvPickers(id, gen); }
+  finally { if (gen === pickerGen) tvFilling = false; }
+}
+
+async function fillTvPickers(id, gen) {
   const seasonSel  = $('season-select');
   const episodeSel = $('episode-select');
   seasonSel.innerHTML  = '<option>Loading…</option>';
-  episodeSel.innerHTML = '<option>—</option>';
+  episodeSel.innerHTML = '<option>Loading…</option>';
+  const watch = modalWatch();
 
   try {
     let details = tvDetails[id];
-    if (!details) { details = await tmdb(`/tv/${id}`); tvDetails[id] = details; }
+    if (!details) {
+      // The season the card opens on comes in the same request
+      const first = watch?.season || 1, extra = `season/${first}`;
+      details = await tmdb(`/tv/${id}?append_to_response=${extra}`);
+      if (details[extra]?.episodes) seasonCache[`${id}-${first}`] = details[extra];
+      delete details[extra];
+      tvDetails[id] = details;
+    }
+    if (gen !== pickerGen) return;
     const seasons = (details.seasons || []).filter(s => s.season_number > 0);
     seasonSel.innerHTML = seasons.map(s =>
       `<option value="${s.season_number}" data-eps="${s.episode_count}">Season ${s.season_number} &nbsp;·&nbsp; ${s.episode_count} ep</option>`
@@ -2565,16 +2587,17 @@ async function loadTvSeasons(id) {
 
     seasonSel.replaceWith(seasonSel.cloneNode(true));
     const freshSel = $('season-select');
-    freshSel.addEventListener('change', () => updateEpisodes(id).then(paintResume));
+    freshSel.addEventListener('change', () => { tvLoad = updateEpisodes(id, ++pickerGen).then(paintResume); });
     // Open on the episode the user is up to
-    const watch = modalWatch();
     if (watch && [...freshSel.options].some(o => +o.value === watch.season)) freshSel.value = watch.season;
-    await updateEpisodes(id);
+    await updateEpisodes(id, gen);
+    if (gen !== pickerGen) return;
     if (watch && +freshSel.value === watch.season && [...episodeSel.options].some(o => +o.value === watch.episode))
       episodeSel.value = watch.episode;
   } catch {
-    seasonSel.innerHTML = '<option value="1">Season 1</option>';
-    await updateEpisodes(id);
+    if (gen !== pickerGen) return;
+    $('season-select').innerHTML = '<option value="1">Season 1</option>';
+    await updateEpisodes(id, gen);
   }
 }
 
@@ -2585,7 +2608,7 @@ function fmtDate(d) {
   return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-async function updateEpisodes(tvId) {
+async function updateEpisodes(tvId, gen = pickerGen) {
   const sel = $('season-select');
   const seasonNum = parseInt(sel.value || 1);
   const opt = sel.options[sel.selectedIndex];
@@ -2597,6 +2620,7 @@ async function updateEpisodes(tvId) {
   try {
     let data = seasonCache[cacheKey];
     if (!data && tvId) { data = await tmdb(`/tv/${tvId}/season/${seasonNum}`); seasonCache[cacheKey] = data; }
+    if (gen !== pickerGen) return;
     const episodes = data?.episodes || [];
     if (episodes.length) {
       epSel.innerHTML = episodes.map(ep => {
@@ -2606,12 +2630,19 @@ async function updateEpisodes(tvId) {
       }).join('');
     } else { throw new Error('no episodes'); }
   } catch {
+    if (gen !== pickerGen) return;
     epSel.innerHTML = Array.from({ length: eps }, (_, i) => `<option value="${i+1}">Episode ${i+1}</option>`).join('');
   }
 }
 
-$('modal-watch-btn').addEventListener('click', () => {
-  if (!currentModalItem) return;
+$('modal-watch-btn').addEventListener('click', async () => {
+  const item = currentModalItem;
+  if (!item) return;
+  // A show's pickers may still be filling in; play what they settle on
+  if (tvLoad && mediaOf(item) === 'tv') {
+    await tvLoad;
+    if (currentModalItem !== item || !modalIsOpen()) return;
+  }
   const s = parseInt($('season-select')?.value  || 1);
   const e = parseInt($('episode-select')?.value || 1);
   const watch = modalWatch();
@@ -3096,7 +3127,7 @@ function modalWatch() {
   return e && e.status !== 'caughtup' ? e : null;
 }
 function modalOnWatchEpisode(e) {
-  return mediaOf(currentModalItem) === 'movie' ||
+  return mediaOf(currentModalItem) === 'movie' || tvFilling ||   // still filling: they open on it
     (+$('season-select').value === e.season && +$('episode-select').value === e.episode);
 }
 function paintResume() {
