@@ -533,7 +533,7 @@ const NO_EVENTS_AFTER = 120000;    // ms on the page before saving a server that
 const LOCAL_EVERY     = 5000;      // ms between saves to this browser
 const REMOTE_EVERY    = 60000;     // ms between saves to the account during playback
 const REMOTE_GAP      = 10000;     // same, for pause/seek/leaving, which can come in bursts
-const FINISHED_AT     = { movie: 0.95, tv: 0.90 };   // a removed movie is gone, so wait longer
+const FINISHED_AT     = { movie: 0.90, tv: 0.95 };   // a film's credits run 5-12 min, an episode's 1-2
 const MAX_EVENT_GAP   = 15;        // seconds; a bigger jump in position is a seek, not playback
 
 // Where each server's messages come from, besides the host in its embed URL
