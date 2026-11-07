@@ -507,6 +507,48 @@
     .card-badge.movie { color: #fff; }
     .card-badge.tv { color: #ffd0d0; }
 
+    /* Continue Watching: how far along, the title's details, and a way out of
+       the row. The buttons only show on hover where there's a mouse; touch
+       screens always show them, as tapping these cards goes straight to the
+       player. */
+    .card-details {
+      padding: 0; border: 0; cursor: pointer; pointer-events: none;
+      transition: transform .2s var(--ease), background .2s, color .2s;
+    }
+    .card:hover .card-details { pointer-events: auto; }
+    .card-details:hover { transform: scale(1.2); background: var(--accent); color: #fff; }
+    /* The row's arrows overlap the cards at each end, where these buttons are.
+       So here only a band across the middle of an arrow takes clicks, between
+       ✕ above and ⓘ below. */
+    .row[data-anchor="continue"] .scroller-wrap:hover .arrow { pointer-events: none; }
+    .row[data-anchor="continue"] .scroller-wrap:hover .arrow::before {
+      content: ''; position: absolute; left: 0; right: 0; top: 60px; bottom: 100px;
+      pointer-events: auto;
+    }
+    .card-progress {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
+      background: rgba(255,255,255,0.28); pointer-events: none;
+    }
+    .card-progress span { display: block; height: 100%; background: var(--accent); }
+    .card-remove {
+      position: absolute; top: 6px; right: 6px; padding: 0;
+      width: 26px; height: 26px; border-radius: 50%;
+      display: grid; place-items: center; cursor: pointer;
+      background: rgba(20,20,26,0.82); color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.7);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      opacity: 0; transition: opacity .2s, transform .2s var(--ease), background .2s, border-color .2s;
+    }
+    .card:hover .card-remove { opacity: 1; }
+    .card-remove:hover { transform: scale(1.15); background: var(--accent); border-color: var(--accent); }
+    html.keynav .card.kf .card-remove, html.keynav .card.kf-parent .card-remove { opacity: 1; }
+    html.keynav .card-remove.kf { border-radius: 50%; }
+    @media (hover: none) {
+      .card-remove { opacity: 1; }
+      .card-watch .card-info { opacity: 1; transform: translate3d(0, 0, 0); }
+      .card-watch .card-details, .card-watch .card-add { pointer-events: auto; }
+    }
+
     /* Digital release badge on card */
     .card-dr-badge {
       position: absolute; top: 8px; right: 8px;
@@ -1069,6 +1111,10 @@
       display: flex; flex-direction: column; gap: 0.55rem;
       scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.28) transparent;
     }
+    .merge-heading {
+      font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); margin-top: 0.35rem;
+    }
     .merge-item { display: flex; align-items: center; gap: 0.75rem; }
     .merge-poster { width: 34px; aspect-ratio: 2/3; border-radius: 4px; object-fit: cover; flex-shrink: 0; background: var(--card); }
     .merge-title { font-size: 0.9rem; font-weight: 600; line-height: 1.25; }
@@ -1149,7 +1195,12 @@
     html.keynav .person-card.kf .cast-photo { outline: 3px solid var(--accent-h); outline-offset: 3px; }
     html.keynav .modal-back.kf, html.keynav .modal-close.kf, html.keynav .account-btn.kf,
     html.keynav .menu-btn.kf, html.keynav .drawer-close.kf { border-radius: 50%; }
-    html.keynav .card.kf .card-info { opacity: 1; transform: translate3d(0, 0, 0); }
+    html.keynav .card.kf .card-info, html.keynav .card.kf-parent .card-info { opacity: 1; transform: translate3d(0, 0, 0); }
+    html.keynav .card.kf-parent {
+      transform: scale(1.09) translateY(-4px);
+      box-shadow: 0 22px 48px rgba(0,0,0,0.7);
+      z-index: 6;
+    }
     html.keynav .rank-card.kf-parent .card {
       transform: scale(1.09) translateY(-4px);
       box-shadow: 0 22px 48px rgba(0,0,0,0.7);
@@ -1344,7 +1395,7 @@
       <div class="modal-actions">
         <button class="btn btn-primary modal-watch-btn" id="modal-watch-btn">
           <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          Play
+          <span id="modal-watch-label">Play</span>
         </button>
         <button class="btn modal-list-btn list-btn" id="modal-list-btn" aria-label="My List">
           <svg class="ic-plus" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -1564,6 +1615,7 @@
 <div id="toast"></div>
 
 <script src="./assets/help.js"></script>
+<script src="./assets/watching.js"></script>
 <script>
 /* ─── CONFIG ─── */
 const API_BASE = "https://api.themoviedb.org/3";
@@ -1582,19 +1634,6 @@ const SERVERS = [
   { name: 'Naafiri', id: 5 },
   { name: 'Ryze',    id: 6 },
 ];
-
-// Firebase web config is public by design; the Firestore rules are what protect the data
-const FIREBASE_VERSION = '13.1.0';
-const FIREBASE_CONFIG = {
-  apiKey: 'AIzaSyDYtSIxT89rF9xWjKt9TNZQCN3rQSzhFyc',
-  authDomain: 'tflix-5f48f.firebaseapp.com',
-  projectId: 'tflix-5f48f',
-  storageBucket: 'tflix-5f48f.firebasestorage.app',
-  messagingSenderId: '1077791721042',
-  appId: '1:1077791721042:web:7a37c01a48ab03b155018b',
-};
-// Username-only accounts sign in as <username>@USER_DOMAIN (must match the Firestore rules)
-const USER_DOMAIN = 'users.tflix.stream';
 
 const CURRENT_YEAR = new Date().getFullYear();
 const CATEGORY_ROWS = [
@@ -1629,7 +1668,6 @@ if (inApp) document.documentElement.dataset.app = inApp;
 // localStorage keys (kept per domain, hence the import below)
 const STORAGE_KEY   = 'tflix_server';
 const MYLIST_KEY    = 'tflix_mylist';
-const SIGNED_IN_KEY = 'tflix_signed_in';
 
 /* ─── IMPORT FROM THE OLD DOMAIN ───
    tflix.nunesnetwork.com is now a redirect page (repo tflix-redirect). As
@@ -1857,7 +1895,7 @@ serverBtn.addEventListener('click', e => { e.stopPropagation(); accountMenu.clas
 document.addEventListener('click', () => { serverMenu.classList.remove('open'); accountMenu.classList.remove('open'); });
 
 /* ─── PLAYER URL ─── */
-function playerUrl(item, season = 1, episode = 1) {
+function playerUrl(item, season = 1, episode = 1, startAt = 0) {
   const p = new URLSearchParams({ server: currentServer });
   const type = mediaOf(item);
   if (type === 'movie') {
@@ -1866,6 +1904,7 @@ function playerUrl(item, season = 1, episode = 1) {
     p.set('type', 'tv'); p.set('id', item.id);
     p.set('s', season); p.set('e', episode);
   }
+  if (startAt) p.set('t', Math.floor(startAt));
   return `${PLAYER}?${p.toString()}`;
 }
 
@@ -1890,7 +1929,7 @@ async function fetchDigitalData(movieId) {
 
 /* ─── CARD ─── */
 // drDate: optional ISO date string — if provided and in the past, shows green badge on card
-function makeCard(item, { drDate = null } = {}) {
+function makeCard(item, { drDate = null, watch = null } = {}) {
   const type    = mediaOf(item);
   const isMovie = type === 'movie';
   const title   = item.title || item.name || 'Untitled';
@@ -1902,29 +1941,39 @@ function makeCard(item, { drDate = null } = {}) {
   const showDrBadge = drDate && new Date(drDate) <= new Date();
 
   const card = document.createElement('div');
-  card.className = 'card';
+  card.className = watch ? 'card card-watch' : 'card';
   card.innerHTML = `
-    <span class="card-badge ${isMovie ? 'movie' : 'tv'}">${isMovie ? 'Film' : 'Series'}</span>
+    <span class="card-badge ${isMovie ? 'movie' : 'tv'}">${isMovie ? 'Film' : (watch ? `S${Number(watch.season)} E${Number(watch.episode)}` : 'Series')}</span>
     ${showDrBadge ? `<span class="card-dr-badge"><span class="card-dr-dot"></span>Digital</span>` : ''}
     ${imgSrc
       ? `<img class="card-poster" src="${imgSrc}" alt="${esc(title)}" loading="lazy" onerror="this.parentNode.replaceChild(makePlaceholder('${esc(title).replace(/'/g,"")}'),this)">`
       : `<div class="card-poster-placeholder"><span style="font-size:2rem">🎬</span><span>${esc(title)}</span></div>`}
     <div class="card-info">
       <div class="card-info-top">
-        <span class="mini-play"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+        ${watch
+          ? `<button class="mini-play card-details" type="button" title="More info" aria-label="More info"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 11v8M12 5.5v.01"/></svg></button>`
+          : `<span class="mini-play"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>`}
         ${m ? `<span class="match">${m}% Match</span>` : ''}
         <button class="card-add list-btn" data-list-key="${listKey(item)}" aria-label="My List">${LIST_ICONS}</button>
       </div>
       <div class="card-info-title">${esc(title)}</div>
       <div class="card-info-meta">${year(date)} · ★ ${rating(item.vote_average)}</div>
-    </div>`;
+    </div>
+    ${watch ? watchCardExtras(watch) : ''}`;
 
   card.dataset.key = listKey(item);
   const add = card.querySelector('.card-add');
   paintListBtn(add);
   add.addEventListener('click', e => { e.stopPropagation(); keepInView(card, () => toggleMyList(item)); popListBtn(add); });
 
-  card.addEventListener('click', () => openModal(item));
+  if (watch) {
+    card.dataset.sig = watchSig(watch);
+    card.querySelector('.card-details').addEventListener('click', e => { e.stopPropagation(); openModal(item); });
+    card.querySelector('.card-remove').addEventListener('click', e => { e.stopPropagation(); removeWatching(listKey(item)); });
+    card.addEventListener('click', () => { window.location.href = resumeUrl(watch); });
+  } else {
+    card.addEventListener('click', () => openModal(item));
+  }
   return card;
 }
 
@@ -2277,6 +2326,7 @@ async function renderTitle(item) {
   currentModalItem = { ...item, media_type: type };
   $('modal-list-btn').dataset.listKey = listKey(item);
   paintListBtn($('modal-list-btn'));
+  paintResume();
 
   const bg = backdrop(item.backdrop_path) || poster(item.poster_path, 'w780');
   $('modal-backdrop-img').style.backgroundImage = bg ? `url('${bg}')` : 'none';
@@ -2307,6 +2357,7 @@ async function renderTitle(item) {
     tvSel.style.display = 'block';
     drEl.style.display = 'none';
     await loadTvSeasons(item.id);
+    paintResume();
   }
 }
 
@@ -2514,8 +2565,13 @@ async function loadTvSeasons(id) {
 
     seasonSel.replaceWith(seasonSel.cloneNode(true));
     const freshSel = $('season-select');
-    freshSel.addEventListener('change', () => updateEpisodes(id));
+    freshSel.addEventListener('change', () => updateEpisodes(id).then(paintResume));
+    // Open on the episode the user is up to
+    const watch = modalWatch();
+    if (watch && [...freshSel.options].some(o => +o.value === watch.season)) freshSel.value = watch.season;
     await updateEpisodes(id);
+    if (watch && +freshSel.value === watch.season && [...episodeSel.options].some(o => +o.value === watch.episode))
+      episodeSel.value = watch.episode;
   } catch {
     seasonSel.innerHTML = '<option value="1">Season 1</option>';
     await updateEpisodes(id);
@@ -2558,8 +2614,11 @@ $('modal-watch-btn').addEventListener('click', () => {
   if (!currentModalItem) return;
   const s = parseInt($('season-select')?.value  || 1);
   const e = parseInt($('episode-select')?.value || 1);
-  window.location.href = playerUrl(currentModalItem, s, e);
+  const watch = modalWatch();
+  const startAt = watch && modalOnWatchEpisode(watch) ? resumeTime(watch) : 0;
+  window.location.href = playerUrl(currentModalItem, s, e, startAt);
 });
+$('episode-select').addEventListener('change', paintResume);
 
 $('modal-close').addEventListener('click', closeModal);
 $('modal-backdrop').addEventListener('click', e => { if (e.target === $('modal-backdrop')) closeModal(); });
@@ -2745,8 +2804,6 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
    single read. Entries keep the TMDB fields makeCard/openModal use, so the
    row renders without refetching anything. The row and its nav link only
    show while the list has something in it. */
-const MYLIST_FIELDS = ['id', 'title', 'name', 'poster_path', 'backdrop_path', 'vote_average',
-  'release_date', 'first_air_date', 'overview', 'genre_ids', 'original_language'];
 const LIST_ICONS = `
   <svg class="ic-plus" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
   <svg class="ic-check" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>`;
@@ -2760,7 +2817,7 @@ function listKey(item) { return `${mediaOf(item)}_${item.id}`; }
 
 function listEntry(item) {
   const e = { media_type: mediaOf(item), addedAt: Date.now() };
-  for (const f of MYLIST_FIELDS) if (item[f] != null) e[f] = item[f];
+  for (const f of TITLE_FIELDS) if (item[f] != null) e[f] = item[f];
   return e;
 }
 
@@ -2800,43 +2857,64 @@ function startListSync() {
   if (myListRef && myListRef.id === uid) return;
   if (myListUnsub) myListUnsub();
   myListUnsub = myListRef = null;
-  if (!uid) { setMyList(readLocalList()); return; }
+  setSyncUid(uid);
+  watchRemote = {};
+  if (!uid) { setMyList(readLocalList()); refreshWatching(); return; }
 
   myListRef = fb.f.doc(fb.db, 'users', uid);
   let first = true;
   myListUnsub = fb.f.onSnapshot(myListRef, snap => {
-    const remote = (snap.exists() && snap.data().list) || {};
+    const data = (snap.exists() && snap.data()) || {};
+    const remote = data.list || {};
+    watchRemote = data.watching || {};
     setMyList(remote);
-    if (first) { first = false; mergeLocalList(remote); }
+    refreshWatching();
+    if (first) { first = false; mergeLocalList(remote); flushWatching(); }
   }, err => {
     console.warn('My List sync failed', err);
     toast("Couldn't load My List");
   });
 }
 
-// Titles saved while signed out only join the account if the user says so
-// (it may be someone else's device)
+// Titles saved and progress made while signed out only join the account if the
+// user says so (it may be someone else's device)
 let pendingMerge = null;
 
+function clearLocalTitles() {
+  saveLocalList({});
+  writeJsonStore(WATCH_KEY, {});
+}
+
+function mergeRow(e, extra) {
+  const src = poster(e.poster_path, 'w92');
+  return `<div class="merge-item">
+    ${src ? `<img class="merge-poster" src="${src}" alt="" loading="lazy">` : '<div class="merge-poster"></div>'}
+    <div>
+      <div class="merge-title">${esc(e.title || e.name || 'Untitled')}</div>
+      <div class="merge-meta">${year(e.release_date || e.first_air_date)} · ${e.media_type === 'tv' ? 'Series' : 'Film'}${extra}</div>
+    </div>
+  </div>`;
+}
+
 function mergeLocalList(remote) {
-  const fresh = Object.fromEntries(Object.entries(readLocalList()).filter(([k]) => !remote[k]));
-  const n = Object.keys(fresh).length;
-  if (!n) { saveLocalList({}); return; }
-  pendingMerge = fresh;
-  $('auth-title').textContent = `Add ${n} title${n !== 1 ? 's' : ''} to your list?`;
+  const list = Object.fromEntries(Object.entries(readLocalList()).filter(([k]) => !remote[k]));
+  const progress = Object.fromEntries(Object.entries(readJsonStore(WATCH_KEY))
+    .filter(([k, e]) => (e.updatedAt || 0) > (watchRemote[k]?.updatedAt || 0)));
+  const n = Object.keys(list).length, w = Object.keys(progress).length;
+  if (!n && !w) { clearLocalTitles(); return; }
+  pendingMerge = { list, progress };
+  $('auth-title').textContent = w
+    ? `Add ${n + w} title${n + w !== 1 ? 's' : ''} to your account?`
+    : `Add ${n} title${n !== 1 ? 's' : ''} to your list?`;
   $('auth-sub').textContent = 'You saved these on this device before signing in.';
-  $('merge-list').innerHTML = Object.values(fresh)
-    .sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0))
-    .map(e => {
-      const src = poster(e.poster_path, 'w92');
-      return `<div class="merge-item">
-        ${src ? `<img class="merge-poster" src="${src}" alt="" loading="lazy">` : '<div class="merge-poster"></div>'}
-        <div>
-          <div class="merge-title">${esc(e.title || e.name || 'Untitled')}</div>
-          <div class="merge-meta">${year(e.release_date || e.first_air_date)} · ${e.media_type === 'tv' ? 'Series' : 'Film'}</div>
-        </div>
-      </div>`;
-    }).join('');
+  $('merge-add').textContent = w ? 'Add to my account' : 'Add to my list';
+  const newestFirst = (x, y) => (y.addedAt || y.updatedAt || 0) - (x.addedAt || x.updatedAt || 0);
+  const listRows = Object.values(list).sort(newestFirst).map(e => mergeRow(e, ''));
+  const progressRows = Object.values(progress).sort(newestFirst)
+    .map(e => mergeRow(e, e.media_type === 'tv' ? ` · S${Number(e.season)} E${Number(e.episode)}` : ''));
+  $('merge-list').innerHTML = (n && w)
+    ? ['<div class="merge-heading">My List</div>', ...listRows, '<div class="merge-heading">Continue Watching</div>', ...progressRows].join('')
+    : [...listRows, ...progressRows].join('');
   showAuth('merge');
 }
 
@@ -2844,12 +2922,18 @@ $('merge-add').addEventListener('click', () => {
   const add = pendingMerge;
   closeAuth();
   if (!add || !myListRef) return;
-  writeRemoteList(add).then(() => { saveLocalList({}); toast('Added to My List'); },
-                            () => toast("Couldn't add your saved titles"));
+  // An empty map in a merge would wipe the field, so only send what there is
+  const changes = {};
+  if (Object.keys(add.list).length) changes.list = add.list;
+  if (Object.keys(add.progress).length) changes.watching = add.progress;
+  fb.f.setDoc(myListRef, changes, { merge: true }).then(() => {
+    clearLocalTitles();
+    toast(changes.watching ? 'Added to your account' : 'Added to My List');
+  }, () => toast("Couldn't add your saved titles"));
 });
 
 $('merge-discard').addEventListener('click', () => {
-  saveLocalList({});
+  clearLocalTitles();
   closeAuth();
 });
 
@@ -2904,6 +2988,132 @@ $('modal-list-btn').addEventListener('click', () => {
   popListBtn($('modal-list-btn'));
 });
 
+/* ─── CONTINUE WATCHING ───
+   The stream page records progress (assets/watching.js has the storage). This
+   shows it: a row below My List whose cards go straight to the player, and
+   Resume in the title modal. The row reads the same Firestore doc as My List,
+   so it costs no extra read. Shows that are caught up stay out of the row
+   until TMDB says a newer episode has aired. */
+let watching = {};        // key -> entry, what's on screen
+let watchRemote = {};     // what the account has, before queued changes
+let watchScroller = null;
+const caughtUpChecked = new Set();
+
+function refreshWatching() {
+  const uid = myListRef?.id || syncUid();
+  watching = uid ? overlayQueue(watchRemote, readJsonStore(watchQueueKey(uid))) : readJsonStore(WATCH_KEY);
+  renderWatching();
+  paintResume();
+  checkCaughtUp();
+}
+
+function sendWatching(key, item) {
+  return fb.f.setDoc(myListRef, { watching: { [key]: queuedValue(item, fb.f.deleteField) } }, { merge: true });
+}
+
+// Whatever a closed tab or a failed write left behind. Anything the account
+// has a newer version of is out of date, so it's dropped instead.
+function flushWatching() {
+  if (!myListRef) return;
+  const uid = myListRef.id;
+  for (const [key, item] of Object.entries(readJsonStore(watchQueueKey(uid)))) {
+    if ((watchRemote[key]?.updatedAt || 0) > item.updatedAt) { clearQueued(uid, key, item.updatedAt); continue; }
+    sendWatching(key, item).then(() => clearQueued(uid, key, item.updatedAt),
+                                 err => console.warn('Progress not synced yet', err));
+  }
+}
+
+function saveWatching(key, entry) {
+  const uid = myListRef?.id || syncUid();
+  storeWatching(uid, key, entry);
+  refreshWatching();
+  if (myListRef) flushWatching();
+}
+
+function removeWatching(key) {
+  saveWatching(key, null);
+  toast('Removed from Continue Watching');
+}
+
+const resumeTime = e => e.time >= WATCH_MIN_RESUME ? e.time : 0;
+const resumeUrl  = e => playerUrl(e, e.season, e.episode, resumeTime(e));
+const watchSig   = e => `${e.season}-${e.episode}-${e.time || 0}-${e.duration || 0}`;
+
+function watchCardExtras(e) {
+  const pct = e.duration ? Math.min(100, Math.max(0, e.time / e.duration * 100)) : 0;
+  return `
+    ${pct ? `<div class="card-progress"><span style="width:${pct.toFixed(1)}%"></span></div>` : ''}
+    <button class="card-remove" type="button" title="Remove from Continue Watching" aria-label="Remove from Continue Watching">
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>`;
+}
+
+function renderWatching() {
+  if (!watchScroller) return;
+  const entries = Object.values(watching)
+    .filter(e => e.status !== 'caughtup')
+    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  watchScroller.closest('.row').hidden = !entries.length;
+  // Reuse unchanged cards so the row keeps its scroll position and focus, and
+  // leave the row alone if nothing moved, as that would restart a hovered card
+  const current = [...watchScroller.children];
+  const cards = new Map(current.map(c => [c.dataset.key, c]));
+  const next = entries.map(e => {
+    const card = cards.get(listKey(e));
+    return card && card.dataset.sig === watchSig(e) ? card : makeCard(e, { watch: e });
+  });
+  if (next.length !== current.length || next.some((c, i) => c !== current[i])) watchScroller.replaceChildren(...next);
+}
+
+function loadWatchingRow() {
+  watchScroller = buildRow({ title: 'Continue Watching', anchor: 'continue' });
+  refreshWatching();
+}
+
+// A new episode of a caught-up show puts it back in the row, on that episode
+async function checkCaughtUp() {
+  const due = Object.entries(watching).filter(([k, e]) => e.status === 'caughtup' && !caughtUpChecked.has(k));
+  if (!due.length) return;
+  due.forEach(([k]) => caughtUpChecked.add(k));
+  await mapLimit(due, 6, async ([key, e]) => {
+    try {
+      let details = tvDetails[e.id];
+      if (!details) { details = await tmdb(`/tv/${e.id}`); tvDetails[e.id] = details; }
+      const last = details.last_episode_to_air;
+      if (!last || watching[key]?.updatedAt !== e.updatedAt) return;
+      let next = null;
+      if (last.season_number > e.season) next = { season: e.season + 1, episode: 1 };
+      else if (last.season_number === e.season && last.episode_number > e.episode) next = { season: e.season, episode: e.episode + 1 };
+      if (next) saveWatching(key, { ...e, ...next, status: 'watching', updatedAt: Date.now() });
+    } catch (err) { console.warn('Could not check for new episodes', err); }
+  });
+}
+
+// Title modal: Resume when the selected episode is the one the user is up to
+function modalWatch() {
+  if (!currentModalItem) return null;
+  const e = watching[listKey(currentModalItem)];
+  return e && e.status !== 'caughtup' ? e : null;
+}
+function modalOnWatchEpisode(e) {
+  return mediaOf(currentModalItem) === 'movie' ||
+    (+$('season-select').value === e.season && +$('episode-select').value === e.episode);
+}
+function paintResume() {
+  const e = modalWatch();
+  const on = e && modalOnWatchEpisode(e);
+  $('modal-watch-label').textContent = !on ? 'Play' : e.media_type === 'tv' ? `Resume S${Number(e.season)} E${Number(e.episode)}` : 'Resume';
+}
+
+// Back from the player can restore this page as it was, so it may be out of
+// date; progress can also change in another tab or come online later
+window.addEventListener('pageshow', e => { if (e.persisted) { refreshWatching(); flushWatching(); } });
+window.addEventListener('storage', e => {
+  if (!e.key || e.key === WATCH_KEY || e.key.startsWith('tflix_watching_queue_')) refreshWatching();
+});
+window.addEventListener('online', flushWatching);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { refreshWatching(); flushWatching(); } });
+
 /* ─── ACCOUNT ───
    Firebase Auth (email + password) behind one "Username or email" field.
    A username signs in as <username>@USER_DOMAIN, an address that never gets
@@ -2919,8 +3129,6 @@ let authUser = null;
 let authMode = 'signin';
 let authView = null;    // 'form' | 'verify' | 'merge' while the dialog is open
 
-const isUsernameAccount = u => (u?.email || '').endsWith('@' + USER_DOMAIN);
-const canSync     = u => !!u && (u.emailVerified || isUsernameAccount(u));
 const accountName = u => isUsernameAccount(u) ? u.email.split('@')[0] : u.email;
 const authIsOpen  = () => $('auth-backdrop').classList.contains('open');
 
@@ -3554,7 +3762,10 @@ $('delete-forgot').addEventListener('click', async () => {
 onAccountForm('delete', async fail => {
   if (!$('delete-pass').value) return fail('Enter your password to confirm.');
   const u = await reauth($('delete-pass').value);
-  if (myListRef) await fb.f.deleteDoc(myListRef);   // the rules only allow this while signed in
+  if (myListRef) {
+    await fb.f.deleteDoc(myListRef);   // the rules only allow this while signed in
+    writeJsonStore(watchQueueKey(myListRef.id), {});
+  }
   await u.delete();
   closeAuth();
   toast('Account deleted');
@@ -3736,6 +3947,7 @@ $('cal-day').addEventListener('click', e => {
   await loadHero();
   loadTop10();
   loadMyListRow();
+  loadWatchingRow();
   for (const cfg of CATEGORY_ROWS) loadRow(cfg);
 })();
 </script>
@@ -3761,15 +3973,15 @@ $('cal-day').addEventListener('click', e => {
 
   function setFocus(el, scroll = true) {
     if (!el) return;
+    // A ranked card, or the card around one of its buttons, stays lit up too
+    const litParent = e => e.closest('.rank-card') || e.parentElement?.closest('.card');
     if (cur) {
       cur.classList.remove('kf');
-      const rp = cur.closest('.rank-card');
-      if (rp) rp.classList.remove('kf-parent');
+      litParent(cur)?.classList.remove('kf-parent');
     }
     cur = el;
     el.classList.add('kf');
-    const rp = el.closest('.rank-card');
-    if (rp) rp.classList.add('kf-parent');
+    litParent(el)?.classList.add('kf-parent');
     // Real focus only where native behaviour needs it (selects open their
     // picker, buttons stay accessible). Inputs get focused on Enter so the
     // TV keyboard doesn't pop up just from navigating past the search box.
@@ -3855,7 +4067,9 @@ $('cal-day').addEventListener('click', e => {
     document.querySelectorAll('#rows-container .scroller').forEach(sc => {
       const items = [...sc.children]
         .map(c => c.classList.contains('rank-card') ? c.querySelector('.card') : c)
-        .filter(c => c && c.classList.contains('card'));
+        .filter(c => c && c.classList.contains('card'))
+        // Continue Watching: its cards play, so ⓘ and ✕ are stops of their own after each
+        .flatMap(c => [c, ...c.querySelectorAll('.card-details, .card-remove')]);
       if (items.length) secs.push({ key: sc, items });
     });
     return secs;
