@@ -1244,6 +1244,18 @@
       .modal-list-btn { padding: 0.7rem 1rem; }
       .modal-list-btn .list-label { display: none; }
     }
+
+    /* ─── NO aspect-ratio ───
+       LG TVs from 2022 run Chromium 87, one version short of it. Without this the
+       cards, skeletons and the title's backdrop collapse to no height. */
+    @supports not (aspect-ratio: 1 / 1) {
+      .card, .skeleton { isolation: isolate; }
+      .card::before, .skeleton::before { content: ''; display: block; padding-top: 150%; }
+      .card-poster, .card-poster-placeholder { position: absolute; top: 0; left: 0; height: 100%; z-index: -1; }
+      .modal-hero::before { content: ''; display: block; padding-top: 56.25%; }
+      .cal-item-poster { height: 57px; }
+      .merge-poster { height: 51px; }
+    }
   </style>
 </head>
 <body>
@@ -1645,8 +1657,8 @@ const CATEGORY_ROWS = [
 ];
 
 /* ─── APP FLAG ───
-   The apps open appwindows./appandroid.tflix.stream, which Cloudflare
-   redirects here with ?app=windows|android. It's kept for the session
+   The apps open appwindows./appandroid./appwebos.tflix.stream, which Cloudflare
+   redirects here with ?app=windows|android|webos. It's kept for the session
    (sessionStorage survives the trip to the player and back), dropped from
    the address, and exposed as <html data-app="…"> for app-only tweaks.
    Cosmetic only: anyone can add the parameter. */
@@ -1655,7 +1667,7 @@ const inApp = (() => {
   const params = new URLSearchParams(location.search);
   if (params.has('app')) {
     const app = params.get('app');
-    try { if (app === 'windows' || app === 'android') sessionStorage.setItem(APP_KEY, app); } catch {}
+    try { if (app === 'windows' || app === 'android' || app === 'webos') sessionStorage.setItem(APP_KEY, app); } catch {}
     params.delete('app');
     const rest = params.toString();
     history.replaceState(history.state, '', location.pathname + (rest ? `?${rest}` : '') + location.hash);
@@ -4246,6 +4258,21 @@ $('cal-day').addEventListener('click', e => {
   };
   /* The account dialog moves focus into itself on open and back on close */
   window.__knavFocus = el => { if (active && vis(el)) setFocus(el, false); };
+  /* Coming back from the player on webOS (assets/webos.js): the card the remote
+     was on, and picking up there. Whatever the remote did meanwhile wins. */
+  window.__knavCard = () => {
+    if (!active) return null;
+    const el = $('modal-backdrop').classList.contains('open') ? lastCard : cur;
+    return el && el.closest('.card');
+  };
+  window.__knavResume = card => {
+    if (active) return;
+    active = true;
+    document.documentElement.classList.add('keynav');
+    if ($('modal-backdrop').classList.contains('open')) { lastCard = card; focusInitial(); }
+    else if (card) setFocus(card, false);
+    else focusInitial();
+  };
   window.__knavModalClosed = () => {
     if (!active) return;
     if (lastCard && vis(lastCard)) setFocus(lastCard); else focusInitial();
@@ -4260,6 +4287,15 @@ $('cal-day').addEventListener('click', e => {
       document.documentElement.classList.remove('keynav');
     }, { passive: true }));
 })();
+</script>
+
+<script>
+// LG webOS app only: its shell can't add scripts to the page, so this lives on the site
+if (document.documentElement.dataset.app === 'webos') {
+  const webos = document.createElement('script');
+  webos.src = './assets/webos.js';
+  document.body.appendChild(webos);
+}
 </script>
 
 <!-- Cloudflare Web Analytics -->

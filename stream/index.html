@@ -327,6 +327,11 @@
       .logo { font-size: 1.3rem; }
       .now-title { font-size: 0.85rem; }
     }
+
+    /* LG TVs from 2022 run Chromium 87, one version short of aspect-ratio */
+    @supports not (aspect-ratio: 1 / 1) {
+      .player-wrap { height: 0; padding-top: 56.25%; }
+    }
   </style>
 </head>
 <body>
@@ -1062,6 +1067,8 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHelp();
 (function () {
   let active = false;
   let cur = null;
+  let onWebOS = false;   // the main page keeps the app flag for the session
+  try { onWebOS = sessionStorage.getItem('tflix_app') === 'webos'; } catch {}
 
   const vis = el => !!(el && el.getClientRects().length);
 
@@ -1151,7 +1158,10 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHelp();
         return;
       }
       e.preventDefault();
+      const pickedServer = onWebOS && cur.classList.contains('server-card');
       cur.click();
+      // LG: there's no cursor to turn on as on Android TV, but the Magic Remote's pointer is ready to use on the player
+      if (pickedServer) setFocus($('player-wrap'));
       return;
     }
 
