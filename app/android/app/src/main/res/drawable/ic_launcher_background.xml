@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Background layer of the adaptive icon: the same tile colours as assets/icons/icon.svg. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:startColor="#1E1E27"
+        android:endColor="#0D0D11" />
+</shape>
