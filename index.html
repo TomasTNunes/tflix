@@ -2953,11 +2953,14 @@ $('merge-add').addEventListener('click', () => {
   const add = pendingMerge;
   closeAuth();
   if (!add || !myListRef) return;
-  // An empty map in a merge would wipe the field, so only send what there is
-  const changes = {};
-  if (Object.keys(add.list).length) changes.list = add.list;
-  if (Object.keys(add.progress).length) changes.watching = add.progress;
-  fb.f.setDoc(myListRef, changes, { merge: true }).then(() => {
+  // Each title replaces its whole entry, so none keeps fields from an older one
+  const changes = {}, paths = [];
+  for (const [field, titles] of [['list', add.list], ['watching', add.progress]]) {
+    if (!Object.keys(titles).length) continue;
+    changes[field] = titles;
+    for (const key of Object.keys(titles)) paths.push(new fb.f.FieldPath(field, key));
+  }
+  fb.f.setDoc(myListRef, changes, { mergeFields: paths }).then(() => {
     clearLocalTitles();
     toast(changes.watching ? 'Added to your account' : 'Added to My List');
   }, () => toast("Couldn't add your saved titles"));
@@ -3039,7 +3042,7 @@ function refreshWatching() {
 }
 
 function sendWatching(key, item) {
-  return fb.f.setDoc(myListRef, { watching: { [key]: queuedValue(item, fb.f.deleteField) } }, { merge: true });
+  return writeWatching(fb.f, myListRef, key, item);
 }
 
 // Whatever a closed tab or a failed write left behind. Anything the account

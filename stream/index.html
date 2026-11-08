@@ -813,7 +813,7 @@ async function sendQueued(uid, key) {
     if (!item) return;
     const { f, db, uid: current } = await loadSync();
     if (current !== uid) return;
-    await f.setDoc(f.doc(db, 'users', uid), { watching: { [key]: queuedValue(item, f.deleteField) } }, { merge: true });
+    await writeWatching(f, f.doc(db, 'users', uid), key, item);
     clearQueued(uid, key, item.updatedAt);
   } catch (err) {
     console.warn('Progress not synced yet', err);

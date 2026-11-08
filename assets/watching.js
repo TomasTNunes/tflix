@@ -98,3 +98,12 @@ function clearQueued(uid, key, updatedAt) {
 
 // The field value for users/{uid}.watching[key]
 const queuedValue = (item, deleteField) => item.deleted ? deleteField() : item;
+
+// Writes one queued change to users/{uid}, replacing the title's whole entry.
+// A plain merge keeps any field the new entry leaves out, so a show that moved
+// on to the next episode would keep the time of the one before. f is the
+// Firestore module.
+function writeWatching(f, ref, key, item) {
+  return f.setDoc(ref, { watching: { [key]: queuedValue(item, f.deleteField) } },
+    { mergeFields: [new f.FieldPath('watching', key)] });
+}
