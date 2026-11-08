@@ -6,21 +6,52 @@
      • back-navigation state restore (Electron ships with bfcache off,
        so this rebuilds the open poster + scroll position on Back)
 
+   And one fix inside the third-party stream embeds:
+     • stops popunder ad scripts from swallowing clicks on the player
+
    Runs in the isolated world (contextIsolation: true): the DOM nodes
    and listeners created here can still talk to ipcRenderer directly.
-   Only injects into the TOP frame — never inside the third-party
-   stream embeds (which also receive this preload).
+   Runs in every frame (nodeIntegrationInSubFrames), sandboxed, and
+   exposes nothing to the pages it runs in.
    ─────────────────────────────────────────────────────────────── */
 
-const { ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
-// App version. The preload is sandboxed (can't require package.json directly),
-// so ask the main process for it synchronously.
-let APP_VERSION = '';
-try { APP_VERSION = ipcRenderer.sendSync('tflix:get-version') || ''; } catch {}
+/* ─── Keep player buttons clickable (embeds only) ───
+   Popunder scripts catch every click on window/document in the capture phase,
+   cancel it, and try to open their ad — only standing down once a window really
+   opened. The app denies that window, so they never stand down and each click
+   dies before it reaches the player: buttons do nothing, while sliders still
+   drag because those run on pointerdown/mousedown (seen on Naafiri / vidfast).
 
-// Don't inject inside iframes (stream embeds, ad frames, etc.)
+   So, before any page script runs, cancelling a real click at that outermost
+   capture stage is made a no-op. The ad's window.open is still denied in
+   main.js, and the player's own handlers further in are untouched. */
+if (window.top !== window.self) {
+  contextBridge.executeInMainWorld({
+    func: () => {
+      ['preventDefault', 'stopPropagation', 'stopImmediatePropagation'].forEach((method) => {
+        const original = Event.prototype[method];
+        Event.prototype[method] = function () {
+          const swallowingClick =
+            this.isTrusted &&
+            (this.type === 'click' || this.type === 'touchend') &&
+            this.eventPhase === Event.CAPTURING_PHASE &&
+            (this.currentTarget === window || this.currentTarget === document);
+          if (!swallowingClick) return original.apply(this, arguments);
+        };
+      });
+    },
+  });
+}
+
+// Everything below is for the TFLIX site itself, not the embeds or ad frames.
 if (window.top === window.self) {
+  // App version. The preload is sandboxed (can't require package.json directly),
+  // so ask the main process for it synchronously.
+  let APP_VERSION = '';
+  try { APP_VERSION = ipcRenderer.sendSync('tflix:get-version') || ''; } catch {}
+
   const VER_ID = 'tflix-version-label';
 
   // The stream/player route has its own (often fullscreen) UI — keep the

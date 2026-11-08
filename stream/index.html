@@ -92,8 +92,8 @@
     }
     .now-title .ep-tag { color: var(--muted); font-weight: 500; }
 
-    /* Same support pill as the main page navbar */
-    .support-btn {
+    /* Same pill as the main page navbar (Calendar there) */
+    .help-btn {
       display: flex; align-items: center; gap: 0.5rem;
       padding: 0.45rem 1rem;
       background: linear-gradient(135deg, rgba(229,9,20,0.18), rgba(229,9,20,0.04));
@@ -103,17 +103,17 @@
       cursor: pointer; white-space: nowrap; flex-shrink: 0;
       transition: background .2s, border-color .2s, box-shadow .25s, transform .15s var(--ease);
     }
-    .support-btn:hover {
+    .help-btn:hover {
       background: linear-gradient(135deg, rgba(229,9,20,0.32), rgba(229,9,20,0.1));
       border-color: rgba(255,34,46,0.7);
       box-shadow: 0 4px 22px rgba(229,9,20,0.35);
       transform: translateY(-1px);
     }
-    .support-btn:active { transform: scale(.96); }
-    .support-btn svg { flex-shrink: 0; }
+    .help-btn:active { transform: scale(.96); }
+    .help-btn svg { flex-shrink: 0; }
     @media (max-width: 560px) {
-      .support-btn span.s-name { display: none; }
-      .support-btn { padding: 0.45rem 0.6rem; }
+      .help-btn span.s-name { display: none; }
+      .help-btn { padding: 0.45rem 0.6rem; }
     }
 
     /* ─── LAYOUT ─── */
@@ -179,6 +179,12 @@
     }
     .sel:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
     .sel option { background: #16161c; color: var(--text); }
+    /* Slim gray scrollbar in the dropdown list (Chrome/Edge/app draw these
+       in the native popup; the standard scrollbar-color is ignored there) */
+    .sel::-webkit-scrollbar { width: 8px; }
+    .sel::-webkit-scrollbar-track { background: transparent; }
+    .sel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.28); border-radius: 99px; }
+    .sel::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.45); }
 
     .nextep-btn {
       width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
@@ -206,6 +212,77 @@
     .server-card .s-name { font-size: 0.92rem; font-weight: 700; }
     .server-card .s-note { font-size: 0.72rem; color: var(--muted); line-height: 1.25; }
     .server-card.selected .s-name { color: #fff; }
+
+    /* ─── HELP DIALOG (same card as the main page's profile menu → Help) ─── */
+    .help-backdrop {
+      position: fixed; inset: 0; z-index: 700;
+      background: rgba(0,0,0,0.78); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center; padding: 1rem;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .help-backdrop.open { opacity: 1; pointer-events: all; }
+    .help-dialog {
+      --pad-x: 2rem;
+      position: relative; width: 100%; max-width: 520px; max-height: 92vh;
+      display: flex; flex-direction: column;
+      background: var(--bg-elev); border: 1px solid var(--line);
+      border-radius: var(--radius-lg); box-shadow: 0 30px 90px rgba(0,0,0,0.85);
+      padding: 2.2rem var(--pad-x) 1.8rem;
+      transform: translateY(20px) scale(0.97); transition: transform .3s var(--ease);
+    }
+    .help-backdrop.open .help-dialog { transform: none; }
+    .help-close {
+      position: absolute; top: 1rem; right: 1rem; z-index: 3;
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.15);
+      color: #fff; cursor: pointer; font-size: 1.3rem; line-height: 1;
+      display: grid; place-items: center; transition: background .2s;
+    }
+    .help-close:hover { background: rgba(0,0,0,0.85); }
+    /* The FAQ scrolls inside the card; the close button and GitHub link stay put */
+    .help-body {
+      min-height: 0; overflow-y: auto; scrollbar-width: none;
+      margin: -6px calc(-1 * var(--pad-x)) 0; padding: 6px var(--pad-x) 0;
+    }
+    .help-body::-webkit-scrollbar { display: none; }
+    .help-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em;
+      margin-bottom: 0.35rem; padding-right: 2.5rem;
+    }
+    .help-sub { font-size: 0.9rem; line-height: 1.5; color: var(--muted); margin-bottom: 1.4rem; }
+    .faq-list { display: flex; flex-direction: column; gap: 0.5rem; padding-bottom: 0.2rem; }
+    .faq-item { background: var(--card); border: 1px solid var(--line); border-radius: 10px; transition: border-color .15s; }
+    .faq-item:has(.faq-q[aria-expanded="true"]) { border-color: rgba(255,255,255,0.18); }
+    .faq-q {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+      width: 100%; padding: 0.8rem 1rem; text-align: left;
+      background: none; border: none; border-radius: 10px; color: var(--text);
+      font-family: inherit; font-size: 0.92rem; font-weight: 600; line-height: 1.35; cursor: pointer;
+    }
+    .faq-q:hover { background: var(--card-h); }
+    .faq-q svg { flex-shrink: 0; color: var(--muted); transition: transform .2s var(--ease); }
+    .faq-q[aria-expanded="true"] svg { transform: rotate(180deg); color: var(--text); }
+    .faq-a { margin: 0 1rem; padding: 0.7rem 0 0.9rem; border-top: 1px solid var(--line); font-size: 0.86rem; line-height: 1.55; color: rgba(255,255,255,0.78); }
+    .faq-a[hidden] { display: none; }
+    .faq-a b { color: var(--text); font-weight: 700; }
+    .help-foot { flex-shrink: 0; margin: 1rem calc(-1 * var(--pad-x)) 0; padding: 1rem var(--pad-x) 0; border-top: 1px solid var(--line); }
+    .help-foot-text { font-size: 0.8rem; line-height: 1.45; color: var(--muted); margin-bottom: 0.75rem; }
+    .help-foot-src { margin-top: 0.75rem; text-align: center; font-size: 0.74rem; color: var(--muted); }
+    .help-foot-src a { color: var(--text); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(255,255,255,0.3); transition: color .2s; }
+    .help-foot-src a:hover { color: var(--accent-h); text-decoration-color: currentColor; }
+    .help-gh {
+      display: flex; align-items: center; justify-content: center; gap: 0.55rem; width: 100%;
+      padding: 0.8rem 1.9rem; border-radius: 7px;
+      background: #fff; color: #0a0a0d; font-size: 0.98rem; font-weight: 700;
+      transition: transform .15s var(--ease), background .2s;
+    }
+    .help-gh:hover { background: rgba(255,255,255,0.82); transform: translateY(-2px); }
+    .help-gh:active { transform: scale(.97); }
+    @media (max-width: 560px) {
+      .help-dialog { --pad-x: 1.3rem; padding: 2rem var(--pad-x) 1.5rem; }
+      .help-gh { padding: 0.7rem 1.4rem; font-size: 0.9rem; }
+    }
 
     /* Toast */
     #toast {
@@ -235,7 +312,8 @@
        while html.keynav is set, i.e. when navigating with arrows/remote. */
     html.keynav .kf { outline: 3px solid var(--accent-h); outline-offset: 2px; border-radius: 8px; }
     html.keynav .server-card.kf { border-color: var(--accent); background: var(--card-h); }
-    html.keynav .back-btn.kf { outline-offset: 1px; border-radius: 50%; }
+    html.keynav .server-card.selected.kf { background: var(--accent-soft); }
+    html.keynav .back-btn.kf, html.keynav .help-close.kf { outline-offset: 1px; border-radius: 50%; }
     html.keynav .player-wrap.kf { outline: 3px solid var(--accent); outline-offset: 3px; }
 
     /* ─── RESPONSIVE ─── */
@@ -259,10 +337,10 @@
     </button>
     <div class="logo" id="logo">TFLIX</div>
     <div class="now-title" id="now-title">Loading…</div>
-    <a class="support-btn" id="support-btn" href="https://github.com/TomasTNunes/tflix/issues" target="_blank" rel="noopener noreferrer" title="Report an issue or get support on GitHub">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-      <span class="s-name">Support</span>
-    </a>
+    <button class="help-btn" id="help-btn" type="button" title="Help and FAQ">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.5-2.7 4.1"/><circle cx="12" cy="17.6" r=".6" fill="currentColor"/></svg>
+      <span class="s-name">Help</span>
+    </button>
   </header>
 
   <main id="main">
@@ -298,6 +376,27 @@
 
   <div id="toast"></div>
 
+  <div class="help-backdrop" id="help-backdrop">
+    <div class="help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <button class="help-close" id="help-close" aria-label="Close">✕</button>
+      <div class="help-body" id="help-body">
+        <div class="help-title" id="help-title">Help</div>
+        <div class="help-sub">Answers to common questions about watching on TFLIX.</div>
+        <div class="faq-list" id="faq-list"></div>
+      </div>
+      <div class="help-foot">
+        <div class="help-foot-text">Didn't find your answer? Report a problem, suggest a feature or ask a question.</div>
+        <a class="help-gh" id="help-issues" href="https://github.com/TomasTNunes/tflix/issues" target="_blank" rel="noopener noreferrer">
+          <svg width="17" height="17" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          Open an issue on GitHub
+        </a>
+        <div class="help-foot-src">TFLIX is open source · <a id="help-src" href="https://github.com/TomasTNunes/tflix" target="_blank" rel="noopener noreferrer">View the code</a></div>
+      </div>
+    </div>
+  </div>
+
+<script src="../assets/help.js"></script>
+<script src="../assets/watching.js"></script>
 <script>
 /* ─── CONFIG ─── */
 const API_BASE = "https://api.themoviedb.org/3";
@@ -321,14 +420,20 @@ const SERVERS = [
 ];
 
 /* Exact streaming source resolvers (ported from the original player) */
+// Bard, Xayah, Naafiri and Ryze remember where you stopped and jump there by
+// themselves, unless they're given a start time. This page decides where playback
+// starts, so their links carry the smallest one each accepts (Bard takes whole
+// numbers only, Ryze needs more than 1). withStartTime replaces it when resuming.
 const serverUrlResolvers = {
   //1: (p) => p.type === 'movie' ? `https://vidsrc.cc/v2/embed/movie/${p.id}?autoPlay=false` : `https://vidsrc.cc/v2/embed/tv/${p.id}/${p.season}/${p.episode}?autoPlay=false`, // Rakan (vidsrc.cc)
   1: (p) => p.type === 'movie' ? `https://vixsrc.to/movie/${p.id}?autoPlay=true&lang=en` : `https://vixsrc.to/tv/${p.id}/${p.season}/${p.episode}?autoPlay=true&lang=en`,                                   // Rakan
-  2: (p) => p.type === 'movie' ? `https://moviesapi.to/movie/${p.id}` : `https://moviesapi.to/tv/${p.id}-${p.season}-${p.episode}`,                                                                            // Bard
-  3: (p) => p.type === 'movie' ? `https://vidsrc-embed.ru/embed/movie?tmdb=${p.id}&autoplay=1` : `https://vidsrc-embed.ru/embed/tv?tmdb=${p.id}&season=${p.season}&episode=${p.episode}&autoplay=1`,                        // Xayah
-  4: (p) => p.type === 'movie' ? `https://player.videasy.net/movie/${p.id}` : `https://player.videasy.net/tv/${p.id}/${p.season}/${p.episode}?nextEpisode=true&episodeSelector=true`,                          // Ekko
-  5: (p) => p.type === 'movie' ? `https://vidfast.pro/movie/${p.id}?autoPlay=true` : `https://vidfast.pro/tv/${p.id}/${p.season}/${p.episode}?autoPlay=true`,                                                   // Naafiri
-  6: (p) => p.type === 'movie' ? `https://vidlink.pro/movie/${p.id}?title=true&poster=true&autoplay=true` : `https://vidlink.pro/tv/${p.id}/${p.season}/${p.episode}?title=true&poster=true&autoplay=true&nextbutton=true` // Ryze
+  2: (p) => p.type === 'movie' ? `https://moviesapi.to/movie/${p.id}?startAt=1` : `https://moviesapi.to/tv/${p.id}-${p.season}-${p.episode}?startAt=1`,                                                                            // Bard
+  3: (p) => p.type === 'movie' ? `https://vidsrc.sh/embed/movie?tmdb=${p.id}&autoplay=1&startAt=1` : `https://vidsrc.sh/embed/tv?tmdb=${p.id}&season=${p.season}&episode=${p.episode}&autoplay=1&autonext=1&startAt=1`,                        // Xayah
+  4: (p) => p.type === 'movie' ? `https://cinesrc.st/embed/movie/${p.id}?autoplay=true&prioritize=true&lastserver=wave` : `https://cinesrc.st/embed/tv/${p.id}?s=${p.season}&e=${p.episode}&autoplay=true&autonext=true&prioritize=true&lastserver=wave`, // Ekko
+  5: (p) => p.type === 'movie' ? `https://vidfast.vc/movie/${p.id}?autoPlay=true&startAt=1` : `https://vidfast.vc/tv/${p.id}/${p.season}/${p.episode}?autoPlay=true&startAt=1`,                                                   // Naafiri
+  // Ryze has no autoplay parameter on purpose: there it also forces the player to mute.
+  // Without it, the video still starts by itself, with sound, when the browser allows that.
+  6: (p) => p.type === 'movie' ? `https://vidlink.pro/movie/${p.id}?title=true&poster=true&nextbutton=true&player=jw&primaryColor=ffffff&secondaryColor=ffffff&iconColor=ffffff&startAt=1.01` : `https://vidlink.pro/tv/${p.id}/${p.season}/${p.episode}?title=true&poster=true&nextbutton=true&player=jw&primaryColor=ffffff&secondaryColor=ffffff&iconColor=ffffff&startAt=1.01` // Ryze
 };
 
 /* ─── STATE ─── */
@@ -361,6 +466,8 @@ function readParams() {
     out.season  = parseInt(p.get('s'), 10) || 1;
     out.episode = parseInt(p.get('e'), 10) || 1;
   }
+  const t = parseInt(p.get('t'), 10);
+  if (t >= WATCH_MIN_RESUME) out.startAt = t;
   return out;
 }
 
@@ -370,12 +477,16 @@ function syncUrl() {
   p.set('id', state.id);
   if (state.type === 'tv') { p.set('s', state.season); p.set('e', state.episode); }
   p.set('server', state.server);
+  // Keeps the place across a refresh, in the credits too: reopened there it just
+  // counts as finished again
+  if (session && session.time >= WATCH_MIN_RESUME) p.set('t', Math.floor(session.time));
   history.replaceState(null, '', `${location.pathname}?${p.toString()}`);
 }
 
 /* ─── PLAYER ─── */
 function loadPlayer() {
-  const src = serverUrlResolvers[state.server](state);
+  prepareSession();
+  const src = withStartTime(serverUrlResolvers[state.server](state));
   const loader = $('player-loading');
   loader.classList.remove('hide');
 
@@ -408,6 +519,320 @@ function updateTitleBar() {
     ? `${esc(base)} <span class="ep-tag">· S${state.season} E${state.episode}</span>`
     : esc(base);
   document.title = `${base} — TFLIX`;
+}
+
+/* ─── CONTINUE WATCHING ───
+   Records what's playing (assets/watching.js has the storage). The video is in
+   a cross-origin iframe, so we only know what the server tells us with
+   postMessage. Every server words those messages differently, so
+   readPlayerEvent turns them into one shape. If no event ever arrives, the
+   title and episode are still saved after a while, just without a position.
+   Nothing here may ever get in the way of the video, so failures stay quiet. */
+const SAVE_AFTER      = 30;        // seconds played before a new title counts as being watched (a seek counts at once)
+const START_GRACE     = 20;        // seconds played near the start before believing a player that ignored the start time
+const NO_EVENTS_AFTER = 120000;    // ms on the page before saving a server that reports nothing
+const LOCAL_EVERY     = 5000;      // ms between saves to this browser
+const REMOTE_EVERY    = 60000;     // ms between saves to the account during playback
+const REMOTE_GAP      = 10000;     // same, for pause/seek/leaving, which can come in bursts
+const FINISHED_AT     = { movie: 0.90, tv: 0.95 };   // a film's credits run 5-12 min, an episode's 1-2
+const MAX_EVENT_GAP   = 15;        // seconds; a bigger jump in position is a seek, not playback
+
+// Where each server's messages come from, besides the host in its embed URL
+const EXTRA_ORIGINS = { 2: ['https://vidspark.to'] };   // moviesapi.to redirects there
+
+let session = null;   // the episode or movie on screen; survives a server switch
+
+const watchKey = () => `${state.type}_${state.id}`;
+
+function newSession() {
+  return {
+    season: state.season, episode: state.episode,
+    time: 0, duration: 0, lastT: null, played: 0,
+    gotEvents: false, tracked: false,
+    settled: true, loadPlayed: 0,
+    finished: false, finishedAt: 0,
+    lastLocal: 0, lastRemote: 0, sentTime: null, noEventsTimer: null,
+  };
+}
+
+// Called for every player load: a new title or episode starts over, while
+// switching server on the same one carries on from the same place
+function prepareSession() {
+  const previous = session;
+  if (previous) clearTimeout(previous.noEventsTimer);
+
+  if (!previous) {
+    const saved = readOwnWatching(syncUid())[watchKey()];
+    const same = saved && (state.type === 'movie' || (saved.season === state.season && saved.episode === state.episode));
+    if (!state.startAt && same && saved.time >= WATCH_MIN_RESUME) state.startAt = Math.floor(saved.time);
+    session = newSession();
+    // Opening something already in progress keeps it up to date from the start.
+    // A caught-up show isn't in progress until its last episode is really rewatched.
+    session.tracked = !!((same && saved.status !== 'caughtup') || state.startAt);
+    session.time = state.startAt || 0;
+    if (same && saved.duration) session.duration = saved.duration;
+  } else if (previous.season === state.season && previous.episode === state.episode) {
+    // Another server for the same video carries on from the same place; a finished
+    // one stays finished, so its credits don't bring it back
+    state.startAt = previous.time >= WATCH_MIN_RESUME ? Math.floor(previous.time) : 0;
+    previous.lastT = null;
+    previous.gotEvents = false;
+  } else {
+    state.startAt = 0;
+    session = newSession();
+  }
+
+  const s = session;
+  s.settled = !state.startAt;
+  s.loadPlayed = 0;
+  s.noEventsTimer = setTimeout(() => {
+    if (s === session && !s.gotEvents) saveProgress(true);
+  }, NO_EVENTS_AFTER);
+}
+
+function withStartTime(src) {
+  if (!state.startAt) return src;
+  const u = new URL(src);
+  if (state.server === 4) {
+    u.searchParams.set('t', state.startAt);
+    u.searchParams.set('continueprompt', 'false');
+  } else {
+    u.searchParams.set('startAt', state.startAt);
+  }
+  return u.href;
+}
+
+function readPlayerEvent(server, d) {
+  if (!d || typeof d !== 'object') return null;
+  let name, time, duration, season, episode, id;
+  if (server === 2) {
+    if (d.source !== 'vidspark-player') return null;
+    name = d.event; time = d.currentTime; duration = d.duration;
+  } else if (server === 4) {
+    if (typeof d.type !== 'string' || !d.type.startsWith('cinesrc:')) return null;
+    name = d.type.slice('cinesrc:'.length);
+    time = d.currentTime; duration = d.duration;
+    if (name === 'nextepisode') { season = d.season; episode = d.episode; }
+  } else {
+    // Rakan puts the details under "event", the others under "data"
+    const p = server === 1 ? d.event : d.data;
+    if (d.type !== 'PLAYER_EVENT' || !p || typeof p !== 'object') return null;
+    if (server === 3) {
+      name = p.player_status; time = p.player_progress; duration = p.player_duration;
+      season = p.player_info?.season; episode = p.player_info?.episode; id = p.player_info?.tmdb;
+    } else {
+      name = p.event; time = p.currentTime; duration = p.duration;
+      season = p.season; episode = p.episode; id = p.tmdbId;
+    }
+  }
+  const num = v => (v != null && Number.isFinite(Number(v)) && Number(v) >= 0) ? Number(v) : undefined;
+  return {
+    time: num(time), duration: num(duration), season: num(season), episode: num(episode), id,
+    ended: name === 'ended' || name === 'completed',
+    stopped: name === 'pause' || name === 'paused' || name === 'seeked',
+    next: server === 6 && name === 'nextEpisode',
+  };
+}
+
+window.addEventListener('message', e => {
+  try {
+    const frame = $('player');
+    if (!state || !session || !frame || e.source !== frame.contentWindow) return;
+    const origins = [new URL(frame.src).origin, ...(EXTRA_ORIGINS[state.server] || [])];
+    if (!origins.includes(e.origin)) return;
+    const ev = readPlayerEvent(state.server, e.data);
+    if (ev) onPlayerEvent(ev);
+  } catch (err) { console.warn('Player event ignored', err); }
+});
+
+// The length to expect, to tell the video from an ad playing before it
+function expectedRuntime() {
+  if (state.type === 'movie') return (state.runtime || 0) * 60;
+  const ep = seasonCache[`${state.id}-${state.season}`]?.episodes?.find(x => x.episode_number === state.episode);
+  return (ep?.runtime || tvData?.episode_run_time?.[0] || 0) * 60;
+}
+function plausibleDuration(d) {
+  const expected = expectedRuntime();
+  return expected ? d >= expected * 0.5 : d >= 60;
+}
+
+function onPlayerEvent(ev) {
+  // Ryze's own next button keeps the start time and can't change season, so this
+  // page takes over and loads the next episode itself
+  if (ev.next) { if (state.type === 'tv') goNextEpisode(); return; }
+  if (state.type === 'tv' && ev.season > 0 && ev.episode > 0 &&
+      (ev.season !== state.season || ev.episode !== state.episode)) {
+    followEpisode(ev.season, ev.episode);
+  }
+  if (ev.id != null && String(ev.id) !== String(state.id)) return;
+
+  const s = session;
+  if (ev.duration) {
+    if (!plausibleDuration(ev.duration)) return;
+    s.duration = ev.duration;
+  }
+  let jumped = false;
+  if (ev.time != null && s.duration) {
+    s.gotEvents = true;
+    const delta = s.lastT == null ? 0 : ev.time - s.lastT;
+    if (delta > 0 && delta <= MAX_EVENT_GAP) { s.played += delta; s.loadPlayed += delta; }
+    s.lastT = ev.time;
+    // Until a player opened at a saved place is really there, it may still report
+    // the start of the video, which mustn't replace the place. It counts once it
+    // moves forward past the opening seconds, or has played on for a while anyway.
+    if (!s.settled) {
+      if ((ev.time < WATCH_MIN_RESUME || delta <= 0) && s.loadPlayed < START_GRACE) return;
+      s.settled = true;
+    } else {
+      jumped = Math.abs(delta) > MAX_EVENT_GAP;
+    }
+    s.time = ev.time;
+  }
+  if (!s.duration) return;
+
+  const pct = s.time / s.duration;
+  const limit = FINISHED_AT[state.type];
+  if (s.finished) {
+    // The credits keep reporting, which mustn't bring it back. Seeking back does.
+    // The URL still follows them, for a refresh or another server.
+    if (s.time >= s.finishedAt - 10 || pct >= limit) {
+      if (Date.now() - s.lastLocal >= LOCAL_EVERY) { s.lastLocal = Date.now(); syncUrl(); }
+      return;
+    }
+    s.finished = false;
+    s.lastLocal = 0;   // it was removed, so save it again right away
+  }
+
+  // Seeking shows real interest, wherever it lands, except into the credits
+  if (s.played >= SAVE_AFTER || (jumped && s.time >= WATCH_MIN_RESUME && pct < limit)) s.tracked = true;
+  if (!s.tracked) return;
+  if (pct >= limit || (ev.ended && pct >= 0.5)) { finishSession(); return; }
+  saveProgress(ev.stopped || jumped);
+}
+
+function buildEntry() {
+  const s = session;
+  const e = { ...state.meta, media_type: state.type, status: 'watching', updatedAt: Date.now() };
+  if (state.type === 'tv') { e.season = s.season; e.episode = s.episode; }
+  if (s.time > 0) e.time = Math.floor(s.time);
+  if (s.duration) e.duration = Math.floor(s.duration);
+  return e;
+}
+
+function saveProgress(force = false) {
+  const s = session;
+  if (!s || s.finished || !state.meta) return;
+  const now = Date.now();
+  if (!force && now - s.lastLocal < LOCAL_EVERY) return;
+  s.lastLocal = now;
+  const uid = syncUid();
+  storeWatching(uid, watchKey(), buildEntry());
+  syncUrl();
+  const send = uid && now - s.lastRemote >= (force ? REMOTE_GAP : REMOTE_EVERY);
+  if (send || !uid) s.sentTime = s.time;
+  if (send) {
+    s.lastRemote = now;
+    sendQueued(uid, watchKey());
+  }
+}
+
+// A finished movie is removed. A finished episode moves the show on to the
+// next one that has aired, or marks it caught up.
+function finishSession() {
+  const s = session;
+  s.finished = true;
+  s.finishedAt = s.time;
+  const uid = syncUid();
+  if (state.type === 'movie') {
+    storeWatching(uid, watchKey(), null);
+  } else {
+    if (!state.meta) return;
+    const e = buildEntry();
+    delete e.time;
+    delete e.duration;
+    const next = nextAiredEpisode();
+    if (next) { e.season = next.season; e.episode = next.episode; }
+    else e.status = 'caughtup';
+    storeWatching(uid, watchKey(), e);
+  }
+  syncUrl();
+  if (uid) sendQueued(uid, watchKey());
+}
+
+function nextAiredEpisode() {
+  const next = computeNext();
+  const last = tvData?.last_episode_to_air;
+  if (!next || !last) return null;
+  const aired = next.season < last.season_number ||
+    (next.season === last.season_number && next.episode <= last.episode_number);
+  return aired ? next : null;
+}
+
+// The player moved to another episode by itself (auto-next, its own menu):
+// the page follows it without reloading the player
+function followEpisode(season, episode) {
+  clearTimeout(session.noEventsTimer);
+  const seasonChanged = season !== state.season;
+  state.season = season;
+  state.episode = episode;
+  state.startAt = 0;
+  session = newSession();
+  session.gotEvents = true;
+  if (seasonChanged) { $('season-select').value = season; populateEpisodes(true); }
+  else { $('episode-select').value = episode; updateNextBtn(); }
+  syncUrl();
+  if (state.title) updateTitleBar();
+}
+
+// Leaving or hiding the page only writes if the place has changed since the last send
+const flushProgress = () => {
+  if (session && session.tracked && session.gotEvents && session.time !== session.sentTime) saveProgress(true);
+};
+window.addEventListener('pagehide', flushProgress);
+document.addEventListener('visibilitychange', () => { if (document.hidden) flushProgress(); });
+
+// The account: Firebase only loads when there's something to send, or when this
+// browser is signed in but hasn't been told yet which account progress syncs to
+let syncLoading = null;
+
+function loadSync() {
+  return syncLoading ||= (async () => {
+    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}`;
+    const [{ initializeApp }, a, f] = await Promise.all([
+      import(`${base}/firebase-app.js`),
+      import(`${base}/firebase-auth.js`),
+      import(`${base}/firebase-firestore.js`),
+    ]);
+    const app = initializeApp(FIREBASE_CONFIG);
+    const auth = a.getAuth(app);
+    await auth.authStateReady();
+    const user = auth.currentUser;
+    const uid = canSync(user) ? user.uid : null;
+    setSyncUid(uid);
+    return { f, db: f.getFirestore(app), uid };
+  })().catch(err => { syncLoading = null; throw err; });
+}
+
+// What can't be sent stays queued; the main page retries it
+async function sendQueued(uid, key) {
+  try {
+    const item = readJsonStore(watchQueueKey(uid))[key];
+    if (!item) return;
+    const { f, db, uid: current } = await loadSync();
+    if (current !== uid) return;
+    await writeWatching(f, f.doc(db, 'users', uid), key, item);
+    clearQueued(uid, key, item.updatedAt);
+  } catch (err) {
+    console.warn('Progress not synced yet', err);
+  }
+}
+
+// TITLE_FIELDS from a TMDB details response, which lists genres in full
+function titleMeta(data) {
+  const meta = {};
+  for (const f of TITLE_FIELDS) if (data[f] != null) meta[f] = data[f];
+  if (!meta.genre_ids && Array.isArray(data.genres)) meta.genre_ids = data.genres.map(g => g.id);
+  return meta;
 }
 
 /* ─── SERVERS ─── */
@@ -445,6 +870,7 @@ async function setupTv() {
     tvData = await tmdb(`/tv/${state.id}`);
     if (!tvData || (!tvData.name && !tvData.original_name)) throw new Error('not found');
     state.title = tvData.name || tvData.original_name;
+    state.meta = titleMeta(tvData);
     updateTitleBar();
 
     const seasons = (tvData.seasons || []).filter(s => s.season_number > 0);
@@ -544,6 +970,8 @@ async function setupMovie() {
     const data = await tmdb(`/movie/${state.id}`);
     if (!data || (!data.title && !data.original_title)) throw new Error('not found');
     state.title = data.title || data.original_title;
+    state.meta = titleMeta(data);
+    state.runtime = data.runtime;
   } catch {
     showFatal();
     return;
@@ -583,6 +1011,26 @@ $('back-btn').addEventListener('click', () => {
   else location.href = '/';
 });
 
+/* ─── HELP ─── */
+const helpIsOpen = () => $('help-backdrop').classList.contains('open');
+renderFaq($('faq-list'));
+function openHelp() {
+  collapseFaq($('faq-list'));
+  $('help-body').scrollTop = 0;
+  $('help-backdrop').classList.add('open');
+  window.__knavFocus(document.querySelector('.faq-q'));
+}
+function closeHelp() {
+  if (!helpIsOpen()) return;
+  $('help-backdrop').classList.remove('open');
+  if (document.activeElement && $('help-backdrop').contains(document.activeElement)) document.activeElement.blur();
+  window.__knavFocus($('help-btn'));
+}
+$('help-btn').addEventListener('click', openHelp);
+$('help-close').addEventListener('click', closeHelp);
+$('help-backdrop').addEventListener('click', e => { if (e.target === $('help-backdrop')) closeHelp(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHelp(); });
+
 /* ─── INIT ─── */
 (async function init() {
   state = readParams();
@@ -599,6 +1047,7 @@ $('back-btn').addEventListener('click', () => {
 
   buildServers();
   loadPlayer();              // start streaming immediately
+  if (localStorage.getItem(SIGNED_IN_KEY) && !syncUid()) loadSync().catch(() => {});
 
   if (state.type === 'tv') await setupTv();
   else await setupMovie();
@@ -606,7 +1055,7 @@ $('back-btn').addEventListener('click', () => {
 
 /* ─── TV / D-PAD NAVIGATION ───
    Same model as the main page: arrow keys + Enter (what a TV remote sends)
-   walk the page's controls — back/support buttons → season/episode →
+   walk the page's controls — back/help buttons → season/episode →
    next episode → server cards. Activates on the first arrow key, deactivates on mouse or
    touch, so pointer users never see it. Back itself is handled outside the
    page (browser/back gesture/Android app). */
@@ -626,8 +1075,11 @@ $('back-btn').addEventListener('click', () => {
   }
 
   function getSections() {
+    // Help open → only its controls, top to bottom
+    if (helpIsOpen())
+      return [$('help-close'), ...document.querySelectorAll('.faq-q'), $('help-issues'), $('help-src')].map(el => ({ items: [el] }));
     const secs = [];
-    const header = [$('back-btn'), $('support-btn')].filter(vis);
+    const header = [$('back-btn'), $('help-btn')].filter(vis);
     if (header.length) secs.push({ items: header });
     const tv = $('tv-panel');
     if (tv && !tv.hidden) {
@@ -645,6 +1097,9 @@ $('back-btn').addEventListener('click', () => {
     document.querySelectorAll('.server-card').forEach(c => { if (vis(c)) secs.push({ items: [c] }); });
     return secs;
   }
+
+  /* The help dialog moves focus into itself on open and back on close */
+  window.__knavFocus = el => { if (active && vis(el)) setFocus(el, false); };
 
   function focusInitial() {
     const sel = document.querySelector('.server-card.selected');

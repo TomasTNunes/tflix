@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1024" height="1024">
+  <!-- Alternate TFLIX icon (sample D2), not used by the apps: a white lamp and
+       fading white beam on a red tile. Kept for possible later use. -->
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff2f3a"/>
+      <stop offset="1" stop-color="#a8040e"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.12"/>
+    </linearGradient>
+    <clipPath id="tileClip"><rect width="512" height="512" rx="112"/></clipPath>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#tile)"/>
+  <g clip-path="url(#tileClip)">
+    <polygon points="196,170 316,170 366,512 146,512" fill="url(#beam)"/>
+    <rect x="88" y="92" width="336" height="92" rx="16" fill="#fff"/>
+  </g>
+</svg>

@@ -97,6 +97,60 @@
     .logo:hover { transform: scale(1.04); }
 
     .nav-links { display: flex; align-items: center; gap: 1.4rem; flex-shrink: 0; }
+
+    /* Menu button + side drawer: the way to the sections once the nav links
+       are hidden (narrow screens). The button only shows then. */
+    .menu-btn {
+      display: none; place-items: center; flex-shrink: 0;
+      width: 38px; height: 38px; margin-right: calc(-1 * clamp(0.4rem, 1.2vw, 1.2rem)); padding: 0;
+      background: transparent; border: none; border-radius: 50%;
+      color: var(--text); cursor: pointer; transition: background .2s;
+    }
+    .menu-btn:hover { background: rgba(255,255,255,0.08); }
+    .drawer-backdrop {
+      position: fixed; inset: 0; z-index: 440;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(3px);
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .drawer-backdrop.open { opacity: 1; pointer-events: all; }
+    .nav-drawer {
+      position: fixed; top: 0; bottom: 0; left: 0; z-index: 450;
+      width: min(280px, 82vw); padding: 0 0.75rem 1.5rem;
+      display: flex; flex-direction: column; gap: 0.2rem;
+      background: var(--bg-elev); border-right: 1px solid var(--line);
+      box-shadow: 24px 0 60px rgba(0,0,0,0.6);
+      transform: translateX(-102%); visibility: hidden;
+      transition: transform .3s var(--ease), visibility 0s linear .3s;
+    }
+    .nav-drawer.open { transform: none; visibility: visible; transition: transform .3s var(--ease); }
+    .drawer-head {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 70px; padding: 0 0.25rem 0 0.75rem; margin-bottom: 0.4rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .drawer-head .logo { cursor: default; }
+    .drawer-head .logo:hover { transform: none; }
+    .drawer-close {
+      width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+      background: transparent; border: none; color: var(--muted); cursor: pointer;
+      font-size: 1.15rem; line-height: 1; transition: background .2s, color .2s;
+    }
+    .drawer-close:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+    .drawer-link {
+      position: relative; display: flex; align-items: center; gap: 0.85rem;
+      width: 100%; padding: 0.8rem 0.9rem; border-radius: 8px;
+      background: none; border: none; text-align: left;
+      color: var(--muted); font-size: 0.98rem; font-weight: 500; cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .drawer-link[hidden] { display: none; }
+    .drawer-link svg { flex-shrink: 0; }
+    .drawer-link:hover { background: var(--card-h); color: var(--text); }
+    .drawer-link.active { color: var(--text); font-weight: 700; background: rgba(229,9,20,0.1); }
+    .drawer-link.active::before {
+      content: ''; position: absolute; left: 0; top: 0.6rem; bottom: 0.6rem;
+      width: 3px; border-radius: 3px; background: var(--accent);
+    }
     .nav-link {
       font-size: 0.86rem; font-weight: 500; color: var(--muted);
       cursor: pointer; transition: color .2s; position: relative; padding: 4px 0;
@@ -143,7 +197,7 @@
     }
     .search-wrap.open #search-clear.visible { display: block; }
 
-    .support-btn {
+    .pill-btn {
       display: flex; align-items: center; gap: 0.5rem;
       padding: 0.45rem 1rem;
       background: linear-gradient(135deg, rgba(229,9,20,0.18), rgba(229,9,20,0.04));
@@ -153,17 +207,17 @@
       cursor: pointer; white-space: nowrap; flex-shrink: 0;
       transition: background .2s, border-color .2s, box-shadow .25s, transform .15s var(--ease);
     }
-    .support-btn:hover {
+    .pill-btn:hover {
       background: linear-gradient(135deg, rgba(229,9,20,0.32), rgba(229,9,20,0.1));
       border-color: rgba(255,34,46,0.7);
       box-shadow: 0 4px 22px rgba(229,9,20,0.35);
       transform: translateY(-1px);
     }
-    .support-btn:active { transform: scale(.96); }
-    .support-btn svg { flex-shrink: 0; }
+    .pill-btn:active { transform: scale(.96); }
+    .pill-btn svg { flex-shrink: 0; }
     @media (max-width: 560px) {
-      .support-btn span.s-name { display: none; }
-      .support-btn { padding: 0.45rem 0.6rem; }
+      .pill-btn span.s-name { display: none; }
+      .pill-btn { padding: 0.45rem 0.6rem; }
     }
 
     .server-wrap { position: relative; flex-shrink: 0; }
@@ -202,6 +256,44 @@
     .s-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: .15s; }
 
     @keyframes pop { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
+
+    .account-wrap { position: relative; flex-shrink: 0; }
+    .account-btn {
+      position: relative;
+      width: 38px; height: 38px; border-radius: 50%; padding: 0;
+      display: grid; place-items: center;
+      background: rgba(255,255,255,0.06); border: 1px solid var(--line);
+      color: var(--text); cursor: pointer;
+      font-family: 'Bricolage Grotesque', sans-serif; font-size: 1rem; font-weight: 800;
+      transition: background .2s, border-color .2s, box-shadow .25s, transform .15s var(--ease);
+    }
+    .account-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+    .account-btn:active { transform: scale(.94); }
+    /* Signed in: the same soft red initial as next to the name in the menu */
+    /* Solid (not see-through over the hero): the menu's red tint on its dark background */
+    .account-btn.signed-in { background: #371016; border-color: #51101a; color: var(--accent-h); }
+    .account-btn.signed-in:hover { background: #4c0f15; border-color: #7b0d15; }
+    .account-btn.signed-in svg { display: none; }
+    /* Email not verified yet (My List isn't syncing), or this app is out of date */
+    .account-btn.unverified::after, .account-btn.app-outdated::after {
+      content: ''; position: absolute; top: -2px; right: -2px;
+      width: 11px; height: 11px; border-radius: 50%;
+      background: #fbbf24; border: 2px solid var(--bg);
+    }
+    /* Who's signed in: muted and not clickable, unlike the rows below it */
+    .account-head {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.75rem 1rem; border-bottom: 1px solid var(--line); cursor: default;
+    }
+    .account-head-avatar {
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center;
+      background: rgba(229,9,20,0.18); color: var(--accent-h);
+      font-family: 'Bricolage Grotesque', sans-serif; font-size: 0.8rem; font-weight: 800;
+    }
+    .account-head-name { font-size: 0.84rem; color: var(--muted); word-break: break-all; }
+    .s-dot.warn { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
+    #account-initial:empty { display: none; }
 
     /* ─────────────── HERO BILLBOARD ─────────────── */
     #hero {
@@ -372,6 +464,35 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.5);
     }
     .card-info .match { color: var(--green); font-size: 0.72rem; font-weight: 700; }
+
+    /* My List toggle: mirrors .mini-play on the right. It only takes clicks
+       while the card is hovered, so a tap on a touch screen opens the title
+       instead of silently toggling an invisible button. */
+    .card-add {
+      margin-left: auto; padding: 0;
+      width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center;
+      background: rgba(20,20,26,0.75); color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.7);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      cursor: pointer; pointer-events: none;
+      transition: transform .2s var(--ease), background .2s, border-color .2s, box-shadow .2s, color .2s;
+    }
+    .card:hover .card-add, .rank-card:hover .card-add { pointer-events: auto; }
+    .card-add:hover {
+      transform: scale(1.2);
+      background: var(--accent); border-color: var(--accent); color: #fff;
+      box-shadow: 0 0 0 4px var(--accent-soft), 0 4px 14px rgba(229,9,20,0.55);
+    }
+    .card-add.added { background: #fff; border-color: #fff; color: #0a0a0d; }
+    .card-add.added:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .list-btn svg { transition: transform .25s var(--ease); }
+    .list-btn:hover .ic-plus { transform: rotate(90deg); }
+    .list-btn .ic-check, .list-btn.added .ic-plus { display: none; }
+    .list-btn.added .ic-check { display: block; }
+    .list-btn.pop { animation: listPop .35s var(--ease); }
+    @keyframes listPop { 40% { transform: scale(1.4); } }
     .card-info-title {
       font-size: 0.82rem; font-weight: 600; line-height: 1.25;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -385,6 +506,48 @@
     }
     .card-badge.movie { color: #fff; }
     .card-badge.tv { color: #ffd0d0; }
+
+    /* Continue Watching: how far along, the title's details, and a way out of
+       the row. The buttons only show on hover where there's a mouse; touch
+       screens always show them, as tapping these cards goes straight to the
+       player. */
+    .card-details {
+      padding: 0; border: 0; cursor: pointer; pointer-events: none;
+      transition: transform .2s var(--ease), background .2s, color .2s;
+    }
+    .card:hover .card-details { pointer-events: auto; }
+    .card-details:hover { transform: scale(1.2); background: var(--accent); color: #fff; }
+    /* The row's arrows overlap the cards at each end, where these buttons are.
+       So here only a band across the middle of an arrow takes clicks, between
+       ✕ above and ⓘ below. */
+    .row[data-anchor="continue"] .scroller-wrap:hover .arrow { pointer-events: none; }
+    .row[data-anchor="continue"] .scroller-wrap:hover .arrow::before {
+      content: ''; position: absolute; left: 0; right: 0; top: 60px; bottom: 100px;
+      pointer-events: auto;
+    }
+    .card-progress {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
+      background: rgba(255,255,255,0.28); pointer-events: none;
+    }
+    .card-progress span { display: block; height: 100%; background: var(--accent); }
+    .card-remove {
+      position: absolute; top: 6px; right: 6px; padding: 0;
+      width: 26px; height: 26px; border-radius: 50%;
+      display: grid; place-items: center; cursor: pointer;
+      background: rgba(20,20,26,0.82); color: #fff;
+      border: 1.5px solid rgba(255,255,255,0.7);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      opacity: 0; transition: opacity .2s, transform .2s var(--ease), background .2s, border-color .2s;
+    }
+    .card:hover .card-remove { opacity: 1; }
+    .card-remove:hover { transform: scale(1.15); background: var(--accent); border-color: var(--accent); }
+    html.keynav .card.kf .card-remove, html.keynav .card.kf-parent .card-remove { opacity: 1; }
+    html.keynav .card-remove.kf { border-radius: 50%; }
+    @media (hover: none) {
+      .card-remove { opacity: 1; }
+      .card-watch .card-info { opacity: 1; transform: translate3d(0, 0, 0); }
+      .card-watch .card-details, .card-watch .card-add { pointer-events: auto; }
+    }
 
     /* Digital release badge on card */
     .card-dr-badge {
@@ -459,6 +622,24 @@
     .filter-tab:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
     .filter-tab.active { background: #fff; border-color: #fff; color: #0a0a0d; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem 0.9rem; }
+    /* People in search: a row above the titles under "All", a grid under "People" */
+    .sr-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.7rem; }
+    .sr-people { margin-bottom: 1.8rem; }
+    .people-row {
+      display: flex; gap: 1rem; overflow-x: auto; scrollbar-width: none;
+      padding: 0.45rem 0.3rem; margin: -0.45rem -0.3rem 0;
+    }
+    .people-row::-webkit-scrollbar { display: none; }
+    .person-card {
+      flex: 0 0 auto; width: 112px; padding: 0; text-align: center;
+      background: none; border: none; color: inherit; font-family: inherit; cursor: pointer;
+    }
+    .person-card .cast-photo { width: 96px; height: 96px; }
+    .person-card:hover .cast-photo { transform: scale(1.07); border-color: rgba(255,255,255,0.75); box-shadow: 0 8px 22px rgba(0,0,0,0.6); }
+    .person-card:hover .cast-name { color: var(--accent-h); }
+    .person-card .cast-name, .person-card .cast-character { display: -webkit-box; }
+    .grid.people-grid { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 1.4rem 0.9rem; }
+    .grid.people-grid .person-card { width: 100%; }
     .grid .card { width: 100%; }
     .grid .card:hover { transform: scale(1.05) translateY(-4px); }
 
@@ -477,9 +658,10 @@
       position: fixed; inset: 0; background: rgba(0,0,0,0.78);
       backdrop-filter: blur(6px); z-index: 600;
       display: flex; align-items: flex-start; justify-content: center;
-      padding: 4vh 1rem; overflow-y: auto;
+      padding: 4vh 1rem; overflow-y: auto; scrollbar-width: none;
       opacity: 0; pointer-events: none; transition: opacity .25s;
     }
+    .modal-backdrop::-webkit-scrollbar { display: none; }
     .modal-backdrop.open { opacity: 1; pointer-events: all; }
     .modal {
       background: var(--bg-elev); border: 1px solid var(--line);
@@ -491,7 +673,8 @@
     }
     .modal-backdrop.open .modal { transform: none; }
 
-    .modal-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+    .modal-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+    .modal-scroll::-webkit-scrollbar { display: none; }
     .modal-hero { position: relative; aspect-ratio: 16/9; background: var(--card); }
     #modal-backdrop-img { position: absolute; inset: 0; background-size: cover; background-position: center 20%; }
     .modal-hero::after {
@@ -508,14 +691,18 @@
       font-size: clamp(1.6rem, 4vw, 2.6rem); font-weight: 800; line-height: 1.02;
       letter-spacing: -0.02em; text-shadow: 0 3px 20px rgba(0,0,0,0.6);
     }
-    .modal-close {
-      position: absolute; top: 1rem; right: 1rem; z-index: 3;
+    .modal-view { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+    .modal-close, .modal-back {
+      position: absolute; top: 1rem; z-index: 3;
       width: 38px; height: 38px; border-radius: 50%;
       background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.15);
       color: #fff; cursor: pointer; font-size: 1.3rem; line-height: 1;
       display: grid; place-items: center; backdrop-filter: blur(6px); transition: background .2s;
     }
-    .modal-close:hover { background: rgba(0,0,0,0.85); }
+    .modal-close { right: 1rem; }
+    .modal-back { left: 1rem; }
+    .modal-close:hover, .modal-back:hover { background: rgba(0,0,0,0.85); }
+    .modal-back:active { transform: scale(.93); }
 
     .modal-body { padding: 1.4rem 2rem 1.5rem; }
     .modal-meta { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; font-size: 0.9rem; font-weight: 500; color: rgba(255,255,255,0.8); margin-bottom: 1rem; }
@@ -559,6 +746,88 @@
       margin-bottom: 0;
       display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
     }
+    /* ── Cast row (modal) ── */
+    .modal-cast { padding-bottom: 1.6rem; }
+    .modal-cast .field-label { padding: 0 2rem; margin-bottom: 0.2rem; }
+    .cast-scroller {
+      display: flex; gap: 1rem;
+      overflow-x: hidden;
+      padding: 0.5rem 2rem;
+      scrollbar-width: none;
+      overscroll-behavior-x: contain;
+    }
+    .cast-scroller::-webkit-scrollbar { display: none; }
+    @media (hover: none) { .cast-scroller { overflow-x: auto; } }
+    .cast-wrap .arrow { bottom: 0; width: 3rem; background: linear-gradient(to right, var(--bg-elev) 25%, transparent); }
+    .cast-wrap.static .arrow { display: none; }
+    .cast-member { flex: 0 0 auto; width: 96px; text-align: center; cursor: pointer; }
+    .cast-photo {
+      width: 84px; height: 84px; border-radius: 50%; object-fit: cover; display: block;
+      margin: 0 auto 0.55rem; background: var(--card); border: 1px solid var(--line);
+      transition: transform .25s var(--ease), border-color .25s, box-shadow .25s;
+    }
+    .cast-member:hover .cast-photo {
+      transform: scale(1.07); border-color: rgba(255,255,255,0.75);
+      box-shadow: 0 8px 22px rgba(0,0,0,0.6);
+    }
+    .cast-member:hover .cast-name { color: var(--accent-h); }
+    .cast-photo-placeholder { display: grid; place-items: center; color: var(--muted); font-size: 1.2rem; font-weight: 700; }
+    .cast-name {
+      font-size: 0.82rem; font-weight: 500; line-height: 1.25; color: var(--text); transition: color .2s;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .cast-character {
+      font-size: 0.72rem; line-height: 1.25; color: var(--muted); margin-top: 2px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    /* ── Person view (modal) ── */
+    .person-hero { position: relative; padding: 4.6rem 2rem 1.4rem; overflow: hidden; }
+    .person-hero-bg {
+      position: absolute; inset: 0; background-size: cover; background-position: center 25%;
+      opacity: 0.35;
+    }
+    .person-hero-bg::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(17,17,22,0.15), var(--bg-elev));
+    }
+    .person-head { position: relative; display: flex; align-items: center; gap: 1.6rem; margin-bottom: 1.2rem; }
+    .person-photo {
+      width: 150px; height: 150px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+      background: var(--card); border: 3px solid rgba(255,255,255,0.12);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    }
+    .person-photo.cast-photo-placeholder { font-size: 2.4rem; }
+    .person-name {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; line-height: 1.05;
+      letter-spacing: -0.02em; text-shadow: 0 3px 20px rgba(0,0,0,0.6); margin-bottom: 0.6rem;
+    }
+    .person-fact { font-size: 0.9rem; line-height: 1.55; color: rgba(255,255,255,0.8); }
+    .person-bio {
+      position: relative; font-size: 0.94rem; line-height: 1.6; color: rgba(255,255,255,0.78);
+      white-space: pre-line;
+      display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .person-bio.expanded { display: block; }
+    .person-bio-more {
+      position: relative; background: none; border: none; padding: 0.4rem 0 0;
+      color: var(--text); font-family: inherit; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; transition: color .2s;
+    }
+    .person-bio-more:hover { color: var(--accent-h); }
+    .person-credits { padding: 0.6rem 2rem 2rem; }
+    .person-section-title {
+      font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.3rem; font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .person-section-title .count { font-family: inherit; font-size: 0.85rem; font-weight: 500; color: var(--muted); margin-left: 0.4rem; }
+    .person-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    .appearance-role {
+      font-size: 0.74rem; line-height: 1.3; color: var(--muted); text-align: center; margin-top: 0.45rem;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
     .field-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
     .modal-selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.85rem; }
     .modal-select {
@@ -572,11 +841,326 @@
     }
     .modal-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
     .modal-select option { background: #16161c; color: var(--text); }
+    /* Slim gray scrollbar in the dropdown list (Chrome/Edge/app draw these
+       in the native popup; the standard scrollbar-color is ignored there) */
+    .modal-select::-webkit-scrollbar { width: 8px; }
+    .modal-select::-webkit-scrollbar-track { background: transparent; }
+    .modal-select::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.28); border-radius: 99px; }
+    .modal-select::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.45); }
     .modal-footer {
       flex-shrink: 0; padding: 0.85rem 2rem 1.2rem;
       border-top: 1px solid var(--line); background: var(--bg-elev);
     }
-    .modal-watch-btn { width: 100%; padding: 0.95rem; font-size: 1.02rem; }
+    .modal-actions { display: flex; gap: 0.7rem; }
+    .modal-watch-btn { flex: 1; padding: 0.95rem; font-size: 1.02rem; }
+    .modal-list-btn {
+      flex-shrink: 0; padding: 0.95rem 1.4rem; font-size: 1.02rem;
+      background: rgba(70,70,80,0.75); color: #fff;
+    }
+    .modal-list-btn:hover, .hero-list:hover {
+      background: var(--accent); transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(229,9,20,0.45);
+    }
+    .modal-list-btn.added, .hero-list.added { background: rgba(255,255,255,0.16); }
+    .modal-list-btn.added:hover, .hero-list.added:hover { background: var(--accent); }
+
+    /* ─────────────── ACCOUNT DIALOG ─────────────── */
+    .auth-backdrop {
+      position: fixed; inset: 0; z-index: 700;
+      background: rgba(0,0,0,0.78); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center; padding: 1rem;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .auth-backdrop.open { opacity: 1; pointer-events: all; }
+    .auth-dialog {
+      --pad-x: 2rem;
+      position: relative; width: 100%; max-width: 400px; max-height: 92vh;
+      display: flex; flex-direction: column;
+      background: var(--bg-elev); border: 1px solid var(--line);
+      border-radius: var(--radius-lg); box-shadow: 0 30px 90px rgba(0,0,0,0.85);
+      padding: 2.2rem var(--pad-x) 1.8rem;
+      transform: translateY(20px) scale(0.97); transition: transform .3s var(--ease);
+    }
+    /* The contents scroll inside the card, so ✕ and Back stay in its corners.
+       It spans the card's full width (and a few px up) so hover lifts and
+       focus outlines aren't clipped. */
+    .auth-body {
+      min-height: 0; overflow-y: auto; scrollbar-width: none;
+      margin: -6px calc(-1 * var(--pad-x)) 0; padding: 6px var(--pad-x) 0;
+    }
+    .auth-body::-webkit-scrollbar { display: none; }
+    .auth-backdrop.open .auth-dialog { transform: none; }
+    .auth-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em;
+      margin-bottom: 0.35rem; padding-right: 2.5rem;
+    }
+    .auth-sub { font-size: 0.9rem; line-height: 1.5; color: var(--muted); margin-bottom: 1.4rem; word-break: break-word; }
+    .auth-input {
+      width: 100%; height: 46px; padding: 0 1rem; margin-bottom: 1rem;
+      background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+      color: var(--text); font-family: inherit; font-size: 0.95rem;
+      outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    .auth-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .auth-msg { font-size: 0.84rem; line-height: 1.45; color: #ff6b6b; margin: -0.2rem 0 1rem; }
+    .auth-msg:empty { display: none; }
+    .auth-msg.ok { color: var(--green); }
+    .auth-dialog .btn { width: 100%; }
+    .auth-actions { display: flex; flex-direction: column; gap: 0.6rem; }
+    .auth-note { font-size: 0.78rem; line-height: 1.5; color: var(--muted); margin-top: 0.9rem; }
+    .auth-foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.3rem; }
+    .auth-link {
+      background: none; border: none; padding: 0;
+      color: var(--text); font-family: inherit; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; transition: color .2s;
+    }
+    .auth-link:hover { color: var(--accent-h); }
+    .auth-link .acc-hint { display: none; }
+    .auth-link.disabled, .auth-link.disabled:hover { color: rgba(255,255,255,0.32); cursor: not-allowed; }
+    .auth-link.disabled:hover .acc-label, html.keynav .auth-link.disabled.kf .acc-label { display: none; }
+    .auth-link.disabled:hover .acc-hint, html.keynav .auth-link.disabled.kf .acc-hint { display: inline; }
+    .auth-dialog [hidden] { display: none; }
+    .auth-sub:empty { display: none; }
+    /* Pinned to the top: the day list below the grid changes height, and
+       re-centring would move the month arrows under the cursor */
+    .auth-dialog.wide { max-width: 780px; align-self: flex-start; margin-top: 4vh; }
+
+    /* Calendar card */
+    .cal-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem; }
+    .cal-month {
+      font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.15rem; font-weight: 700;
+      min-width: 11rem; text-align: center;
+    }
+    .cal-nav {
+      width: 34px; height: 34px; border-radius: 50%; padding: 0;
+      display: grid; place-items: center;
+      background: var(--card); border: 1px solid var(--line); color: var(--text);
+      cursor: pointer; transition: background .15s, border-color .15s;
+    }
+    .cal-nav:hover { background: var(--card-h); border-color: rgba(255,255,255,0.2); }
+    .cal-today {
+      margin-left: auto; padding: 0.4rem 0.95rem; border-radius: 99px;
+      background: transparent; border: 1px solid var(--line); color: var(--text);
+      font-family: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: border-color .15s;
+    }
+    .cal-today:hover { border-color: rgba(255,255,255,0.3); }
+    .cal-legend { display: flex; gap: 1rem; margin-bottom: 0.7rem; font-size: 0.76rem; color: var(--muted); }
+    .cal-legend span { display: flex; align-items: center; gap: 0.4rem; }
+    .cal-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .cal-dot.episode { background: var(--accent-h); }
+    .cal-dot.digital { background: var(--green); }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; transition: opacity .2s; }
+    .cal-grid.loading { opacity: 0.5; }
+    .cal-wd {
+      padding-bottom: 0.3rem; text-align: center;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+    }
+    .cal-cell {
+      min-height: 76px; padding: 0.35rem; overflow: hidden;
+      display: flex; flex-direction: column; align-items: stretch; gap: 3px; text-align: left;
+      background: var(--card); border: 1px solid transparent; border-radius: 8px;
+      color: var(--text); font-family: inherit; cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .cal-cell:hover { background: var(--card-h); }
+    .cal-cell.other { opacity: 0.38; }
+    .cal-cell.selected { background: var(--card-h); border-color: rgba(255,255,255,0.35); }
+    .cal-num { align-self: flex-start; padding: 0 0.35rem; border-radius: 99px; font-size: 0.78rem; font-weight: 600; }
+    .cal-cell.today .cal-num { background: var(--accent); color: #fff; }
+    .cal-chip {
+      padding: 1px 5px; border-radius: 4px;
+      font-size: 0.66rem; font-weight: 600; line-height: 1.3;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cal-chip.episode { background: rgba(229,9,20,0.22); color: #ffb3b6; }
+    .cal-chip.digital { background: rgba(34,197,94,0.18); color: #86efac; }
+    .cal-more { font-size: 0.64rem; color: var(--muted); }
+    .cal-day { margin-top: 1.1rem; }
+    .cal-day-title { margin-bottom: 0.6rem; font-size: 0.95rem; font-weight: 700; }
+    .cal-empty { padding: 0.4rem 0; font-size: 0.86rem; color: var(--muted); }
+    .cal-item {
+      display: flex; align-items: center; gap: 0.8rem;
+      width: 100%; padding: 0.5rem; margin-bottom: 0.4rem; text-align: left;
+      background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+      color: var(--text); font-family: inherit; cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .cal-item:hover { background: var(--card-h); border-color: rgba(255,255,255,0.2); }
+    .cal-item-poster { width: 38px; aspect-ratio: 2/3; border-radius: 4px; object-fit: cover; flex-shrink: 0; background: var(--bg-elev); }
+    .cal-item-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .cal-item-title { font-size: 0.9rem; font-weight: 600; }
+    .cal-item-sub { font-size: 0.78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cal-badge { flex-shrink: 0; padding: 2px 8px; border-radius: 99px; font-size: 0.66rem; font-weight: 700; }
+    .cal-badge.episode { background: rgba(229,9,20,0.18); color: #ff8a8a; }
+    .cal-badge.digital { background: rgba(34,197,94,0.14); color: #4ade80; }
+    @media (max-width: 560px) {
+      .cal-month { min-width: 0; font-size: 1rem; }
+      .cal-cell { min-height: 46px; padding: 0.25rem; align-items: center; }
+      .cal-num { align-self: center; }
+      /* Too narrow for titles: each release becomes a dot */
+      .cal-chip { width: 6px; height: 6px; padding: 0; border-radius: 50%; font-size: 0; }
+      .cal-chip.episode { background: var(--accent-h); }
+      .cal-chip.digital { background: var(--green); }
+      .cal-more { display: none; }
+    }
+    .auth-dialog.has-back { padding-top: 4.2rem; }
+
+    /* Get Apps */
+    .auth-dialog.apps { max-width: 480px; }
+    .app-list { display: flex; flex-direction: column; gap: 0.6rem; }
+    .app-card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+    .app-row { display: flex; align-items: center; gap: 0.9rem; padding: 0.9rem 1rem 0.55rem; }
+    .app-icon {
+      width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+      display: grid; place-items: center; background: rgba(255,255,255,0.07); color: var(--text);
+    }
+    .app-info { flex: 1; min-width: 0; }
+    .app-name { display: flex; align-items: center; gap: 0.5rem; font-size: 0.98rem; font-weight: 700; }
+    .app-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 4px; font-size: 0.78rem; color: var(--muted); }
+    .app-meta .acct-badge { margin-left: 0; }
+    .auth-dialog a.btn { text-decoration: none; }
+    .auth-dialog .btn.app-dl.update { background: var(--accent); color: #fff; }
+    .auth-dialog .btn.app-dl.update:hover { background: var(--accent-h); box-shadow: 0 6px 22px rgba(229,9,20,0.45); }
+    .auth-dialog .btn.app-dl { width: auto; flex-shrink: 0; padding: 0.6rem 1.1rem; font-size: 0.88rem; text-decoration: none; }
+    .app-howto-btn {
+      display: flex; align-items: center; gap: 0.35rem; margin: 0 0 0.55rem calc(1rem + 44px + 0.9rem);
+      padding: 0.15rem 0; background: none; border: none; color: var(--muted);
+      font-family: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: color .2s;
+    }
+    .app-howto-btn:hover { color: var(--text); }
+    .app-howto-btn svg { transition: transform .2s var(--ease); }
+    .app-howto-btn[aria-expanded="true"] { color: var(--text); }
+    .app-howto-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+    .app-howto { margin: 0 1rem 0.9rem; padding-top: 0.75rem; border-top: 1px solid var(--line); font-size: 0.84rem; line-height: 1.5; color: rgba(255,255,255,0.78); }
+    .app-howto ol { margin: 0 0 0.75rem; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.3rem; }
+    .app-howto b { color: var(--text); font-weight: 700; }
+    .app-howto-head { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.35rem; }
+    .app-howto p { margin: 0; }
+    .app-howto ol + .app-howto-head { margin-top: 0.2rem; }
+    @media (max-width: 420px) {
+      .app-row { flex-wrap: wrap; }
+      .app-howto-btn { margin-left: 1rem; }
+      .auth-dialog .btn.app-dl { width: 100%; }
+    }
+
+    /* Help: FAQ list, with the GitHub link pinned under it */
+    .auth-dialog.help { max-width: 520px; }
+    .faq-list { display: flex; flex-direction: column; gap: 0.5rem; padding-bottom: 0.2rem; }
+    .faq-item { background: var(--card); border: 1px solid var(--line); border-radius: 10px; transition: border-color .15s; }
+    .faq-item:has(.faq-q[aria-expanded="true"]) { border-color: rgba(255,255,255,0.18); }
+    .faq-q {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+      width: 100%; padding: 0.8rem 1rem; text-align: left;
+      background: none; border: none; border-radius: 10px; color: var(--text);
+      font-family: inherit; font-size: 0.92rem; font-weight: 600; line-height: 1.35; cursor: pointer;
+    }
+    .faq-q:hover { background: var(--card-h); }
+    .faq-q svg { flex-shrink: 0; color: var(--muted); transition: transform .2s var(--ease); }
+    .faq-q[aria-expanded="true"] svg { transform: rotate(180deg); color: var(--text); }
+    .faq-a { margin: 0 1rem; padding: 0.7rem 0 0.9rem; border-top: 1px solid var(--line); font-size: 0.86rem; line-height: 1.55; color: rgba(255,255,255,0.78); }
+    .faq-a b { color: var(--text); font-weight: 700; }
+    .help-foot { flex-shrink: 0; margin: 1rem calc(-1 * var(--pad-x)) 0; padding: 1rem var(--pad-x) 0; border-top: 1px solid var(--line); }
+    .help-foot-text { font-size: 0.8rem; line-height: 1.45; color: var(--muted); margin-bottom: 0.75rem; }
+    .help-foot-src, .apps-src { margin-top: 0.75rem; text-align: center; font-size: 0.74rem; color: var(--muted); }
+    .help-foot-src a, .apps-src a { color: var(--text); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(255,255,255,0.3); transition: color .2s; }
+    .help-foot-src a:hover, .apps-src a:hover { color: var(--accent-h); text-decoration-color: currentColor; }
+
+    /* My Account card */
+    .acct-head { display: flex; align-items: center; gap: 0.9rem; margin: 0.4rem 0 1.2rem; }
+    .acct-avatar {
+      width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center;
+      background: var(--accent); color: #fff; box-shadow: 0 0 18px rgba(229,9,20,0.4);
+      font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.4rem; font-weight: 800;
+    }
+    .acct-name { font-size: 1.05rem; font-weight: 700; word-break: break-all; }
+    .acct-kind { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+    .acct-info { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 1.2rem; }
+    .acct-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.7rem 0.9rem; font-size: 0.88rem; }
+    .acct-row + .acct-row { border-top: 1px solid var(--line); }
+    .acct-row > span:first-child { color: var(--muted); flex-shrink: 0; }
+    .acct-row > span:last-child { text-align: right; word-break: break-all; }
+    .acct-badge { display: inline-block; margin-left: 0.4rem; padding: 1px 7px; border-radius: 99px; font-size: 0.7rem; font-weight: 700; }
+    .acct-badge.ok   { color: #4ade80; background: rgba(34,197,94,0.12); }
+    .acct-badge.warn { color: #fbbf24; background: rgba(234,179,8,0.12); }
+    .acct-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+    .acct-action {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+      width: 100%; padding: 0.8rem 1rem; text-align: left;
+      background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+      color: var(--text); font-family: inherit; font-size: 0.92rem; font-weight: 600;
+      cursor: pointer; transition: background .15s, border-color .15s, color .15s;
+    }
+    .acct-action:hover { background: var(--card-h); border-color: rgba(255,255,255,0.2); }
+    .acct-action::after { content: '›'; font-size: 1.25rem; line-height: 1; color: var(--muted); }
+    .acct-action-label { display: flex; align-items: center; gap: 0.6rem; }
+    .acct-action.danger { color: #ff6b6b; }
+    .acct-action.danger:hover { background: rgba(229,9,20,0.14); border-color: rgba(229,9,20,0.4); }
+    /* Unavailable for username accounts: dimmed, and the label swaps for the
+       reason on hover (same line, so nothing changes size) */
+    .acct-action.disabled, .acct-action.disabled:hover { color: rgba(255,255,255,0.32); background: var(--card); border-color: var(--line); cursor: not-allowed; }
+    .acct-action.disabled::after { content: none; }
+    .acct-action .acc-hint { display: none; font-weight: 500; }
+    .acct-action.disabled:hover .acc-label, html.keynav .acct-action.disabled.kf .acc-label { display: none; }
+    .acct-action.disabled:hover .acc-hint, html.keynav .acct-action.disabled.kf .acc-hint { display: inline; }
+    .btn-danger { background: var(--accent); color: #fff; }
+    .btn-danger:hover { background: var(--accent-h); transform: translateY(-2px); box-shadow: 0 6px 22px rgba(229,9,20,0.45); }
+    .merge-list {
+      max-height: 232px; overflow-y: auto; margin-bottom: 0.6rem;
+      display: flex; flex-direction: column; gap: 0.55rem;
+      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.28) transparent;
+    }
+    .merge-heading {
+      font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); margin-top: 0.35rem;
+    }
+    .merge-item { display: flex; align-items: center; gap: 0.75rem; }
+    .merge-poster { width: 34px; aspect-ratio: 2/3; border-radius: 4px; object-fit: cover; flex-shrink: 0; background: var(--card); }
+    .merge-title { font-size: 0.9rem; font-weight: 600; line-height: 1.25; }
+    .merge-meta { font-size: 0.74rem; color: var(--muted); margin-top: 1px; }
+    @media (max-width: 560px) { .auth-dialog { --pad-x: 1.3rem; padding: 2rem var(--pad-x) 1.5rem; } }
+
+    /* ─────────────── UPDATE POP-UP (apps) ─────────────── */
+    .update-pop {
+      /* Under the header (its dropdowns open over it) and any open title */
+      position: fixed; top: 78px; right: var(--gutter); z-index: 290;
+      width: 340px; overflow: hidden;
+      background: var(--bg-elev); border: 1px solid var(--line); border-radius: 12px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.75);
+      opacity: 0; transform: translateY(-10px); pointer-events: none;
+      transition: opacity .28s var(--ease), transform .28s var(--ease);
+    }
+    .update-pop.show { opacity: 1; transform: none; pointer-events: auto; }
+    /* Countdown to the auto-close: empties towards the left, paused while
+       the pointer or focus is on the pop-up */
+    .update-pop-timer { height: 3px; background: rgba(229,9,20,0.18); }
+    .update-pop-timer i { display: block; height: 100%; background: var(--accent); transform-origin: left; }
+    .update-pop.show .update-pop-timer i { animation: update-pop-countdown 20s linear forwards; }
+    .update-pop:hover .update-pop-timer i, .update-pop:focus-within .update-pop-timer i { animation-play-state: paused; }
+    @keyframes update-pop-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+    .update-pop-body { padding: 1rem 1.1rem 1.1rem; }
+    .update-pop-title { display: flex; align-items: center; gap: 0.55rem; font-size: 1rem; font-weight: 700; }
+    .update-pop-text { margin: 0.35rem 0 0.85rem; font-size: 0.86rem; line-height: 1.45; color: var(--muted); }
+    .update-pop-text b { color: var(--text); font-weight: 600; }
+    .update-pop-check {
+      display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.9rem; padding: 0;
+      background: none; border: none; color: var(--text); font-size: 0.84rem; cursor: pointer; text-align: left;
+    }
+    .update-pop-check .box {
+      width: 17px; height: 17px; border-radius: 4px; flex-shrink: 0;
+      border: 1.5px solid rgba(255,255,255,0.35); display: grid; place-items: center;
+      transition: background .15s, border-color .15s;
+    }
+    .update-pop-check:hover .box { border-color: rgba(255,255,255,0.6); }
+    .update-pop-check[aria-checked="true"] .box { background: var(--accent); border-color: var(--accent); }
+    .update-pop-check[aria-checked="true"] .box::after {
+      content: ''; width: 9px; height: 5px; margin-top: -2px;
+      border: solid #fff; border-width: 0 0 2px 2px; transform: rotate(-45deg);
+    }
+    .update-pop-actions { display: flex; gap: 0.55rem; }
+    .update-pop-actions .btn { flex: 1; padding: 0.62rem 1rem; font-size: 0.9rem; }
+    @media (max-width: 560px) { .update-pop { top: 74px; left: 12px; right: 12px; width: auto; } }
 
     /* ─────────────── TOAST ─────────────── */
     #toast {
@@ -605,7 +1189,18 @@
       box-shadow: 0 22px 48px rgba(0,0,0,0.7);
       z-index: 6;
     }
-    html.keynav .card.kf .card-info { opacity: 1; transform: translate3d(0, 0, 0); }
+    html.keynav .cast-member.kf { outline: none; }
+    html.keynav .cast-member.kf .cast-photo { outline: 3px solid var(--accent-h); outline-offset: 3px; }
+    html.keynav .person-card.kf { outline: none; }
+    html.keynav .person-card.kf .cast-photo { outline: 3px solid var(--accent-h); outline-offset: 3px; }
+    html.keynav .modal-back.kf, html.keynav .modal-close.kf, html.keynav .account-btn.kf,
+    html.keynav .menu-btn.kf, html.keynav .drawer-close.kf { border-radius: 50%; }
+    html.keynav .card.kf .card-info, html.keynav .card.kf-parent .card-info { opacity: 1; transform: translate3d(0, 0, 0); }
+    html.keynav .card.kf-parent {
+      transform: scale(1.09) translateY(-4px);
+      box-shadow: 0 22px 48px rgba(0,0,0,0.7);
+      z-index: 6;
+    }
     html.keynav .rank-card.kf-parent .card {
       transform: scale(1.09) translateY(-4px);
       box-shadow: 0 22px 48px rgba(0,0,0,0.7);
@@ -619,6 +1214,7 @@
     /* ─────────────── RESPONSIVE ─────────────── */
     @media (max-width: 860px) {
       .nav-links { display: none; }
+      .menu-btn { display: grid; }
       #hero { height: 78vh; min-height: 460px; }
       .hero-content { bottom: 14vh; max-width: 90%; }
       .hero-dots { display: none; }
@@ -626,12 +1222,27 @@
     }
     @media (max-width: 560px) {
       .logo { font-size: 1.35rem; }
+      header { gap: 0.9rem; }
+      .nav-right { gap: 0.45rem; }
+      /* Room for the menu button: typing already searches, so the
+         magnifier goes and the box keeps the space */
+      .search-toggle { display: none; }
+      .search-wrap.open #search { padding: 0 1.9rem 0 0.85rem; }
       .server-btn span.s-name { display: none; }
       .btn { padding: 0.7rem 1.4rem; font-size: 0.9rem; }
       .modal-body { padding: 1.2rem 1.3rem 1.5rem; }
+      .modal-cast .field-label { padding: 0 1.3rem; }
+      .cast-scroller { padding: 0.5rem 1.3rem; }
+      .person-hero { padding: 4.2rem 1.3rem 1.3rem; }
+      .person-head { flex-direction: column; text-align: center; gap: 1rem; }
+      .person-photo { width: 120px; height: 120px; }
+      .person-credits { padding: 0.6rem 1.3rem 1.6rem; }
+      .person-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
       .modal-footer { padding: 0.85rem 1.3rem 1.1rem; }
       .modal-hero-content { padding: 1.2rem 1.3rem; }
       .modal-selectors { grid-template-columns: 1fr; }
+      .modal-list-btn { padding: 0.7rem 1rem; }
+      .modal-list-btn .list-label { display: none; }
     }
   </style>
 </head>
@@ -639,11 +1250,15 @@
 
 <!-- ─────────────── NAVBAR ─────────────── -->
 <header id="header">
+  <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
   <div class="logo" id="logo">TFLIX</div>
 
   <nav class="nav-links">
     <span class="nav-link active" data-nav="home">Home</span>
     <span class="nav-link" data-nav="trending">Trending</span>
+    <span class="nav-link" data-nav="mylist" id="nav-mylist" hidden>My List</span>
     <span class="nav-link" data-nav="movies">Movies</span>
     <span class="nav-link" data-nav="tv">TV Shows</span>
   </nav>
@@ -655,14 +1270,14 @@
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
       </button>
-      <input type="text" id="search" placeholder="Search movies &amp; TV shows…" autocomplete="off" spellcheck="false"/>
+      <input type="text" id="search" placeholder="Search movies, shows &amp; people…" autocomplete="off" spellcheck="false"/>
       <button id="search-clear" title="Clear">✕</button>
     </div>
 
-    <a class="support-btn" id="support-btn" href="https://github.com/TomasTNunes/tflix/issues" target="_blank" rel="noopener noreferrer" title="Report an issue or get support on GitHub">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-      <span class="s-name">Support</span>
-    </a>
+    <button class="pill-btn" id="calendar-btn" type="button" title="New episodes and releases for My List">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>
+      <span class="s-name">Calendar</span>
+    </button>
 
     <div class="server-wrap">
       <button class="server-btn" id="server-btn">
@@ -671,11 +1286,33 @@
         <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="server-menu" id="server-menu">
-        <div class="server-menu-header">Streaming Servers</div>
+        <div class="server-menu-header">Default Server</div>
       </div>
+    </div>
+
+    <div class="account-wrap">
+      <button class="account-btn" id="account-btn" aria-label="Account" title="Sign in to sync My List">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+        <span id="account-initial"></span>
+      </button>
+      <div class="server-menu account-menu" id="account-menu"></div>
     </div>
   </div>
 </header>
+
+<!-- ─────────────── SIDE DRAWER (narrow screens) ─────────────── -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<nav class="nav-drawer" id="nav-drawer" aria-label="Sections">
+  <div class="drawer-head">
+    <div class="logo">TFLIX</div>
+    <button class="drawer-close" id="drawer-close" type="button" aria-label="Close menu">✕</button>
+  </div>
+  <button class="drawer-link active" type="button" data-nav="home"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h5v-6h4v6h5V9.5"/></svg>Home</button>
+  <button class="drawer-link" type="button" data-nav="trending"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Trending</button>
+  <button class="drawer-link" type="button" data-nav="mylist" id="drawer-mylist" hidden><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h12v17l-6-4-6 4z"/></svg>My List</button>
+  <button class="drawer-link" type="button" data-nav="movies"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>Movies</button>
+  <button class="drawer-link" type="button" data-nav="tv"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M8 2.5 12 6l4-3.5"/></svg>TV Shows</button>
+</nav>
 
 <!-- ─────────────── HERO ─────────────── -->
 <section id="hero" class="empty"></section>
@@ -695,12 +1332,18 @@
     <button class="filter-tab active" data-filter="all">All</button>
     <button class="filter-tab" data-filter="movie">Movies</button>
     <button class="filter-tab" data-filter="tv">TV Shows</button>
+    <button class="filter-tab" data-filter="person">People</button>
   </div>
+  <div class="sr-people" id="sr-people" hidden>
+    <div class="sr-label">People</div>
+    <div class="people-row" id="people-row"></div>
+  </div>
+  <div class="sr-label" id="sr-titles-label" hidden>Titles</div>
   <div class="grid" id="search-grid"></div>
   <div id="search-spinner" class="spinner-wrap" style="display:none"><div class="spinner"></div></div>
   <div id="search-empty" class="empty" style="display:none">
     <div class="empty-icon">🎬</div>
-    <h3>No titles found</h3>
+    <h3 id="search-empty-title">No titles found</h3>
     <p>Try a different search term or check your spelling.</p>
   </div>
 </section>
@@ -708,8 +1351,12 @@
 <!-- ─────────────── MODAL ─────────────── -->
 <div class="modal-backdrop" id="modal-backdrop">
   <div class="modal" id="modal">
+    <button class="modal-back" id="modal-back" title="Back" aria-label="Back" style="display:none">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
     <button class="modal-close" id="modal-close">✕</button>
-    <div class="modal-scroll">
+    <div class="modal-view" id="title-view">
+    <div class="modal-scroll" id="title-scroll">
       <div class="modal-hero">
         <div id="modal-backdrop-img"></div>
         <div class="modal-hero-content">
@@ -722,6 +1369,14 @@
         <div id="modal-genres" class="modal-genres"></div>
         <div id="modal-digital-release" class="dr-loading"></div>
         <div id="modal-overview" class="modal-overview"></div>
+      </div>
+      <div id="modal-cast" class="modal-cast" style="display:none">
+        <div class="field-label">Cast</div>
+        <div class="scroller-wrap cast-wrap">
+          <button class="arrow left" aria-label="Scroll left"><svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="cast-scroller" id="cast-scroller"></div>
+          <button class="arrow right" aria-label="Scroll right"><svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -737,10 +1392,221 @@
           </div>
         </div>
       </div>
-      <button class="btn btn-primary modal-watch-btn" id="modal-watch-btn">
-        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        Play
-      </button>
+      <div class="modal-actions">
+        <button class="btn btn-primary modal-watch-btn" id="modal-watch-btn">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <span id="modal-watch-label">Play</span>
+        </button>
+        <button class="btn modal-list-btn list-btn" id="modal-list-btn" aria-label="My List">
+          <svg class="ic-plus" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          <svg class="ic-check" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+          <span class="list-label">My List</span>
+        </button>
+      </div>
+    </div>
+    </div>
+    <div class="modal-view" id="person-view" style="display:none">
+      <div class="modal-scroll" id="person-scroll">
+        <div id="person-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────── UPDATE POP-UP (apps) ─────────────── -->
+<div class="update-pop" id="update-pop" role="dialog" aria-labelledby="update-pop-title" hidden>
+  <div class="update-pop-timer"><i></i></div>
+  <div class="update-pop-body">
+    <div class="update-pop-title" id="update-pop-title"><span class="s-dot warn"></span>Update available</div>
+    <div class="update-pop-text" id="update-pop-text"></div>
+    <button class="update-pop-check" id="update-pop-skip" type="button" role="checkbox" aria-checked="false"><span class="box"></span>Don't show again for this update</button>
+    <div class="update-pop-actions">
+      <button class="btn btn-danger" id="update-pop-go" type="button">Update</button>
+      <button class="btn btn-ghost" id="update-pop-close" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────── ACCOUNT DIALOG ─────────────── -->
+<div class="auth-backdrop" id="auth-backdrop">
+  <div class="auth-dialog" id="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+    <button class="modal-back" id="auth-back" title="Back" aria-label="Back" hidden>
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <button class="modal-close" id="auth-close" aria-label="Close">✕</button>
+    <div class="auth-body">
+    <div class="auth-title" id="auth-title"></div>
+    <div class="auth-sub" id="auth-sub"></div>
+
+    <form id="auth-form" novalidate>
+      <label class="field-label" for="auth-id">Username or email</label>
+      <input class="auth-input" id="auth-id" type="text" autocomplete="username" autocapitalize="none" spellcheck="false">
+      <label class="field-label" for="auth-pass">Password</label>
+      <input class="auth-input" id="auth-pass" type="password" autocomplete="current-password">
+      <div class="auth-msg" id="auth-msg"></div>
+      <button class="btn btn-primary" id="auth-submit" type="submit"></button>
+      <div class="auth-note" id="auth-note">Email is optional. Without one, you can't recover your password if you forget it.</div>
+      <div class="auth-foot">
+        <button class="auth-link" id="auth-switch" type="button"></button>
+        <button class="auth-link" id="auth-forgot" type="button">Forgot password?</button>
+      </div>
+    </form>
+
+    <div id="auth-verify">
+      <div class="auth-msg" id="verify-msg"></div>
+      <div class="auth-actions">
+        <button class="btn btn-primary" id="verify-check" type="button">I've verified my email</button>
+        <button class="btn btn-ghost" id="verify-resend" type="button">Resend email</button>
+      </div>
+      <div class="auth-foot"><button class="auth-link" id="verify-signout" type="button">Use a different account</button></div>
+    </div>
+
+    <div id="auth-account">
+      <div class="acct-head">
+        <div class="acct-avatar" id="acct-avatar"></div>
+        <div>
+          <div class="acct-name" id="acct-name"></div>
+          <div class="acct-kind" id="acct-kind"></div>
+        </div>
+      </div>
+      <div class="acct-info" id="acct-info"></div>
+      <div class="acct-actions" id="acct-actions"></div>
+    </div>
+
+    <div id="auth-calendar">
+      <div class="cal-head">
+        <button class="cal-nav" id="cal-prev" type="button" aria-label="Previous month">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="cal-month" id="cal-month"></div>
+        <button class="cal-nav" id="cal-next" type="button" aria-label="Next month">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="cal-today" id="cal-today" type="button">Jump to today</button>
+      </div>
+      <div class="cal-legend">
+        <span><i class="cal-dot episode"></i>New episode</span>
+        <span><i class="cal-dot digital"></i>Digital release</span>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-day" id="cal-day"></div>
+    </div>
+
+    <div id="auth-apps">
+      <div class="app-list">
+        <div class="app-card">
+          <div class="app-row">
+            <div class="app-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5l7.5-1.05V11.5H3v-6zm0 13l7.5 1.05V12.5H3v6zm8.5 1.2L21 21v-8.5h-9.5v7.2zm0-15.4v7.2H21V3l-9.5 1.3z"/></svg>
+            </div>
+            <div class="app-info">
+              <div class="app-name">Windows<span class="s-dot warn app-dot" data-app="windows" title="Update available" hidden></span></div>
+              <div class="app-meta"><span class="acct-badge ok">No Ads</span><span class="app-ver" data-app="windows"></span></div>
+            </div>
+            <a class="btn btn-primary app-dl" data-app="windows" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
+          </div>
+          <button class="app-howto-btn" type="button" aria-expanded="false" aria-controls="howto-windows"><span>How to install &amp; update</span><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="app-howto" id="howto-windows" hidden>
+            <ol>
+              <li>Download the installer and open it.</li>
+              <li>If your browser says the file isn't commonly downloaded, choose <b>Keep</b>. If Windows shows <b>Windows protected your PC</b>, click <b>More info → Run anyway</b>.</li>
+              <li>Click through the setup (<b>Next → Install</b>), then open TFLIX from the desktop or Start menu.</li>
+            </ol>
+            <div class="app-howto-head">Updating</div>
+            <p>If a new version is out, a notice appears when you open the app and your profile icon gets a yellow dot. Click <b>Update</b> here and run the new installer over the old version. There's no need to uninstall, and your settings are kept.</p>
+          </div>
+        </div>
+        <div class="app-card">
+          <div class="app-row">
+            <div class="app-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v7c0 .83.67 1.5 1.5 1.5S5 17.33 5 16.5v-7C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zm-4.97-5.84l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48A5.84 5.84 0 0 0 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31A5.98 5.98 0 0 0 6 7h12c0-1.99-.97-3.75-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/></svg>
+            </div>
+            <div class="app-info">
+              <div class="app-name">Android &amp; Android TV<span class="s-dot warn app-dot" data-app="android" title="Update available" hidden></span></div>
+              <div class="app-meta"><span class="acct-badge ok">No Ads</span><span class="app-ver" data-app="android"></span></div>
+            </div>
+            <a class="btn btn-primary app-dl" data-app="android" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
+          </div>
+          <button class="app-howto-btn" type="button" aria-expanded="false" aria-controls="howto-android"><span>How to install &amp; update</span><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="app-howto" id="howto-android" hidden>
+            <div class="app-howto-head">Phone or tablet</div>
+            <ol>
+              <li>Download the APK, then open it from the download notification or your Downloads folder.</li>
+              <li>When asked, allow <b>Install unknown apps</b> for your browser or Files app.</li>
+              <li>Tap <b>Install</b>, then open TFLIX.</li>
+            </ol>
+            <div class="app-howto-head">Android TV</div>
+            <ol>
+              <li>Install a file manager from the Play Store, such as <b>Send files to TV</b> or <b>X-plore</b>.</li>
+              <li>Get the APK onto the TV with it (or download it on the TV), open it and allow unknown apps when asked.</li>
+              <li>TFLIX then shows up in the TV's app list.</li>
+            </ol>
+            <div class="app-howto-head">Updating</div>
+            <p>If a new version is out, a notice appears when you open the app and your profile icon gets a yellow dot. Tap <b>Update</b> here and the new APK downloads, no browser needed. On a phone or tablet, tap the finished download to install it over the old version. On a TV the installer opens by itself. The first time, Android asks you to allow installs from that source (your Downloads or Files app on a phone, TFLIX on a TV): allow it, come back and tap <b>Update</b> again. There's no need to uninstall.</p>
+          </div>
+        </div>
+      </div>
+      <div class="auth-note">Already have the app? Install the new version over it to update. There's no need to uninstall.</div>
+      <div class="apps-src">Older versions and what's new · <a id="apps-releases" href="https://github.com/TomasTNunes/tflix/releases" target="_blank" rel="noopener noreferrer">View all releases</a></div>
+    </div>
+
+    <div id="auth-help" class="faq-list"></div>
+
+    <div id="auth-apps-again" class="auth-actions">
+      <a class="btn btn-primary" id="again-download" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download anyway</a>
+      <button class="btn btn-ghost" id="again-cancel" type="button">Cancel</button>
+    </div>
+
+    <div id="auth-moved" class="auth-actions">
+      <button class="btn btn-primary" id="moved-signin" type="button">Sign In</button>
+      <button class="btn btn-ghost" id="moved-later" type="button">Not now</button>
+    </div>
+
+    <div id="auth-merge" class="auth-actions">
+      <div class="merge-list" id="merge-list"></div>
+      <button class="btn btn-primary" id="merge-add" type="button">Add to my list</button>
+      <button class="btn btn-ghost" id="merge-discard" type="button">Discard</button>
+    </div>
+
+    <form id="auth-add-email" novalidate>
+      <label class="field-label" for="add-email-input">Email</label>
+      <input class="auth-input" id="add-email-input" type="email" autocomplete="email" autocapitalize="none" spellcheck="false">
+      <label class="field-label" for="add-email-pass">Current password</label>
+      <input class="auth-input" id="add-email-pass" type="password" autocomplete="current-password">
+      <div class="auth-msg" id="add-email-msg"></div>
+      <button class="btn btn-primary" type="submit">Send confirmation link</button>
+    </form>
+
+    <form id="auth-password" novalidate>
+      <input type="text" autocomplete="username" hidden>
+      <label class="field-label" for="password-current">Current password</label>
+      <input class="auth-input" id="password-current" type="password" autocomplete="current-password">
+      <label class="field-label" for="password-new">New password</label>
+      <input class="auth-input" id="password-new" type="password" autocomplete="new-password">
+      <div class="auth-msg" id="password-msg"></div>
+      <button class="btn btn-primary" type="submit">Change password</button>
+    </form>
+
+    <form id="auth-delete" novalidate>
+      <label class="field-label" for="delete-pass">Password</label>
+      <input class="auth-input" id="delete-pass" type="password" autocomplete="current-password">
+      <div class="auth-msg" id="delete-msg"></div>
+      <button class="btn btn-danger" type="submit">Delete account</button>
+      <div class="auth-foot">
+        <button class="auth-link" id="delete-forgot" type="button">
+          <span class="acc-label">Forgot password?</span><span class="acc-hint">Only available with an email</span>
+        </button>
+      </div>
+    </form>
+    </div>
+    <!-- Help: outside the scrolling body, so the GitHub link always shows -->
+    <div class="help-foot" id="help-foot" hidden>
+      <div class="help-foot-text">Didn't find your answer? Report a problem, suggest a feature or ask a question.</div>
+      <a class="btn btn-primary" id="help-issues" href="https://github.com/TomasTNunes/tflix/issues" target="_blank" rel="noopener noreferrer">
+        <svg width="17" height="17" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        Open an issue on GitHub
+      </a>
+      <div class="help-foot-src">TFLIX is open source · <a id="help-src" href="https://github.com/TomasTNunes/tflix" target="_blank" rel="noopener noreferrer">View the code</a></div>
     </div>
   </div>
 </div>
@@ -748,6 +1614,8 @@
 <!-- ─────────────── TOAST ─────────────── -->
 <div id="toast"></div>
 
+<script src="./assets/help.js"></script>
+<script src="./assets/watching.js"></script>
 <script>
 /* ─── CONFIG ─── */
 const API_BASE = "https://api.themoviedb.org/3";
@@ -776,16 +1644,109 @@ const CATEGORY_ROWS = [
   { title: 'Airing Today',        endpoint: '/tv/airing_today', media: 'tv',    anchor: 'airing' },
 ];
 
+/* ─── APP FLAG ───
+   The apps open appwindows./appandroid.tflix.stream, which Cloudflare
+   redirects here with ?app=windows|android. It's kept for the session
+   (sessionStorage survives the trip to the player and back), dropped from
+   the address, and exposed as <html data-app="…"> for app-only tweaks.
+   Cosmetic only: anyone can add the parameter. */
+const APP_KEY = 'tflix_app';
+const inApp = (() => {
+  const params = new URLSearchParams(location.search);
+  if (params.has('app')) {
+    const app = params.get('app');
+    try { if (app === 'windows' || app === 'android') sessionStorage.setItem(APP_KEY, app); } catch {}
+    params.delete('app');
+    const rest = params.toString();
+    history.replaceState(history.state, '', location.pathname + (rest ? `?${rest}` : '') + location.hash);
+  }
+  try { return sessionStorage.getItem(APP_KEY); } catch { return null; }
+})();
+if (inApp) document.documentElement.dataset.app = inApp;
+
 /* ─── STATE ─── */
-const STORAGE_KEY = 'tflix_server';
+// localStorage keys (kept per domain, hence the import below)
+const STORAGE_KEY   = 'tflix_server';
+const MYLIST_KEY    = 'tflix_mylist';
+
+/* ─── IMPORT FROM THE OLD DOMAIN ───
+   tflix.nunesnetwork.com is now a redirect page (repo tflix-redirect). As
+   browsers keep localStorage per domain, it hands guests' saved data over
+   as #import=<base64url JSON { v, list, server }>. That's accepted once per
+   browser: the redirect sends it on every visit, and taking it again would
+   bring back titles removed here since. Titles are merged (ones already
+   here win) and the server only fills in an unset choice. A signed-in user
+   then gets the usual "Add N titles?" prompt once their list syncs.
+   Login sessions can't move domains, so someone who was signed in there
+   (signedIn) but isn't here is asked to sign in again.
+
+   Anyone can craft such a link, so every field must look like TMDB data
+   before it's kept: poster paths, dates etc. end up in the page's HTML. */
+const IMPORTED_KEY = 'tflix_imported';
+const isDate = v => /^\d{4}-\d{2}-\d{2}$/.test(v);
+const isImagePath = v => /^\/[\w.-]+$/.test(v);
+const IMPORT_FIELDS = {
+  title: v => typeof v === 'string',
+  name: v => typeof v === 'string',
+  overview: v => typeof v === 'string',
+  poster_path: isImagePath,
+  backdrop_path: isImagePath,
+  vote_average: v => Number.isFinite(v),
+  release_date: isDate,
+  first_air_date: isDate,
+  genre_ids: v => Array.isArray(v) && v.every(Number.isInteger),
+  original_language: v => /^[a-z]{2,3}$/.test(v),
+};
+
+// → { note, askSignIn } on the first import, else null
+const importResult = (() => {
+  const m = /^#import=([\w-]+)$/.exec(location.hash);
+  if (!m) return null;
+  history.replaceState(history.state, '', location.pathname + location.search);
+  try {
+    if (localStorage.getItem(IMPORTED_KEY)) return null;
+    const json = decodeURIComponent(escape(atob(m[1].replace(/-/g, '+').replace(/_/g, '/'))));
+    const data = JSON.parse(json);
+    if (!data || data.v !== 1) return null;
+
+    const list = readLocalList();
+    let added = 0;
+    for (const [key, e] of Object.entries(data.list || {})) {
+      const t = /^(movie|tv)_(\d+)$/.exec(key);
+      if (!t || list[key] || !e || e.id !== Number(t[2])) continue;
+      const entry = { id: e.id, media_type: t[1], addedAt: Number.isFinite(e.addedAt) ? e.addedAt : Date.now() };
+      for (const [f, ok] of Object.entries(IMPORT_FIELDS)) if (e[f] != null && ok(e[f])) entry[f] = e[f];
+      list[key] = entry;
+      added++;
+    }
+    if (added) saveLocalList(list);
+    if (!localStorage.getItem(STORAGE_KEY) && SERVERS.some(s => String(s.id) === String(data.server)))
+      localStorage.setItem(STORAGE_KEY, String(data.server));
+    localStorage.setItem(IMPORTED_KEY, String(Date.now()));
+    const signedInHere = !!localStorage.getItem(SIGNED_IN_KEY);
+    return {
+      // Signed-in users are asked about these titles instead, once their list syncs
+      note: added && !signedInHere ? `${added} title${added !== 1 ? 's' : ''} from tflix.nunesnetwork.com added to My List` : null,
+      askSignIn: data.signedIn === true && !signedInHere,
+    };
+  } catch {
+    return null;   // unreadable or blocked storage: carry on without it
+  }
+})();
+
 let currentServer = (() => {
   const saved = localStorage.getItem(STORAGE_KEY);
   return saved ? parseInt(saved, 10) : 1;
 })();
 let currentFilter = 'all';
 let searchResults = [];
+let searchPeople  = [];   // people matching the search (with a photo), in TMDB's order
 let currentModalItem = null;
 let tvDetails = {};
+// The title card's season/episode pickers
+let pickerGen = 0;       // each new fill bumps it, so a slower old one gives way
+let tvFilling = false;   // a show's pickers are still filling in for the first time
+let tvLoad    = null;    // the pickers filling in, which Play waits for
 let genreMap = {};
 
 /* hero state */
@@ -844,8 +1805,9 @@ function scrollToSection(anchor) {
   window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
 }
 
-document.querySelectorAll('.nav-link').forEach(link => {
+document.querySelectorAll('.nav-link, .drawer-link').forEach(link => {
   link.addEventListener('click', () => {
+    closeDrawer(false);
     resetSearch();
     const nav = link.dataset.nav;
     if (nav === 'home') {
@@ -856,7 +1818,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
   });
 });
 
-const NAV_SECTIONS = ['trending', 'movies', 'tv'];
+const NAV_SECTIONS = ['trending', 'mylist', 'movies', 'tv'];   // in page order
 let rafNav = null;
 
 function updateActiveNav() {
@@ -867,17 +1829,46 @@ function updateActiveNav() {
     let active = 'home';
     for (const anchor of NAV_SECTIONS) {
       const el = document.querySelector(`[data-anchor="${anchor}"]`);
-      if (!el) continue;
+      if (!el || el.hidden) continue;
       if (el.getBoundingClientRect().top <= NAV_OFFSET + 40) active = anchor;
     }
-    const navKey = { trending: 'trending', movies: 'movies', tv: 'tv' }[active] || 'home';
-    document.querySelectorAll('.nav-link').forEach(l =>
+    const navKey = { trending: 'trending', mylist: 'mylist', movies: 'movies', tv: 'tv' }[active] || 'home';
+    document.querySelectorAll('.nav-link, .drawer-link').forEach(l =>
       l.classList.toggle('active', l.dataset.nav === navKey)
     );
   });
 }
 
 window.addEventListener('scroll', updateActiveNav, { passive: true });
+
+/* ─── SIDE DRAWER ─── */
+const drawer = $('nav-drawer');
+const drawerIsOpen = () => drawer.classList.contains('open');
+function openDrawer() {
+  serverMenu.classList.remove('open');
+  accountMenu.classList.remove('open');
+  drawer.classList.add('open');
+  $('drawer-backdrop').classList.add('open');
+  $('menu-btn').setAttribute('aria-expanded', 'true');
+  document.body.style.overflow = document.documentElement.style.overflow = 'hidden';
+  window.__knavFocus(drawer.querySelector('.drawer-link.active:not([hidden])') || drawer.querySelector('.drawer-link'));
+}
+// refocus: put the key-nav highlight back on the menu button (not after
+// picking a section, which moves it into that row instead)
+function closeDrawer(refocus = true) {
+  if (!drawerIsOpen()) return;
+  drawer.classList.remove('open');
+  $('drawer-backdrop').classList.remove('open');
+  $('menu-btn').setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = document.documentElement.style.overflow = '';
+  if (document.activeElement && drawer.contains(document.activeElement)) document.activeElement.blur();
+  if (refocus) window.__knavFocus($('menu-btn'));
+}
+$('menu-btn').addEventListener('click', e => { e.stopPropagation(); openDrawer(); });
+$('drawer-close').addEventListener('click', () => closeDrawer());
+$('drawer-backdrop').addEventListener('click', () => closeDrawer());
+// Widening the window brings the nav links back: no drawer needed
+matchMedia('(min-width: 861px)').addEventListener('change', e => { if (e.matches) closeDrawer(false); });
 
 /* ─── SERVER DROPDOWN ─── */
 const serverMenu  = $('server-menu');
@@ -896,7 +1887,7 @@ SERVERS.forEach(s => {
     document.querySelectorAll('.server-item').forEach(i => i.classList.remove('active'));
     el.classList.add('active');
     serverMenu.classList.remove('open');
-    toast(`Now streaming from ${s.name}`);
+    toast(`Default streaming server set to ${s.name}`);
   });
   serverMenu.appendChild(el);
 });
@@ -904,11 +1895,11 @@ SERVERS.forEach(s => {
 const savedServer = SERVERS.find(s => s.id === currentServer) || SERVERS[0];
 serverLabel.textContent = savedServer.name;
 
-serverBtn.addEventListener('click', e => { e.stopPropagation(); serverMenu.classList.toggle('open'); });
-document.addEventListener('click', () => serverMenu.classList.remove('open'));
+serverBtn.addEventListener('click', e => { e.stopPropagation(); accountMenu.classList.remove('open'); serverMenu.classList.toggle('open'); });
+document.addEventListener('click', () => { serverMenu.classList.remove('open'); accountMenu.classList.remove('open'); });
 
 /* ─── PLAYER URL ─── */
-function playerUrl(item, season = 1, episode = 1) {
+function playerUrl(item, season = 1, episode = 1, startAt = 0) {
   const p = new URLSearchParams({ server: currentServer });
   const type = mediaOf(item);
   if (type === 'movie') {
@@ -917,6 +1908,7 @@ function playerUrl(item, season = 1, episode = 1) {
     p.set('type', 'tv'); p.set('id', item.id);
     p.set('s', season); p.set('e', episode);
   }
+  if (startAt) p.set('t', Math.floor(startAt));
   return `${PLAYER}?${p.toString()}`;
 }
 
@@ -941,7 +1933,7 @@ async function fetchDigitalData(movieId) {
 
 /* ─── CARD ─── */
 // drDate: optional ISO date string — if provided and in the past, shows green badge on card
-function makeCard(item, { drDate = null } = {}) {
+function makeCard(item, { drDate = null, watch = null } = {}) {
   const type    = mediaOf(item);
   const isMovie = type === 'movie';
   const title   = item.title || item.name || 'Untitled';
@@ -953,23 +1945,39 @@ function makeCard(item, { drDate = null } = {}) {
   const showDrBadge = drDate && new Date(drDate) <= new Date();
 
   const card = document.createElement('div');
-  card.className = 'card';
+  card.className = watch ? 'card card-watch' : 'card';
   card.innerHTML = `
-    <span class="card-badge ${isMovie ? 'movie' : 'tv'}">${isMovie ? 'Film' : 'Series'}</span>
+    <span class="card-badge ${isMovie ? 'movie' : 'tv'}">${isMovie ? 'Film' : (watch ? `S${Number(watch.season)} E${Number(watch.episode)}` : 'Series')}</span>
     ${showDrBadge ? `<span class="card-dr-badge"><span class="card-dr-dot"></span>Digital</span>` : ''}
     ${imgSrc
       ? `<img class="card-poster" src="${imgSrc}" alt="${esc(title)}" loading="lazy" onerror="this.parentNode.replaceChild(makePlaceholder('${esc(title).replace(/'/g,"")}'),this)">`
       : `<div class="card-poster-placeholder"><span style="font-size:2rem">🎬</span><span>${esc(title)}</span></div>`}
     <div class="card-info">
       <div class="card-info-top">
-        <span class="mini-play"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+        ${watch
+          ? `<button class="mini-play card-details" type="button" title="More info" aria-label="More info"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 11v8M12 5.5v.01"/></svg></button>`
+          : `<span class="mini-play"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>`}
         ${m ? `<span class="match">${m}% Match</span>` : ''}
+        <button class="card-add list-btn" data-list-key="${listKey(item)}" aria-label="My List">${LIST_ICONS}</button>
       </div>
       <div class="card-info-title">${esc(title)}</div>
       <div class="card-info-meta">${year(date)} · ★ ${rating(item.vote_average)}</div>
-    </div>`;
+    </div>
+    ${watch ? watchCardExtras(watch) : ''}`;
 
-  card.addEventListener('click', () => openModal(item));
+  card.dataset.key = listKey(item);
+  const add = card.querySelector('.card-add');
+  paintListBtn(add);
+  add.addEventListener('click', e => { e.stopPropagation(); keepInView(card, () => toggleMyList(item)); popListBtn(add); });
+
+  if (watch) {
+    card.dataset.sig = watchSig(watch);
+    card.querySelector('.card-details').addEventListener('click', e => { e.stopPropagation(); openModal(item); });
+    card.querySelector('.card-remove').addEventListener('click', e => { e.stopPropagation(); removeWatching(listKey(item)); });
+    card.addEventListener('click', () => { window.location.href = resumeUrl(watch); });
+  } else {
+    card.addEventListener('click', () => openModal(item));
+  }
   return card;
 }
 
@@ -1159,10 +2167,18 @@ async function loadHero() {
             <button class="btn btn-primary hero-play">
               <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Play
             </button>
+            <button class="btn btn-ghost hero-list list-btn" data-list-key="${listKey(item)}" aria-label="My List">
+              <svg class="ic-plus" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              <svg class="ic-check" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+              My List
+            </button>
           </div>
         </div>`;
 
       slide.querySelector('.hero-play').addEventListener('click', () => openModal(item));
+      const listBtn = slide.querySelector('.hero-list');
+      paintListBtn(listBtn);
+      listBtn.addEventListener('click', () => { toggleMyList(item); popListBtn(listBtn); });
       hero.appendChild(slide);
     });
 
@@ -1210,8 +2226,101 @@ async function loadGenres() {
   } catch {}
 }
 
-/* ─── MODAL ─── */
-async function openModal(item) {
+/* ─── MODAL ───
+   The modal holds a stack of views: a title (movie/show) or a person. Opening
+   from the page starts a fresh stack; opening from inside the modal (a cast
+   member, an appearance) pushes onto it and the top-left Back pops it. Each
+   pushed level gets its own history entry, so the system/remote Back button
+   walks back the same way, and ✕ closes the whole stack.
+
+   Each entry stores its depth (how many steps above the page it sits), so
+   closing can always return to the page in one go — even after a reload has
+   left us on a stale modal entry (Back from the player in the apps, which
+   reload instead of restoring from the bfcache). */
+let modalStack  = [];
+let titleViewEntry  = null;   // entry each view currently shows, so Back can skip re-rendering
+let personViewEntry = null;
+
+const modalIsOpen = () => $('modal-backdrop').classList.contains('open');
+const modalDepth  = () => (history.state && history.state.tflixModal) ? (history.state.depth || 1) : 0;
+const viewScroll  = kind => $(kind === 'person' ? 'person-scroll' : 'title-scroll');
+
+function openModal(item) { return showModalEntry({ kind: 'title', item }, 'forward'); }
+function openPerson(id)  { return showModalEntry({ kind: 'person', id }, 'forward'); }
+
+function modalBack() {
+  if (modalStack.length < 2) return;
+  modalStack.pop();
+  showModalEntry(modalStack[modalStack.length - 1], 'back');
+}
+
+async function showModalEntry(entry, dir) {
+  const wasOpen = modalIsOpen();
+  if (dir === 'forward') {
+    if (wasOpen) {
+      const prev = modalStack[modalStack.length - 1];
+      prev.scrollTop = viewScroll(prev.kind).scrollTop;
+      prev.focusEl = window.__knavCurrent ? window.__knavCurrent() : null;
+      modalStack.push(entry);
+    } else {
+      modalStack = [entry];
+    }
+  }
+
+  // Titles render before the switch; a show's season/episode pickers fill in afterwards
+  if (entry.kind === 'title' && titleViewEntry !== entry) {
+    titleViewEntry = entry;
+    await renderTitle(entry.item);
+    if (modalStack[modalStack.length - 1] !== entry) return;   // navigated elsewhere meanwhile
+  }
+
+  $('title-view').style.display  = entry.kind === 'title'  ? '' : 'none';
+  $('person-view').style.display = entry.kind === 'person' ? '' : 'none';
+  $('modal-back').style.display  = modalStack.length > 1 ? '' : 'none';
+
+  if (entry.kind === 'person' && personViewEntry !== entry) {
+    personViewEntry = entry;
+    renderPerson(entry);
+  }
+
+  if (!wasOpen) {
+    $('modal-backdrop').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    // Give the modal its own history entry so the system/remote Back button
+    // (phone gesture, TV remote, browser) closes it instead of leaving the page.
+    if (!modalDepth()) history.pushState({ tflixModal: true, depth: 1 }, '');
+    if (window.__knavModalOpened) window.__knavModalOpened();
+  } else if (dir === 'forward') {
+    history.pushState({ tflixModal: true, depth: modalDepth() + 1 }, '');
+  }
+
+  requestAnimationFrame(() => {
+    if (dir === 'back') viewScroll(entry.kind).scrollTop = entry.scrollTop || 0;
+    else if (entry.kind === 'title') scrollTitleToDefault();
+    else $('person-scroll').scrollTop = 0;
+    if (wasOpen && window.__knavModalFocus) window.__knavModalFocus(dir === 'back' ? entry.focusEl : null);
+  });
+}
+
+// Open scrolled to the title (just above "FILM // Title"); if it all fits, this stays at the top.
+// The cast row is hidden while measuring so the opening scroll is the same with or without it.
+function scrollTitleToDefault() {
+  const sc = $('title-scroll');
+  const hc = sc.querySelector('.modal-hero-content');
+  const cast = $('modal-cast');
+  const castDisplay = cast.style.display;
+  cast.style.display = 'none';
+  sc.scrollTop = 0;
+  const padTop = parseFloat(getComputedStyle(hc).paddingTop) || 0;
+  sc.scrollTop = hc.getBoundingClientRect().top - sc.getBoundingClientRect().top + padTop / 2;
+  const top = sc.scrollTop;
+  cast.style.display = castDisplay;
+  sc.scrollTop = top;
+}
+
+async function renderTitle(item) {
   const type    = mediaOf(item);
   const isMovie = type === 'movie';
   const title   = item.title || item.name;
@@ -1219,6 +2328,9 @@ async function openModal(item) {
   const m       = matchPct(item.vote_average);
 
   currentModalItem = { ...item, media_type: type };
+  $('modal-list-btn').dataset.listKey = listKey(item);
+  paintListBtn($('modal-list-btn'));
+  paintResume();
 
   const bg = backdrop(item.backdrop_path) || poster(item.poster_path, 'w780');
   $('modal-backdrop-img').style.backgroundImage = bg ? `url('${bg}')` : 'none';
@@ -1237,37 +2349,121 @@ async function openModal(item) {
 
   $('modal-overview').textContent = item.overview || 'No description available.';
 
+  loadCast(type, item.id);
+
   const tvSel = $('tv-selectors');
   const drEl  = $('modal-digital-release');
   if (isMovie) {
+    pickerGen++; tvFilling = false; tvLoad = null;
     tvSel.style.display = 'none';
     drEl.style.display = 'inline-flex';
     fetchDigitalReleaseBadge(item.id);
   } else {
     tvSel.style.display = 'block';
     drEl.style.display = 'none';
-    await loadTvSeasons(item.id);
+    // The card opens now; the pickers fill in when TMDB answers, and Play waits for them
+    tvLoad = loadTvSeasons(item.id).then(paintResume);
+    paintResume();
   }
+}
 
-  $('modal-backdrop').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  document.documentElement.style.overflow = 'hidden';
+/* ─── PERSON VIEW (modal) ─── */
+const personCache = {};
+const fmtLongDate = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  // Give the modal its own history entry so the system/remote Back button
-  // (phone gesture, TV remote, browser) closes it instead of leaving the page.
-  if (!(history.state && history.state.tflixModal)) history.pushState({ tflixModal: true }, '');
-  if (window.__knavModalOpened) window.__knavModalOpened();
+function ageBetween(from, to) {
+  const a = new Date(from), b = to ? new Date(to) : new Date();
+  let age = b.getFullYear() - a.getFullYear();
+  if (b.getMonth() < a.getMonth() || (b.getMonth() === a.getMonth() && b.getDate() < a.getDate())) age--;
+  return age;
+}
 
-  // Open scrolled to the title (just above "FILM // Title"); if it all fits, this stays at the top.
-  requestAnimationFrame(() => {
-    const sc = $('modal').querySelector('.modal-scroll');
-    const hc = $('modal').querySelector('.modal-hero-content');
-    if (sc && hc) {
-      sc.scrollTop = 0;
-      const padTop = parseFloat(getComputedStyle(hc).paddingTop) || 0;
-      sc.scrollTop = hc.getBoundingClientRect().top - sc.getBoundingClientRect().top + padTop / 2;
+// One entry per title (a show can be credited several times), talk/news shows
+// left out, best-known first
+function personAppearances(p) {
+  const byKey = new Map();
+  for (const c of p.combined_credits?.cast || []) {
+    if (!c.poster_path) continue;
+    if ((c.genre_ids || []).some(g => g === 10767 || g === 10763)) continue;
+    const key = `${c.media_type}-${c.id}`;
+    const seen = byKey.get(key);
+    if (seen) { if (c.character && !seen.characters.includes(c.character)) seen.characters.push(c.character); }
+    else byKey.set(key, { item: c, characters: c.character ? [c.character] : [] });
+  }
+  return [...byKey.values()].sort((a, b) => (b.item.vote_count || 0) - (a.item.vote_count || 0));
+}
+
+async function renderPerson(entry) {
+  const el = $('person-content');
+  el.innerHTML = '<div class="spinner-wrap" style="padding-top:6rem"><div class="spinner"></div></div>';
+  try {
+    let p = personCache[entry.id];
+    if (!p) {
+      p = await tmdb(`/person/${entry.id}?append_to_response=combined_credits`);
+      if (!p || !p.name) throw new Error('person not found');
+      personCache[entry.id] = p;
     }
-  });
+    if (personViewEntry !== entry) return;   // navigated elsewhere meanwhile
+
+    const apps  = personAppearances(p);
+    const photo = poster(p.profile_path, 'h632');
+    const bg    = apps.map(a => backdrop(a.item.backdrop_path)).find(Boolean);
+    const initials = p.name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('');
+
+    const facts = [];
+    if (p.birthday) {
+      let born = `Born ${fmtLongDate(p.birthday)}`;
+      if (!p.deathday) born += ` (age ${ageBetween(p.birthday)})`;
+      if (p.place_of_birth) born += ` · ${p.place_of_birth}`;
+      facts.push(born);
+    } else if (p.place_of_birth) facts.push(`Born in ${p.place_of_birth}`);
+    if (p.deathday) facts.push(`Died ${fmtLongDate(p.deathday)}${p.birthday ? ` (aged ${ageBetween(p.birthday, p.deathday)})` : ''}`);
+    const aka = (p.also_known_as || []).filter(n => /^[\p{Script=Latin}\s.'’,-]+$/u.test(n)).slice(0, 4);
+    if (aka.length) facts.push(`Also known as: ${aka.join(', ')}`);
+
+    el.innerHTML = `
+      <div class="person-hero">
+        <div class="person-hero-bg" ${bg ? `style="background-image:url('${bg}')"` : ''}></div>
+        <div class="person-head">
+          ${photo
+            ? `<img class="person-photo" src="${photo}" alt="${esc(p.name)}">`
+            : `<div class="person-photo cast-photo-placeholder">${esc(initials)}</div>`}
+          <div>
+            <h2 class="person-name">${esc(p.name)}</h2>
+            ${facts.map(f => `<div class="person-fact">${esc(f)}</div>`).join('')}
+          </div>
+        </div>
+        <p class="person-bio" id="person-bio">${esc(p.biography || 'No biography available.')}</p>
+        <button class="person-bio-more" id="person-bio-more" style="display:none">Read more</button>
+      </div>
+      ${apps.length ? `
+      <div class="person-credits">
+        <div class="person-section-title">Appearances<span class="count">${apps.length}</span></div>
+        <div class="grid person-grid" id="person-grid"></div>
+      </div>` : ''}`;
+
+    const grid = $('person-grid');
+    apps.forEach(({ item, characters }) => {
+      const wrap = document.createElement('div');
+      wrap.appendChild(makeCard(item));
+      if (characters.length) {
+        const role = document.createElement('div');
+        role.className = 'appearance-role';
+        role.textContent = `as ${characters.join(' / ')}`;
+        wrap.appendChild(role);
+      }
+      grid.appendChild(wrap);
+    });
+
+    const bio = $('person-bio'), more = $('person-bio-more');
+    if (bio.scrollHeight > bio.clientHeight + 1) more.style.display = '';
+    more.addEventListener('click', () => {
+      more.textContent = bio.classList.toggle('expanded') ? 'Show less' : 'Read more';
+    });
+  } catch {
+    if (personViewEntry === entry)
+      el.innerHTML = '<div class="empty" style="padding-top:6rem"><h3>Couldn’t load this person</h3><p>Please try again.</p></div>';
+  }
 }
 
 /* ─── DIGITAL RELEASE BADGE (modal) ─── */
@@ -1300,17 +2496,90 @@ async function fetchDigitalReleaseBadge(movieId) {
   }
 }
 
+/* ─── CAST (modal) ─── */
+const castCache = {};
+
+async function loadCast(type, id) {
+  const wrap = $('modal-cast');
+  const sc   = $('cast-scroller');
+  wrap.style.display = 'none';
+  sc.innerHTML = '';
+
+  const cacheKey = `${type}-${id}`;
+  try {
+    let cast = castCache[cacheKey];
+    if (!cast) {
+      // aggregate_credits covers every season of a show; /credits only the latest
+      const data = await tmdb(type === 'movie' ? `/movie/${id}/credits` : `/tv/${id}/aggregate_credits`);
+      cast = (data.cast || []).slice(0, 20).map(c => ({
+        id: c.id,
+        name: c.name,
+        photo: poster(c.profile_path, 'w185'),
+        character: c.character ?? c.roles?.[0]?.character ?? '',
+      }));
+      castCache[cacheKey] = cast;
+    }
+    // A different title may have been opened while this was loading
+    if (!currentModalItem || currentModalItem.id !== id || currentModalItem.media_type !== type) return;
+    if (!cast.length) return;
+
+    sc.innerHTML = cast.map(c => {
+      const initials = (c.name || '').split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('');
+      return `
+        <div class="cast-member" data-id="${c.id}">
+          ${c.photo
+            ? `<img class="cast-photo" src="${c.photo}" alt="${esc(c.name)}" loading="lazy">`
+            : `<div class="cast-photo cast-photo-placeholder">${esc(initials)}</div>`}
+          <div class="cast-name">${esc(c.name)}</div>
+          ${c.character ? `<div class="cast-character">${esc(c.character)}</div>` : ''}
+        </div>`;
+    }).join('');
+    wrap.style.display = '';
+    sc.scrollLeft = 0;
+  } catch {}
+}
+
+{
+  const sc = $('cast-scroller');
+  const castWrap = $('modal-cast').querySelector('.cast-wrap');
+  // Measured on hover (when the arrows would show), as the view may be hidden when the cast loads
+  castWrap.addEventListener('mouseenter', () => castWrap.classList.toggle('static', sc.scrollWidth <= sc.clientWidth + 1));
+  sc.addEventListener('click', e => {
+    const m = e.target.closest('.cast-member');
+    if (m && m.dataset.id) openPerson(+m.dataset.id);
+  });
+  const step = () => Math.max(sc.clientWidth * 0.82, 200);
+  $('modal-cast').querySelector('.arrow.left').addEventListener('click', () => sc.scrollBy({ left: -step(), behavior: 'smooth' }));
+  $('modal-cast').querySelector('.arrow.right').addEventListener('click', () => sc.scrollBy({ left:  step(), behavior: 'smooth' }));
+}
+
 const seasonCache = {};
 
 async function loadTvSeasons(id) {
+  const gen = ++pickerGen;
+  tvFilling = true;
+  try { await fillTvPickers(id, gen); }
+  finally { if (gen === pickerGen) tvFilling = false; }
+}
+
+async function fillTvPickers(id, gen) {
   const seasonSel  = $('season-select');
   const episodeSel = $('episode-select');
   seasonSel.innerHTML  = '<option>Loading…</option>';
-  episodeSel.innerHTML = '<option>—</option>';
+  episodeSel.innerHTML = '<option>Loading…</option>';
+  const watch = modalWatch();
 
   try {
     let details = tvDetails[id];
-    if (!details) { details = await tmdb(`/tv/${id}`); tvDetails[id] = details; }
+    if (!details) {
+      // The season the card opens on comes in the same request
+      const first = watch?.season || 1, extra = `season/${first}`;
+      details = await tmdb(`/tv/${id}?append_to_response=${extra}`);
+      if (details[extra]?.episodes) seasonCache[`${id}-${first}`] = details[extra];
+      delete details[extra];
+      tvDetails[id] = details;
+    }
+    if (gen !== pickerGen) return;
     const seasons = (details.seasons || []).filter(s => s.season_number > 0);
     seasonSel.innerHTML = seasons.map(s =>
       `<option value="${s.season_number}" data-eps="${s.episode_count}">Season ${s.season_number} &nbsp;·&nbsp; ${s.episode_count} ep</option>`
@@ -1318,11 +2587,17 @@ async function loadTvSeasons(id) {
 
     seasonSel.replaceWith(seasonSel.cloneNode(true));
     const freshSel = $('season-select');
-    freshSel.addEventListener('change', () => updateEpisodes(id));
-    await updateEpisodes(id);
+    freshSel.addEventListener('change', () => { tvLoad = updateEpisodes(id, ++pickerGen).then(paintResume); });
+    // Open on the episode the user is up to
+    if (watch && [...freshSel.options].some(o => +o.value === watch.season)) freshSel.value = watch.season;
+    await updateEpisodes(id, gen);
+    if (gen !== pickerGen) return;
+    if (watch && +freshSel.value === watch.season && [...episodeSel.options].some(o => +o.value === watch.episode))
+      episodeSel.value = watch.episode;
   } catch {
-    seasonSel.innerHTML = '<option value="1">Season 1</option>';
-    await updateEpisodes(id);
+    if (gen !== pickerGen) return;
+    $('season-select').innerHTML = '<option value="1">Season 1</option>';
+    await updateEpisodes(id, gen);
   }
 }
 
@@ -1333,7 +2608,7 @@ function fmtDate(d) {
   return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-async function updateEpisodes(tvId) {
+async function updateEpisodes(tvId, gen = pickerGen) {
   const sel = $('season-select');
   const seasonNum = parseInt(sel.value || 1);
   const opt = sel.options[sel.selectedIndex];
@@ -1345,6 +2620,7 @@ async function updateEpisodes(tvId) {
   try {
     let data = seasonCache[cacheKey];
     if (!data && tvId) { data = await tmdb(`/tv/${tvId}/season/${seasonNum}`); seasonCache[cacheKey] = data; }
+    if (gen !== pickerGen) return;
     const episodes = data?.episodes || [];
     if (episodes.length) {
       epSel.innerHTML = episodes.map(ep => {
@@ -1354,35 +2630,59 @@ async function updateEpisodes(tvId) {
       }).join('');
     } else { throw new Error('no episodes'); }
   } catch {
+    if (gen !== pickerGen) return;
     epSel.innerHTML = Array.from({ length: eps }, (_, i) => `<option value="${i+1}">Episode ${i+1}</option>`).join('');
   }
 }
 
-$('modal-watch-btn').addEventListener('click', () => {
-  if (!currentModalItem) return;
+$('modal-watch-btn').addEventListener('click', async () => {
+  const item = currentModalItem;
+  if (!item) return;
+  // A show's pickers may still be filling in; play what they settle on
+  if (tvLoad && mediaOf(item) === 'tv') {
+    await tvLoad;
+    if (currentModalItem !== item || !modalIsOpen()) return;
+  }
   const s = parseInt($('season-select')?.value  || 1);
   const e = parseInt($('episode-select')?.value || 1);
-  window.location.href = playerUrl(currentModalItem, s, e);
+  const watch = modalWatch();
+  const startAt = watch && modalOnWatchEpisode(watch) ? resumeTime(watch) : 0;
+  window.location.href = playerUrl(currentModalItem, s, e, startAt);
 });
+$('episode-select').addEventListener('change', paintResume);
 
 $('modal-close').addEventListener('click', closeModal);
 $('modal-backdrop').addEventListener('click', e => { if (e.target === $('modal-backdrop')) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (drawerIsOpen()) closeDrawer();
+  else if (authIsOpen()) closeAuth(); else closeModal();
+});
+// Go through history so the pushed entry is consumed; popstate below does the actual step back
+$('modal-back').addEventListener('click', () => history.back());
 
-function closeModal(fromPop) {
-  if (!$('modal-backdrop').classList.contains('open')) return;
+function closeModal() {
+  if (!modalIsOpen()) return;
   $('modal-backdrop').classList.remove('open');
   document.body.style.overflow = '';
   document.documentElement.style.overflow = '';
   currentModalItem = null;
+  modalStack = [];
+  titleViewEntry = personViewEntry = null;
   if (window.__knavModalClosed) window.__knavModalClosed();
-  // Closing by any means other than Back itself unwinds the modal's
-  // history entry, so the next Back doesn't have to be pressed twice.
-  if (fromPop !== true && history.state && history.state.tflixModal) history.back();
+  // Unwind whatever modal history entries remain, so the next Back leaves
+  // the page instead of having to be pressed once per card.
+  const depth = modalDepth();
+  if (depth) history.go(-depth);
 }
 
 window.addEventListener('popstate', () => {
-  if ($('modal-backdrop').classList.contains('open')) closeModal(true);
+  if (modalIsOpen()) {
+    if (modalStack.length > 1) modalBack();
+    else closeModal();
+  } else if (modalDepth()) {
+    history.go(-modalDepth());   // stale entry left from before a reload: skip back to the page
+  }
 });
 
 /* ─── SEARCH ─── */
@@ -1429,6 +2729,7 @@ function resetSearch() {
   $('main').style.display = '';
   $('hero').style.display = heroSlides.length ? '' : 'none';
   searchResults = [];
+  searchPeople = [];
   currentFilter = 'all';
   document.querySelectorAll('.filter-tab').forEach(t => t.classList.toggle('active', t.dataset.filter === 'all'));
 }
@@ -1440,10 +2741,11 @@ async function doSearch(q) {
   $('search-term').textContent = `"${q}"`;
   $('search-spinner').style.display = 'flex';
   $('search-grid').innerHTML = '';
+  $('sr-people').hidden = $('sr-titles-label').hidden = true;
   $('search-empty').style.display = 'none';
   $('search-count').textContent = '';
   window.scrollTo({ top: 0 });
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.nav === 'home'));
+  document.querySelectorAll('.nav-link, .drawer-link').forEach(l => l.classList.toggle('active', l.dataset.nav === 'home'));
 
   try {
     const [p1, p2, p3] = await Promise.all([
@@ -1453,13 +2755,15 @@ async function doSearch(q) {
     ]);
     const all = [...(p1.results||[]), ...(p2.results||[]), ...(p3.results||[])];
     const seen = new Set();
-    searchResults = all.filter(r => {
-      if (r.media_type !== 'movie' && r.media_type !== 'tv') return false;
+    const unique = all.filter(r => {
       const key = `${r.media_type}-${r.id}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
+    searchResults = unique.filter(r => r.media_type === 'movie' || r.media_type === 'tv');
+    // People without a photo are mostly obscure crew: they'd only clutter the results
+    searchPeople = unique.filter(r => r.media_type === 'person' && r.profile_path);
     $('search-spinner').style.display = 'none';
     renderSearchResults();
   } catch {
@@ -1468,18 +2772,52 @@ async function doSearch(q) {
   }
 }
 
+const PEOPLE_IN_ALL = 6;   // people shown above the titles under "All"
+const countText = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+function personCard(p) {
+  return `
+    <button class="person-card" type="button" data-id="${p.id}">
+      <img class="cast-photo" src="${poster(p.profile_path, 'w185')}" alt="" loading="lazy">
+      <span class="cast-name">${esc(p.name)}</span>
+      ${p.known_for_department ? `<span class="cast-character">${esc(p.known_for_department)}</span>` : ''}
+    </button>`;
+}
+
 function renderSearchResults() {
   const grid = $('search-grid');
   grid.innerHTML = '';
+  const peopleTab = currentFilter === 'person';
+  grid.classList.toggle('people-grid', peopleTab);
+  const showRow = currentFilter === 'all' && searchPeople.length > 0;
+  $('sr-people').hidden = !showRow;
+  $('people-row').innerHTML = showRow ? searchPeople.slice(0, PEOPLE_IN_ALL).map(personCard).join('') : '';
+  $('people-row').scrollLeft = 0;
+
+  if (peopleTab) {
+    $('sr-titles-label').hidden = true;
+    $('search-count').textContent = countText(searchPeople.length, 'person', 'people');
+    $('search-empty-title').textContent = 'No people found';
+    $('search-empty').style.display = searchPeople.length ? 'none' : 'block';
+    grid.innerHTML = searchPeople.map(personCard).join('');
+    return;
+  }
+
   const filtered = currentFilter === 'all'
     ? searchResults
     : searchResults.filter(r => r.media_type === currentFilter);
-
-  $('search-count').textContent = `${filtered.length} title${filtered.length !== 1 ? 's' : ''}`;
-  if (!filtered.length) { $('search-empty').style.display = 'block'; return; }
-  $('search-empty').style.display = 'none';
+  $('search-count').textContent = countText(filtered.length, 'title', 'titles')
+    + (showRow ? ` · ${countText(searchPeople.length, 'person', 'people')}` : '');
+  $('sr-titles-label').hidden = !(showRow && filtered.length);
+  $('search-empty-title').textContent = 'No titles found';
+  $('search-empty').style.display = filtered.length || showRow ? 'none' : 'block';
   filtered.forEach(item => grid.appendChild(makeCard(item)));
 }
+
+$('search-results-section').addEventListener('click', e => {
+  const card = e.target.closest('.person-card');
+  if (card) openPerson(+card.dataset.id);
+});
 
 document.querySelectorAll('.filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
@@ -1490,11 +2828,1160 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   });
 });
 
+/* ─── MY LIST ───
+   Saved titles keyed "movie_550" / "tv_1399". Signed out, they live in
+   localStorage; signed in (and verified), in one Firestore doc —
+   users/{uid} → { list: { key: entry } } — so loading the whole list is a
+   single read. Entries keep the TMDB fields makeCard/openModal use, so the
+   row renders without refetching anything. The row and its nav link only
+   show while the list has something in it. */
+const LIST_ICONS = `
+  <svg class="ic-plus" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  <svg class="ic-check" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>`;
+
+let myList = readLocalList();   // key -> entry, from whichever store is active
+let myListRef = null;           // the user's Firestore doc while synced, else null
+let myListUnsub = null;
+let myListScroller = null;
+
+function listKey(item) { return `${mediaOf(item)}_${item.id}`; }
+
+function listEntry(item) {
+  const e = { media_type: mediaOf(item), addedAt: Date.now() };
+  for (const f of TITLE_FIELDS) if (item[f] != null) e[f] = item[f];
+  return e;
+}
+
+function readLocalList() {
+  try { return JSON.parse(localStorage.getItem(MYLIST_KEY)) || {}; } catch { return {}; }
+}
+
+function saveLocalList(list) {
+  if (Object.keys(list).length) localStorage.setItem(MYLIST_KEY, JSON.stringify(list));
+  else localStorage.removeItem(MYLIST_KEY);
+}
+
+function toggleMyList(item) {
+  const key = listKey(item);
+  const adding = !myList[key];
+  const next = { ...myList };
+  if (adding) next[key] = listEntry(item); else delete next[key];
+  if (myListRef) {
+    // A rejected write is rolled back by the snapshot listener
+    writeRemoteList({ [key]: adding ? next[key] : fb.f.deleteField() })
+      .catch(() => toast("Couldn't update My List, try again"));
+  } else {
+    saveLocalList(next);
+  }
+  setMyList(next);
+  toast(adding ? 'Added to My List' : 'Removed from My List');
+}
+
+// Merges into the list map, touching only the given keys
+function writeRemoteList(changes) {
+  return fb.f.setDoc(myListRef, { list: changes }, { merge: true });
+}
+
+// Follows the signed-in user's list, or falls back to the local one
+function startListSync() {
+  const uid = canSync(authUser) ? authUser.uid : null;
+  if (myListRef && myListRef.id === uid) return;
+  if (myListUnsub) myListUnsub();
+  myListUnsub = myListRef = null;
+  setSyncUid(uid);
+  watchRemote = {};
+  if (!uid) { setMyList(readLocalList()); refreshWatching(); return; }
+
+  myListRef = fb.f.doc(fb.db, 'users', uid);
+  let first = true;
+  myListUnsub = fb.f.onSnapshot(myListRef, snap => {
+    const data = (snap.exists() && snap.data()) || {};
+    const remote = data.list || {};
+    watchRemote = data.watching || {};
+    setMyList(remote);
+    refreshWatching();
+    if (first) { first = false; mergeLocalList(remote); flushWatching(); }
+  }, err => {
+    console.warn('My List sync failed', err);
+    toast("Couldn't load My List");
+  });
+}
+
+// Titles saved and progress made while signed out only join the account if the
+// user says so (it may be someone else's device)
+let pendingMerge = null;
+
+function clearLocalTitles() {
+  saveLocalList({});
+  writeJsonStore(WATCH_KEY, {});
+}
+
+function mergeRow(e, extra) {
+  const src = poster(e.poster_path, 'w92');
+  return `<div class="merge-item">
+    ${src ? `<img class="merge-poster" src="${src}" alt="" loading="lazy">` : '<div class="merge-poster"></div>'}
+    <div>
+      <div class="merge-title">${esc(e.title || e.name || 'Untitled')}</div>
+      <div class="merge-meta">${year(e.release_date || e.first_air_date)} · ${e.media_type === 'tv' ? 'Series' : 'Film'}${extra}</div>
+    </div>
+  </div>`;
+}
+
+function mergeLocalList(remote) {
+  const list = Object.fromEntries(Object.entries(readLocalList()).filter(([k]) => !remote[k]));
+  const progress = Object.fromEntries(Object.entries(readJsonStore(WATCH_KEY))
+    .filter(([k, e]) => (e.updatedAt || 0) > (watchRemote[k]?.updatedAt || 0)));
+  const n = Object.keys(list).length, w = Object.keys(progress).length;
+  if (!n && !w) { clearLocalTitles(); return; }
+  pendingMerge = { list, progress };
+  $('auth-title').textContent = w
+    ? `Add ${n + w} title${n + w !== 1 ? 's' : ''} to your account?`
+    : `Add ${n} title${n !== 1 ? 's' : ''} to your list?`;
+  $('auth-sub').textContent = 'You saved these on this device before signing in.';
+  $('merge-add').textContent = w ? 'Add to my account' : 'Add to my list';
+  const newestFirst = (x, y) => (y.addedAt || y.updatedAt || 0) - (x.addedAt || x.updatedAt || 0);
+  const listRows = Object.values(list).sort(newestFirst).map(e => mergeRow(e, ''));
+  const progressRows = Object.values(progress).sort(newestFirst)
+    .map(e => mergeRow(e, e.media_type === 'tv' ? ` · S${Number(e.season)} E${Number(e.episode)}` : ''));
+  $('merge-list').innerHTML = (n && w)
+    ? ['<div class="merge-heading">My List</div>', ...listRows, '<div class="merge-heading">Continue Watching</div>', ...progressRows].join('')
+    : [...listRows, ...progressRows].join('');
+  showAuth('merge');
+}
+
+$('merge-add').addEventListener('click', () => {
+  const add = pendingMerge;
+  closeAuth();
+  if (!add || !myListRef) return;
+  // Each title replaces its whole entry, so none keeps fields from an older one
+  const changes = {}, paths = [];
+  for (const [field, titles] of [['list', add.list], ['watching', add.progress]]) {
+    if (!Object.keys(titles).length) continue;
+    changes[field] = titles;
+    for (const key of Object.keys(titles)) paths.push(new fb.f.FieldPath(field, key));
+  }
+  fb.f.setDoc(myListRef, changes, { mergeFields: paths }).then(() => {
+    clearLocalTitles();
+    toast(changes.watching ? 'Added to your account' : 'Added to My List');
+  }, () => toast("Couldn't add your saved titles"));
+});
+
+$('merge-discard').addEventListener('click', () => {
+  clearLocalTitles();
+  closeAuth();
+});
+
+function setMyList(list) {
+  myList = list;
+  renderMyList();
+}
+
+function paintListBtn(btn) {
+  const on = !!myList[btn.dataset.listKey];
+  btn.classList.toggle('added', on);
+  btn.title = on ? 'Remove from My List' : 'Add to My List';
+}
+
+// Adding the first title (or removing the last) shows/hides the My List row,
+// shifting every row below it; scroll by the same amount so `el` stays put
+function keepInView(el, change) {
+  const top = el.getBoundingClientRect().top;
+  change();
+  if (el.isConnected && el.getClientRects().length)
+    window.scrollBy({ top: el.getBoundingClientRect().top - top, behavior: 'instant' });
+}
+
+function popListBtn(btn) {
+  btn.classList.remove('pop');
+  void btn.offsetWidth;   // restart the animation on quick repeat clicks
+  btn.classList.add('pop');
+  btn.addEventListener('animationend', () => btn.classList.remove('pop'), { once: true });
+}
+
+function renderMyList() {
+  const entries = Object.values(myList).sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
+  $('nav-mylist').hidden = $('drawer-mylist').hidden = !entries.length;
+  if (myListScroller) {
+    myListScroller.closest('.row').hidden = !entries.length;
+    // Reuse the cards already there so the row keeps its scroll position and focus
+    const cards = new Map([...myListScroller.children].map(c => [c.dataset.key, c]));
+    myListScroller.replaceChildren(...entries.map(e => cards.get(listKey(e)) || makeCard(e)));
+  }
+  document.querySelectorAll('[data-list-key]').forEach(paintListBtn);
+  updateActiveNav();
+}
+
+function loadMyListRow() {
+  myListScroller = buildRow({ title: 'My List', anchor: 'mylist' });
+  renderMyList();
+}
+
+$('modal-list-btn').addEventListener('click', () => {
+  if (!currentModalItem) return;
+  toggleMyList(currentModalItem);
+  popListBtn($('modal-list-btn'));
+});
+
+/* ─── CONTINUE WATCHING ───
+   The stream page records progress (assets/watching.js has the storage). This
+   shows it: a row below My List whose cards go straight to the player, and
+   Resume in the title modal. The row reads the same Firestore doc as My List,
+   so it costs no extra read. Shows that are caught up stay out of the row
+   until TMDB says a newer episode has aired. */
+let watching = {};        // key -> entry, what's on screen
+let watchRemote = {};     // what the account has, before queued changes
+let watchScroller = null;
+const caughtUpChecked = new Set();
+
+function refreshWatching() {
+  const uid = myListRef?.id || syncUid();
+  watching = uid ? overlayQueue(watchRemote, readJsonStore(watchQueueKey(uid))) : readJsonStore(WATCH_KEY);
+  renderWatching();
+  paintResume();
+  checkCaughtUp();
+}
+
+function sendWatching(key, item) {
+  return writeWatching(fb.f, myListRef, key, item);
+}
+
+// Whatever a closed tab or a failed write left behind. Anything the account
+// has a newer version of is out of date, so it's dropped instead.
+function flushWatching() {
+  if (!myListRef) return;
+  const uid = myListRef.id;
+  for (const [key, item] of Object.entries(readJsonStore(watchQueueKey(uid)))) {
+    if ((watchRemote[key]?.updatedAt || 0) > item.updatedAt) { clearQueued(uid, key, item.updatedAt); continue; }
+    sendWatching(key, item).then(() => clearQueued(uid, key, item.updatedAt),
+                                 err => console.warn('Progress not synced yet', err));
+  }
+}
+
+function saveWatching(key, entry) {
+  const uid = myListRef?.id || syncUid();
+  storeWatching(uid, key, entry);
+  refreshWatching();
+  if (myListRef) flushWatching();
+}
+
+function removeWatching(key) {
+  saveWatching(key, null);
+  toast('Removed from Continue Watching');
+}
+
+const resumeTime = e => e.time >= WATCH_MIN_RESUME ? e.time : 0;
+const resumeUrl  = e => playerUrl(e, e.season, e.episode, resumeTime(e));
+const watchSig   = e => `${e.season}-${e.episode}-${e.time || 0}-${e.duration || 0}`;
+
+function watchCardExtras(e) {
+  const pct = e.duration ? Math.min(100, Math.max(0, e.time / e.duration * 100)) : 0;
+  return `
+    ${pct ? `<div class="card-progress"><span style="width:${pct.toFixed(1)}%"></span></div>` : ''}
+    <button class="card-remove" type="button" title="Remove from Continue Watching" aria-label="Remove from Continue Watching">
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>`;
+}
+
+function renderWatching() {
+  if (!watchScroller) return;
+  const entries = Object.values(watching)
+    .filter(e => e.status !== 'caughtup')
+    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  watchScroller.closest('.row').hidden = !entries.length;
+  // Reuse unchanged cards so the row keeps its scroll position and focus, and
+  // leave the row alone if nothing moved, as that would restart a hovered card
+  const current = [...watchScroller.children];
+  const cards = new Map(current.map(c => [c.dataset.key, c]));
+  const next = entries.map(e => {
+    const card = cards.get(listKey(e));
+    return card && card.dataset.sig === watchSig(e) ? card : makeCard(e, { watch: e });
+  });
+  if (next.length !== current.length || next.some((c, i) => c !== current[i])) watchScroller.replaceChildren(...next);
+}
+
+function loadWatchingRow() {
+  watchScroller = buildRow({ title: 'Continue Watching', anchor: 'continue' });
+  refreshWatching();
+}
+
+// A new episode of a caught-up show puts it back in the row, on that episode
+async function checkCaughtUp() {
+  const due = Object.entries(watching).filter(([k, e]) => e.status === 'caughtup' && !caughtUpChecked.has(k));
+  if (!due.length) return;
+  due.forEach(([k]) => caughtUpChecked.add(k));
+  await mapLimit(due, 6, async ([key, e]) => {
+    try {
+      let details = tvDetails[e.id];
+      if (!details) { details = await tmdb(`/tv/${e.id}`); tvDetails[e.id] = details; }
+      const last = details.last_episode_to_air;
+      if (!last || watching[key]?.updatedAt !== e.updatedAt) return;
+      let next = null;
+      if (last.season_number > e.season) next = { season: e.season + 1, episode: 1 };
+      else if (last.season_number === e.season && last.episode_number > e.episode) next = { season: e.season, episode: e.episode + 1 };
+      if (next) saveWatching(key, { ...e, ...next, status: 'watching', updatedAt: Date.now() });
+    } catch (err) { console.warn('Could not check for new episodes', err); }
+  });
+}
+
+// Title modal: Resume when the selected episode is the one the user is up to
+function modalWatch() {
+  if (!currentModalItem) return null;
+  const e = watching[listKey(currentModalItem)];
+  return e && e.status !== 'caughtup' ? e : null;
+}
+function modalOnWatchEpisode(e) {
+  return mediaOf(currentModalItem) === 'movie' || tvFilling ||   // still filling: they open on it
+    (+$('season-select').value === e.season && +$('episode-select').value === e.episode);
+}
+function paintResume() {
+  const e = modalWatch();
+  const on = e && modalOnWatchEpisode(e);
+  $('modal-watch-label').textContent = !on ? 'Play' : e.media_type === 'tv' ? `Resume S${Number(e.season)} E${Number(e.episode)}` : 'Resume';
+}
+
+// Back from the player can restore this page as it was, so it may be out of
+// date; progress can also change in another tab or come online later
+window.addEventListener('pageshow', e => { if (e.persisted) { refreshWatching(); flushWatching(); } });
+window.addEventListener('storage', e => {
+  if (!e.key || e.key === WATCH_KEY || e.key.startsWith('tflix_watching_queue_')) refreshWatching();
+});
+window.addEventListener('online', flushWatching);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { refreshWatching(); flushWatching(); } });
+
+/* ─── ACCOUNT ───
+   Firebase Auth (email + password) behind one "Username or email" field.
+   A username signs in as <username>@USER_DOMAIN, an address that never gets
+   mail, so only accounts made with a real email can reset their password.
+   Email accounts must verify before My List syncs (the Firestore rules
+   enforce the same). The SDK only loads when someone opens the account
+   button, or on page load if this browser was signed in last time. */
+const accountMenu = $('account-menu');
+
+let fb = null;          // { a: auth module, f: firestore module, auth, db }
+let fbLoading = null;
+let authUser = null;
+let authMode = 'signin';
+let authView = null;    // 'form' | 'verify' | 'merge' while the dialog is open
+
+const accountName = u => isUsernameAccount(u) ? u.email.split('@')[0] : u.email;
+const authIsOpen  = () => $('auth-backdrop').classList.contains('open');
+
+// Emails get a "Continue" link back to the site; that needs the domain to be
+// authorized in Firebase, so fall back to the plain email if it isn't
+const withContinueLink = send => send({ url: location.origin + '/' }).catch(err =>
+  (err && String(err.code).includes('continue-uri')) ? send(undefined) : Promise.reject(err));
+
+function ensureFirebase() {
+  return fbLoading ||= (async () => {
+    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}`;
+    const [{ initializeApp }, a, f] = await Promise.all([
+      import(`${base}/firebase-app.js`),
+      import(`${base}/firebase-auth.js`),
+      import(`${base}/firebase-firestore.js`),
+    ]);
+    const app = initializeApp(FIREBASE_CONFIG);
+    fb = { a, f, auth: a.getAuth(app), db: f.getFirestore(app) };
+    a.onAuthStateChanged(fb.auth, onAuthChange);
+    await fb.auth.authStateReady();
+  })().catch(err => { fbLoading = null; throw err; });
+}
+
+function onAuthChange(user) {
+  authUser = user;
+  if (user) localStorage.setItem(SIGNED_IN_KEY, '1'); else localStorage.removeItem(SIGNED_IN_KEY);
+  renderAccount();
+  startListSync();
+  if (user && !canSync(user)) refreshVerified();
+}
+
+// emailVerified only updates on reload, and the rules read it from the ID
+// token, so a fresh token is needed before the list can sync
+async function refreshVerified() {
+  const u = fb && fb.auth.currentUser;
+  if (!u || canSync(u)) return !!u;
+  try {
+    await u.reload();
+    if (!u.emailVerified) return false;
+    await u.getIdToken(true);
+  } catch { return false; }
+  renderAccount();
+  startListSync();
+  if (authView === 'verify') { closeAuth(); toast('Email verified, My List is synced'); }
+  return true;
+}
+
+// Coming back from a verification / email-change email
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || !authUser) return;
+  if (!canSync(authUser)) refreshVerified();
+  else if (emailChangeTo) checkEmailChanged();
+});
+
+// Confirming a new email revokes the account's sessions, so the reload fails
+// and the user signs in again — now with that email instead of the username
+let emailChangeTo = null;
+
+async function checkEmailChanged() {
+  const u = fb.auth.currentUser;
+  try {
+    await u.reload();
+    if (u.email !== emailChangeTo) return;
+    emailChangeTo = null;
+    renderAccount();
+    toast('Email added');
+  } catch (err) {
+    if (err.code === 'auth/network-request-failed') return;
+    const email = emailChangeTo;
+    emailChangeTo = null;
+    await fb.a.signOut(fb.auth).catch(() => {});
+    showAuth('form', 'signin');
+    $('auth-id').value = email;
+    setAuthMsg('Email confirmed. Sign in with your email and password.', true);
+  }
+}
+
+function renderAccount() {
+  const u = authUser;
+  const btn = $('account-btn');
+  btn.classList.toggle('signed-in', !!u);
+  btn.classList.toggle('unverified', !!u && !canSync(u));
+  btn.classList.toggle('app-outdated', !!appUpdate);
+  btn.title = (u ? accountName(u) : 'Calendar & sign in') + (appUpdate ? ' · Update available' : '');
+  const appsItem = `<div class="server-item account-item" data-act="apps">${appUpdate ? '<div class="s-dot warn"></div>' : ''}<span>Get Apps</span></div>`;
+  $('account-initial').textContent = u ? accountName(u)[0].toUpperCase() : '';
+  accountMenu.innerHTML = !u ? `
+    <div class="server-item account-item" data-act="calendar"><span>Calendar</span></div>
+    ${appsItem}
+    <div class="server-item account-item" data-act="help"><span>Help</span></div>
+    <div class="server-item account-item" data-act="signin"><span>Sign In</span></div>` : `
+    <div class="account-head">
+      <div class="account-head-avatar">${esc(accountName(u)[0].toUpperCase())}</div>
+      <div class="account-head-name">${esc(accountName(u))}</div>
+    </div>
+    ${canSync(u) ? '' : '<div class="server-item account-item" data-act="verify"><div class="s-dot warn"></div><span>Verify Email</span></div>'}
+    <div class="server-item account-item" data-act="account"><span>My Account</span></div>
+    <div class="server-item account-item" data-act="calendar"><span>Calendar</span></div>
+    ${appsItem}
+    <div class="server-item account-item" data-act="help"><span>Help</span></div>
+    <div class="server-item account-item" data-act="signout"><span>Sign Out</span></div>`;
+  if (authView === 'account') renderAccountCard();
+}
+
+function renderAccountCard() {
+  const u = fb.auth.currentUser;
+  const username = isUsernameAccount(u);
+  const n = Object.keys(myList).length;
+  $('acct-avatar').textContent = accountName(u)[0].toUpperCase();
+  $('acct-name').textContent = accountName(u);
+  $('acct-kind').textContent = username ? 'Username account' : 'Email account';
+  $('acct-info').innerHTML = `
+    ${username ? `<div class="acct-row"><span>Username</span><span>${esc(accountName(u))}</span></div>` : ''}
+    <div class="acct-row"><span>Email</span><span>${username ? '<span class="acct-badge warn">Not added</span>'
+      : `${esc(u.email)}${u.emailVerified ? '<span class="acct-badge ok">Verified</span>' : '<span class="acct-badge warn">Not verified</span>'}`}</span></div>
+    <div class="acct-row"><span>Password recovery</span><span>${username ? 'Not available' : 'By email'}</span></div>
+    <div class="acct-row"><span>My List</span><span>${n} title${n !== 1 ? 's' : ''}</span></div>`;
+  $('acct-actions').innerHTML = `
+    ${!username && !u.emailVerified ? `<button class="acct-action" data-act="verify" type="button">
+      <span class="acct-action-label"><span class="s-dot warn"></span>Verify your email</span>
+    </button>` : ''}
+    ${username ? '<button class="acct-action" data-act="add-email" type="button">Add email</button>' : ''}
+    <button class="acct-action${username ? ' disabled' : ''}" data-act="password" type="button">
+      <span class="acc-label">Change password</span><span class="acc-hint">Only available with an email</span>
+    </button>
+    <button class="acct-action danger" data-act="delete" type="button">Delete account</button>`;
+}
+
+$('acct-actions').addEventListener('click', e => {
+  const action = e.target.closest('.acct-action');
+  if (action && !action.classList.contains('disabled')) showAuth(action.dataset.act);
+});
+
+$('account-btn').addEventListener('click', e => {
+  e.stopPropagation();
+  serverMenu.classList.remove('open');
+  accountMenu.classList.toggle('open');
+});
+
+accountMenu.addEventListener('click', async e => {
+  const item = e.target.closest('.account-item');
+  if (!item) { e.stopPropagation(); return; }   // the name header: keep the menu open
+  const act = item.dataset.act;
+  if (act === 'signout') { signOutUser(); return; }
+  if (act !== 'signin') { showAuth(act); return; }
+  // Firebase only loads now; it may also turn out this browser is still signed in
+  try { await ensureFirebase(); }
+  catch { toast("Couldn't reach the account service"); return; }
+  if (authUser) toast(`Signed in as ${accountName(authUser)}`);
+  else showAuth('form', 'signin');
+});
+
+/* ─── GET APPS ───
+   Release assets carry the version in their name and a release may ship only
+   one of the apps, so a fixed /releases/latest/download link can't work: list
+   the releases and take the newest asset per app. Until that answers (or if
+   it fails) the buttons open the latest release page in a new tab.
+   The answer is kept for an hour (GitHub allows 60 unauthenticated requests
+   an hour), except that each app launch checks afresh. */
+const RELEASES_API = 'https://api.github.com/repos/TomasTNunes/tflix/releases?per_page=50';
+const RELEASES_KEY = 'tflix_releases';            // localStorage: { at, best }
+const RELEASES_TTL = 60 * 60 * 1000;
+const APP_ASSETS = {
+  windows: /^tflix-windows\.setup\.(\d+(?:\.\d+)*)\.exe$/,
+  android: /^tflix-android\.(\d+(?:\.\d+)*)\.apk$/,   // not the .debug. build
+};
+let appReleases = null;
+
+const cmpVersion = (a, b) => {
+  const x = a.split('.').map(Number), y = b.split('.').map(Number);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) - (y[i] || 0);
+  return 0;
+};
+
+// → { windows: { version, url }, android: { … } }, from the cache if it's
+// younger than maxAge; a failed request falls back to the cache, or {}
+function loadReleases(maxAge = RELEASES_TTL) {
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem(RELEASES_KEY)); } catch {}
+  if (cached && Date.now() - cached.at < maxAge) return Promise.resolve(cached.best);
+  return appReleases ||= fetch(RELEASES_API)
+    .then(r => r.ok ? r.json() : Promise.reject(new Error(r.status)))
+    .then(list => {
+      const best = {};
+      for (const rel of list) {
+        if (rel.draft || rel.prerelease) continue;
+        for (const asset of rel.assets || []) for (const [app, re] of Object.entries(APP_ASSETS)) {
+          const m = asset.name.match(re);
+          if (m && (!best[app] || cmpVersion(m[1], best[app].version) > 0))
+            best[app] = { version: m[1], url: asset.browser_download_url };
+        }
+      }
+      try { localStorage.setItem(RELEASES_KEY, JSON.stringify({ at: Date.now(), best })); } catch {}
+      return best;
+    })
+    .catch(() => cached ? cached.best : {})
+    .finally(() => { appReleases = null; });
+}
+
+function loadAppReleases() { loadReleases().then(paintAppButtons); }
+
+// Inside an app: the installed version, from the small "v1.2.3" label the
+// app adds to the page (app/windows/preload-main.js, app/android's
+// assets/version-label.js). Null in a browser or an app without the label.
+// The Android app only added the label after 1.1.0, so an Android app that
+// never adds one is 1.1.0. (Every Windows version that can open tflix.stream
+// has it.)
+const ANDROID_UNLABELLED = '1.1.0';
+let appVersionGuess = null;   // set once that's clear, see waitForAppVersion
+
+// The label normally lands within ~50ms of the load event, but on the first
+// run after an Android install or update it can take 4–5s
+const LABEL_GRACE = 12000;
+
+function labelVersion() {
+  const m = inApp && ($('tflix-version-label')?.textContent || '').match(/^v(\d+(?:\.\d+)*)$/);
+  return m ? m[1] : null;
+}
+const installedAppVersion = () => labelVersion() || appVersionGuess;
+
+// Wait for the label until LABEL_GRACE past the load event. An Android app
+// that still has none is taken for 1.1.0, but keep watching: if the label was
+// only late, correctAppUpdate puts right what that guess showed.
+function waitForAppVersion() {
+  return new Promise(resolve => {
+    if (!inApp || labelVersion()) return resolve(labelVersion());
+    let t;
+    const mo = new MutationObserver(() => {
+      if (!labelVersion()) return;
+      mo.disconnect(); clearTimeout(t);
+      if (appVersionGuess) { appVersionGuess = null; correctAppUpdate(); }
+      else resolve(labelVersion());
+    });
+    mo.observe(document.body, { childList: true });
+    const giveUp = () => { t = setTimeout(() => {
+      if (inApp === 'android') appVersionGuess = ANDROID_UNLABELLED;
+      else mo.disconnect();
+      resolve(installedAppVersion());
+    }, LABEL_GRACE); };
+    if (document.readyState === 'complete') giveUp(); else addEventListener('load', giveUp, { once: true });
+  });
+}
+
+// The label turned up after the 1.1.0 guess: if this app is in fact current,
+// take back the dot and the pop-up; if not, show the right "You have" version
+function correctAppUpdate() {
+  if (!appUpdate) return;   // the check hasn't finished; it re-reads the version itself
+  const installed = labelVersion();
+  if (cmpVersion(installed, appUpdate.version) < 0) {
+    appUpdate.installed = installed;
+    $('update-pop-text').innerHTML = `TFLIX <b>v${esc(appUpdate.version)}</b> for Android is out. You have v${esc(installed)}.`;
+  } else {
+    appUpdate = null;
+    const pop = $('update-pop');
+    if (pop.classList.contains('show')) { pop.classList.remove('show'); setTimeout(() => { pop.hidden = true; }, 300); }
+  }
+  renderAccount();
+  if (authView === 'apps') loadAppReleases();
+}
+
+/* ─── APP UPDATE ───
+   Inside an out-of-date app the profile icon and its Get Apps item carry a
+   yellow dot for as long as it stays out of date. On each launch (a new
+   app session, so not when coming back from the player) a pop-up offers the
+   update too, unless "Don't show again" was ticked for that release. It
+   closes itself after 20s, which honours the tick like Close does. */
+const UPDATE_SEEN_KEY = 'tflix_update_seen';        // sessionStorage: this launch was checked
+const UPDATE_SKIP_KEY = 'tflix_update_dismissed';   // localStorage: release not to pop up for
+let appUpdate = null;   // { version, installed } while this app is out of date
+
+async function checkAppUpdate() {
+  const installed = await waitForAppVersion();
+  if (!installed) return;
+  let launch = false;
+  try { launch = !sessionStorage.getItem(UPDATE_SEEN_KEY); sessionStorage.setItem(UPDATE_SEEN_KEY, '1'); } catch {}
+  const latest = (await loadReleases(launch ? 0 : RELEASES_TTL))[inApp];
+  const now = installedAppVersion() || installed;   // a late label may have replaced the guess meanwhile
+  if (!latest || cmpVersion(now, latest.version) >= 0) return;
+  appUpdate = { version: latest.version, installed: now };
+  renderAccount();
+  let skipped = null;
+  try { skipped = localStorage.getItem(UPDATE_SKIP_KEY); } catch {}
+  if (launch && skipped !== latest.version) showUpdatePop();
+}
+
+function showUpdatePop() {
+  const pop = $('update-pop');
+  const name = inApp === 'windows' ? 'Windows' : 'Android';
+  $('update-pop-text').innerHTML = `TFLIX <b>v${esc(appUpdate.version)}</b> for ${name} is out. You have v${esc(appUpdate.installed)}.`;
+  $('update-pop-skip').setAttribute('aria-checked', 'false');
+  pop.hidden = false;
+  requestAnimationFrame(() => requestAnimationFrame(() => pop.classList.add('show')));
+}
+
+function closeUpdatePop() {
+  const pop = $('update-pop');
+  if (!pop.classList.contains('show')) return;
+  if ($('update-pop-skip').getAttribute('aria-checked') === 'true')
+    try { localStorage.setItem(UPDATE_SKIP_KEY, appUpdate.version); } catch {}
+  const hadFocus = pop.contains(document.activeElement) || !!pop.querySelector('.kf');
+  pop.classList.remove('show');
+  setTimeout(() => { pop.hidden = true; }, 300);
+  if (hadFocus) window.__knavFocus($('account-btn'));
+}
+
+$('update-pop-skip').addEventListener('click', e => {
+  const b = e.currentTarget;
+  b.setAttribute('aria-checked', b.getAttribute('aria-checked') === 'true' ? 'false' : 'true');
+});
+$('update-pop-close').addEventListener('click', closeUpdatePop);
+$('update-pop-go').addEventListener('click', () => { closeUpdatePop(); showAuth('apps'); });
+$('update-pop').addEventListener('animationend', closeUpdatePop);   // the 20s countdown ran out
+
+// In a browser every button reads Download. On the card of the app you're in,
+// it reads Update when a newer release exists (and downloads straight away),
+// or stays Download and asks first when you already have the latest.
+function paintAppButtons(best) {
+  const installed = installedAppVersion();
+  for (const app of Object.keys(APP_ASSETS)) {
+    const a = best[app];
+    const link = document.querySelector(`.app-dl[data-app="${app}"]`);
+    const ver = document.querySelector(`.app-ver[data-app="${app}"]`);
+    const mine = !!a && app === inApp && !!installed;
+    const outdated = mine && cmpVersion(installed, a.version) < 0;
+    if (a) link.href = a.url;
+    // A browser saves the file without leaving the page, so it needs no new
+    // tab (that only flashes open and shut). The apps block navigating away,
+    // so there it stays a pop-up, which they hand to the system browser.
+    if (a && !inApp) link.removeAttribute('target');
+    link.textContent = outdated ? 'Update' : 'Download';
+    link.classList.toggle('update', outdated);
+    document.querySelector(`.app-dot[data-app="${app}"]`).hidden = !outdated;
+    link.dataset.state = !mine ? '' : outdated ? 'update' : 'latest';
+    ver.textContent = !a ? '' : outdated ? `v${a.version} · You have v${installed}`
+                               : mine ? `v${a.version} · Installed` : `v${a.version}`;
+  }
+}
+
+$('auth-apps').addEventListener('click', e => {
+  const link = e.target.closest('.app-dl');
+  if (!link || link.dataset.state !== 'latest') return;
+  e.preventDefault();
+  const name = link.dataset.app === 'windows' ? 'Windows' : 'Android';
+  showAuth('apps-again');
+  $('auth-sub').textContent = `You already have the latest version of TFLIX for ${name} (v${installedAppVersion()}). Download it again?`;
+  $('again-download').href = link.href;
+});
+// Download anyway opens the link itself (as a pop-up, like the card's), then
+// goes back to the list; Cancel just goes back
+$('again-download').addEventListener('click', () => setTimeout(() => showAuth('apps'), 0));
+$('again-cancel').addEventListener('click', () => showAuth('apps'));
+
+function setHowto(btn, open) {
+  btn.setAttribute('aria-expanded', open);
+  $(btn.getAttribute('aria-controls')).hidden = !open;
+}
+
+$('auth-apps').addEventListener('click', e => {
+  const btn = e.target.closest('.app-howto-btn');
+  if (btn) setHowto(btn, btn.getAttribute('aria-expanded') !== 'true');
+});
+
+async function signOutUser() {
+  await fb.a.signOut(fb.auth);
+  toast('Signed out');
+}
+
+const AUTH_VIEWS = ['form', 'verify', 'merge', 'moved', 'account', 'calendar', 'help', 'apps', 'apps-again', 'add-email', 'password', 'delete'];
+const AUTH_TEXT = {
+  moved:       ['Welcome to tflix.stream', "TFLIX has a new address, so you'll need to sign in again. Your My List is saved in your account and comes right back."],
+  account:     ['My Account', ''],
+  calendar:    ['Calendar', 'New episodes and digital releases for titles in My List.'],
+  help:        ['Help', 'Answers to common questions about watching on TFLIX.'],
+  apps:        ['Get the Apps', 'Watch TFLIX in its own app. The apps block the pop-ups and ad redirects (No Ads).'],
+  'apps-again': ["You're up to date", ''],   // the line below is filled in by confirmRedownload
+  'add-email': ['Add email', "Use it to recover your password. Once you confirm it, you'll sign in with your email instead of your username."],
+  password:    ['Change password', 'Enter your current password, then the new one.'],
+  delete:      ['Delete account?', "This permanently deletes your account and My List. It can't be undone."],
+};
+let authBackTo = null;   // view the top-left Back returns to, if any
+let authOpener = null;   // header button that opened the dialog, focused again on close
+
+function showAuth(view, mode = authMode) {
+  // Pages opened from My Account get a Back button to it
+  const from = authView;
+  if (view !== authView) authBackTo = authView === 'account' && view !== 'account' ? 'account'
+                                    : authView === 'apps' && view === 'apps-again' ? 'apps' : null;
+  authView = view;
+  authMode = mode;
+  for (const v of AUTH_VIEWS) $(`auth-${v}`).hidden = v !== view;
+  $('auth-back').hidden = !authBackTo;
+  $('auth-dialog').classList.toggle('has-back', !!authBackTo);
+  $('auth-dialog').classList.toggle('wide', view === 'calendar');
+  $('auth-dialog').classList.toggle('apps', view === 'apps');
+  $('auth-dialog').classList.toggle('help', view === 'help');
+  $('help-foot').hidden = view !== 'help';
+  $('auth-dialog').querySelectorAll('.auth-msg').forEach(m => { m.textContent = ''; });
+
+  if (view === 'account') renderAccountCard();
+  if (view === 'calendar') openCalendar();
+  if (view === 'help' && from !== 'help') { collapseFaq($('auth-help')); $('auth-help').closest('.auth-body').scrollTop = 0; }
+  if (view === 'apps') {
+    if (from !== 'apps-again') $('auth-apps').querySelectorAll('.app-howto-btn').forEach(b => setHowto(b, false));
+    loadAppReleases();
+  }
+  if (AUTH_TEXT[view]) {
+    [$('auth-title').textContent, $('auth-sub').textContent] = AUTH_TEXT[view];
+    const u = fb && fb.auth.currentUser;   // none for a guest opening the calendar
+    if (u) {
+      $('auth-password').querySelector('[autocomplete=username]').value = u.email;   // for password managers
+      $('delete-forgot').classList.toggle('disabled', isUsernameAccount(u));
+    }
+  } else if (view === 'form') {
+    const up = mode === 'signup';
+    $('auth-title').textContent  = up ? 'Create account' : 'Sign in';
+    $('auth-sub').textContent    = up ? 'Pick a username, or use your email.' : 'Keep My List in sync on every device.';
+    $('auth-submit').textContent = up ? 'Create account' : 'Sign in';
+    $('auth-switch').textContent = up ? 'Have an account? Sign in' : 'New here? Create an account';
+    $('auth-pass').autocomplete  = up ? 'new-password' : 'current-password';
+    $('auth-note').hidden   = !up;
+    $('auth-forgot').hidden = up;
+  } else if (view === 'verify') {
+    $('auth-title').textContent = 'Check your inbox';
+    $('auth-sub').textContent = `We sent a verification link to ${fb.auth.currentUser.email}. Open it to turn on My List sync.`;
+  }
+
+  $('auth-backdrop').classList.add('open');
+  // In an app, Get Apps starts on that app's card (Update / Download), not Windows
+  const first = (view === 'apps' && inApp && document.querySelector(`.app-dl[data-app="${inApp}"]`))
+             || $(`auth-${view}`).querySelector('input:not([hidden]), button, a[href]');
+  if (document.documentElement.classList.contains('keynav')) window.__knavFocus(first);
+  else if (first.tagName === 'INPUT' && matchMedia('(hover: hover)').matches) first.focus();
+}
+
+function closeAuth() {
+  if (!authIsOpen()) return;
+  $('auth-backdrop').classList.remove('open');
+  authView = null;
+  pendingMerge = null;
+  $('auth-dialog').querySelectorAll('input[type=password]').forEach(i => { i.value = ''; });
+  if (document.activeElement && $('auth-dialog').contains(document.activeElement)) document.activeElement.blur();
+  window.__knavFocus(authOpener || $('account-btn'));
+  authOpener = null;
+}
+
+function setAuthMsg(text, ok = false, id = 'auth-msg') {
+  $(id).textContent = text;
+  $(id).classList.toggle('ok', ok);
+}
+
+function validateAuthId(v) {
+  if (!v) return 'Enter a username or email.';
+  if (v.includes('@')) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return "That email doesn't look right.";
+    if (v.endsWith('@' + USER_DOMAIN)) return "That email can't be used.";
+    return '';
+  }
+  if (!/^[a-z0-9_.]{3,20}$/.test(v)) return 'Usernames are 3–20 characters: letters, numbers, _ and .';
+  return '';
+}
+
+function authErrorText(err, isEmail) {
+  switch (err && err.code) {
+    case 'auth/email-already-in-use':
+      return isEmail ? 'This email is already registered. If it\'s yours, sign in and use "Forgot password?".'
+                     : 'That username is taken.';
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':     return 'Wrong username/email or password.';
+    case 'auth/weak-password':      return 'Password must be at least 6 characters.';
+    case 'auth/invalid-email':      return "That email doesn't look right.";
+    case 'auth/too-many-requests':  return 'Too many attempts. Try again in a few minutes.';
+    case 'auth/network-request-failed': return 'Network error. Check your connection.';
+    default: return 'Something went wrong. Try again.';
+  }
+}
+
+renderFaq($('auth-help'));
+$('calendar-btn').addEventListener('click', () => { showAuth('calendar'); authOpener = $('calendar-btn'); });
+
+$('auth-switch').addEventListener('click', () => showAuth('form', authMode === 'signup' ? 'signin' : 'signup'));
+$('auth-close').addEventListener('click', closeAuth);
+$('auth-back').addEventListener('click', () => showAuth(authBackTo));
+$('auth-backdrop').addEventListener('click', e => { if (e.target === $('auth-backdrop')) closeAuth(); });
+
+$('auth-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = $('auth-id').value.trim().toLowerCase();
+  const pass = $('auth-pass').value;
+  const isEmail = id.includes('@');
+  const problem = validateAuthId(id) || (!pass && 'Enter your password.');
+  if (problem) { setAuthMsg(problem); return; }
+
+  const email = isEmail ? id : `${id}@${USER_DOMAIN}`;
+  const submit = $('auth-submit');
+  submit.disabled = true;
+  setAuthMsg('');
+  try {
+    await ensureFirebase();
+    const { a, auth } = fb;
+    const { user } = authMode === 'signup'
+      ? await a.createUserWithEmailAndPassword(auth, email, pass)
+      : await a.signInWithEmailAndPassword(auth, email, pass);
+    $('auth-pass').value = '';
+    if (authMode === 'signup' && isEmail) {
+      await withContinueLink(s => a.sendEmailVerification(user, s)).catch(() => {});   // "Resend" covers a failure
+      showAuth('verify');
+    } else if (!canSync(user) && !(await refreshVerified())) {
+      showAuth('verify');
+    } else {
+      if (authView === 'form') closeAuth();
+      toast(authMode === 'signup' ? `Welcome, ${accountName(user)}` : `Signed in as ${accountName(user)}`);
+    }
+  } catch (err) {
+    setAuthMsg(authErrorText(err, isEmail));
+  } finally {
+    submit.disabled = false;
+  }
+});
+
+$('auth-forgot').addEventListener('click', async () => {
+  const id = $('auth-id').value.trim().toLowerCase();
+  if (!id.includes('@')) {
+    setAuthMsg(id ? "Accounts without an email can't be recovered." : 'Enter the email you signed up with first.');
+    return;
+  }
+  const problem = validateAuthId(id);
+  if (problem) { setAuthMsg(problem); return; }
+  try {
+    await ensureFirebase();
+    await withContinueLink(s => fb.a.sendPasswordResetEmail(fb.auth, id, s));
+    setAuthMsg(`If an account uses ${id}, a reset link is on its way.`, true);
+  } catch (err) {
+    setAuthMsg(authErrorText(err, true));
+  }
+});
+
+$('verify-check').addEventListener('click', async () => {
+  if (!(await refreshVerified()))
+    setAuthMsg('Not verified yet. Open the link in the email, then try again.', false, 'verify-msg');
+});
+
+$('verify-resend').addEventListener('click', async () => {
+  try {
+    await withContinueLink(s => fb.a.sendEmailVerification(fb.auth.currentUser, s));
+    setAuthMsg('Sent! Check your inbox (and spam folder).', true, 'verify-msg');
+  } catch (err) {
+    setAuthMsg(authErrorText(err, true), false, 'verify-msg');
+  }
+});
+
+$('verify-signout').addEventListener('click', async () => {
+  await signOutUser();
+  showAuth('form', 'signin');
+});
+
+// "Welcome to tflix.stream" card, shown after the move from the old domain
+$('moved-signin').addEventListener('click', async () => {
+  try { await ensureFirebase(); }
+  catch { toast("Couldn't reach the account service"); return; }
+  if (authUser) { closeAuth(); toast(`Signed in as ${accountName(authUser)}`); }
+  else showAuth('form', 'signin');
+});
+$('moved-later').addEventListener('click', closeAuth);
+
+/* Account settings forms. Firebase only allows these changes right after a
+   sign-in, so each one confirms the current password first. */
+async function reauth(password) {
+  const { a, auth } = fb;
+  const u = auth.currentUser;
+  await a.reauthenticateWithCredential(u, a.EmailAuthProvider.credential(u.email, password));
+  return u;
+}
+
+// Wires a settings form: busy state, and errors shown in its own message line
+function onAccountForm(view, handler) {
+  const form = $(`auth-${view}`);
+  const msg = form.querySelector('.auth-msg').id;
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const submit = form.querySelector('[type=submit]');
+    submit.disabled = true;
+    setAuthMsg('', false, msg);
+    try {
+      await handler(text => setAuthMsg(text, false, msg), text => setAuthMsg(text, true, msg));
+    } catch (err) {
+      const code = err && err.code;
+      setAuthMsg(code === 'auth/invalid-credential' || code === 'auth/wrong-password' ? 'Wrong password.'
+               : code === 'auth/email-already-in-use'
+                 ? 'This email is already registered to another account. If it\'s yours, sign out and sign in with it, using "Forgot password?" if needed.'
+               : authErrorText(err, true), false, msg);
+    } finally {
+      submit.disabled = false;
+    }
+  });
+}
+
+onAccountForm('add-email', async (fail, ok) => {
+  const email = $('add-email-input').value.trim().toLowerCase();
+  const problem = email.includes('@') ? validateAuthId(email) : "That email doesn't look right.";
+  if (problem) return fail(problem);
+  if (!$('add-email-pass').value) return fail('Enter your current password.');
+  const u = await reauth($('add-email-pass').value);
+  await withContinueLink(s => fb.a.verifyBeforeUpdateEmail(u, email, s));
+  emailChangeTo = email;
+  $('add-email-pass').value = '';
+  ok(`Link sent to ${email}. Open it to confirm, then sign in again with ${email} and your password.`);
+});
+
+onAccountForm('password', async fail => {
+  const current = $('password-current').value, next = $('password-new').value;
+  if (!current || !next) return fail('Fill in both passwords.');
+  const u = await reauth(current);
+  await fb.a.updatePassword(u, next);
+  $('password-current').value = $('password-new').value = '';
+  showAuth('account');
+  toast('Password changed');
+});
+
+$('delete-forgot').addEventListener('click', async () => {
+  const u = fb.auth.currentUser;
+  if ($('delete-forgot').classList.contains('disabled')) return;
+  try {
+    await withContinueLink(s => fb.a.sendPasswordResetEmail(fb.auth, u.email, s));
+    setAuthMsg(`Reset link sent to ${u.email}. Set a new password, then enter it here.`, true, 'delete-msg');
+  } catch (err) {
+    setAuthMsg(authErrorText(err, true), false, 'delete-msg');
+  }
+});
+
+onAccountForm('delete', async fail => {
+  if (!$('delete-pass').value) return fail('Enter your password to confirm.');
+  const u = await reauth($('delete-pass').value);
+  if (myListRef) {
+    await fb.f.deleteDoc(myListRef);   // the rules only allow this while signed in
+    writeJsonStore(watchQueueKey(myListRef.id), {});
+  }
+  await u.delete();
+  closeAuth();
+  toast('Account deleted');
+});
+
+/* ─── CALENDAR ───
+   Month view of release dates for titles in My List: new episodes of saved
+   shows and digital releases of saved movies, all from TMDB. Show details,
+   seasons and release dates stay cached for the session, so paging months
+   only fetches seasons not seen yet. Weeks start on Monday. */
+let calMonth = null;      // 1st of the month on show
+let calSelected = null;   // 'YYYY-MM-DD'
+let calEvents = {};       // 'YYYY-MM-DD' -> [{ kind, entry, label }]
+let calToken = 0;         // drops results from a month the user already left
+let calLoading = false;
+
+const isoDay = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const pad2 = n => String(n).padStart(2, '0');
+
+// Runs fn over items with at most n requests in flight; failures become null
+async function mapLimit(items, n, fn) {
+  const out = [];
+  let next = 0;
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => {
+    while (next < items.length) {
+      const i = next++;
+      try { out[i] = await fn(items[i]); } catch { out[i] = null; }
+    }
+  }));
+  return out;
+}
+
+// Always six weeks (padded with the neighbouring months' days), so the grid
+// keeps its size from month to month
+function calDays() {
+  const lead = (calMonth.getDay() + 6) % 7;
+  return Array.from({ length: 42 }, (_, i) =>
+    new Date(calMonth.getFullYear(), calMonth.getMonth(), 1 - lead + i));
+}
+
+async function episodesBetween(entry, from, to) {
+  let details = tvDetails[entry.id];
+  if (!details) { details = await tmdb(`/tv/${entry.id}`); tvDetails[entry.id] = details; }
+  const seasons = (details.seasons || []).filter(s => s.season_number > 0)
+    .sort((a, b) => a.season_number - b.season_number);
+  // A season runs from its premiere until the next one starts
+  const wanted = seasons.filter((s, i) => {
+    const next = seasons[i + 1];
+    if (!s.air_date) return i === seasons.length - 1;   // announced, no date yet
+    return s.air_date <= to && (!next || !next.air_date || next.air_date > from);
+  });
+  const events = [];
+  for (const s of wanted) {
+    const key = `${entry.id}-${s.season_number}`;
+    let data = seasonCache[key];
+    if (!data) { data = await tmdb(`/tv/${entry.id}/season/${s.season_number}`); seasonCache[key] = data; }
+    for (const ep of data.episodes || []) {
+      if (!ep.air_date || ep.air_date < from || ep.air_date > to) continue;
+      events.push({ date: ep.air_date, kind: 'episode', entry,
+        label: `S${pad2(ep.season_number)}E${pad2(ep.episode_number)}${ep.name ? ` · ${ep.name}` : ''}` });
+    }
+  }
+  return events;
+}
+
+async function digitalReleaseBetween(entry, from, to) {
+  const date = (await fetchDigitalData(entry.id) || '').slice(0, 10);
+  return date && date >= from && date <= to ? [{ date, kind: 'digital', entry, label: 'Digital release' }] : [];
+}
+
+// Opens on today's month with today selected
+function openCalendar() {
+  const now = new Date();
+  calMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  calSelected = isoDay(now);
+  loadCalendar();
+}
+
+async function loadCalendar() {
+  const token = ++calToken;
+  const days = calDays();
+  const from = isoDay(days[0]), to = isoDay(days[days.length - 1]);
+  calEvents = {};
+  renderCalendar(true);
+  const found = await mapLimit(Object.values(myList), 6, e =>
+    e.media_type === 'tv' ? episodesBetween(e, from, to) : digitalReleaseBetween(e, from, to));
+  if (token !== calToken) return;
+  for (const ev of found.flat()) if (ev) (calEvents[ev.date] ||= []).push(ev);
+  renderCalendar(false);
+}
+
+function renderCalendar(loading) {
+  const today = isoDay(new Date());
+  const month = calMonth.getMonth();
+  calLoading = loading;
+  $('cal-month').textContent = calMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  $('cal-grid').classList.toggle('loading', loading);
+  $('cal-grid').innerHTML =
+    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => `<div class="cal-wd">${d}</div>`).join('') +
+    calDays().map(d => {
+      const key = isoDay(d);
+      const evs = calEvents[key] || [];
+      const cls = ['cal-cell', d.getMonth() !== month && 'other', key === today && 'today', key === calSelected && 'selected']
+        .filter(Boolean).join(' ');
+      return `<button class="${cls}" data-day="${key}" type="button">
+        <span class="cal-num">${d.getDate()}</span>
+        ${evs.slice(0, 2).map(ev => `<span class="cal-chip ${ev.kind}">${esc(ev.entry.title || ev.entry.name)}</span>`).join('')}
+        ${evs.length > 2 ? `<span class="cal-more">+${evs.length - 2} more</span>` : ''}
+      </button>`;
+    }).join('');
+  renderCalendarDay(loading);
+}
+
+function renderCalendarDay(loading) {
+  const evs = calEvents[calSelected] || [];
+  const title = new Date(`${calSelected}T00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  let body;
+  if (loading) body = '<div class="cal-empty">Loading release dates…</div>';
+  else if (!Object.keys(myList).length) body = '<div class="cal-empty">Add shows and movies to My List to see their release dates here.</div>';
+  else if (!evs.length) body = '<div class="cal-empty">Nothing from My List comes out on this day.</div>';
+  else body = evs.map((ev, i) => {
+    const src = poster(ev.entry.poster_path, 'w92');
+    return `<button class="cal-item" data-i="${i}" type="button">
+      ${src ? `<img class="cal-item-poster" src="${src}" alt="" loading="lazy">` : '<span class="cal-item-poster"></span>'}
+      <span class="cal-item-text">
+        <span class="cal-item-title">${esc(ev.entry.title || ev.entry.name)}</span>
+        <span class="cal-item-sub">${esc(ev.label)}</span>
+      </span>
+      <span class="cal-badge ${ev.kind}">${ev.kind === 'episode' ? 'Episode' : 'Digital'}</span>
+    </button>`;
+  }).join('');
+  $('cal-day').innerHTML = `<div class="cal-day-title">${title}</div>${body}`;
+}
+
+function shiftCalendar(months, selectDay) {
+  calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + months, 1);
+  const today = new Date();
+  calSelected = selectDay || (calMonth.getMonth() === today.getMonth() && calMonth.getFullYear() === today.getFullYear()
+    ? isoDay(today) : isoDay(calMonth));
+  loadCalendar();
+}
+
+$('cal-prev').addEventListener('click', () => shiftCalendar(-1));
+$('cal-next').addEventListener('click', () => shiftCalendar(1));
+$('cal-today').addEventListener('click', openCalendar);
+
+$('cal-grid').addEventListener('click', e => {
+  const cell = e.target.closest('.cal-cell');
+  if (!cell) return;
+  const day = cell.dataset.day;
+  if (cell.classList.contains('other')) {   // a neighbouring month's day: go to that month
+    const d = new Date(`${day}T00:00`);
+    shiftCalendar((d.getFullYear() - calMonth.getFullYear()) * 12 + d.getMonth() - calMonth.getMonth(), day);
+    return;
+  }
+  // Only restyle the cells, so a focused cell (TV remote) stays put
+  calSelected = day;
+  $('cal-grid').querySelectorAll('.cal-cell').forEach(c => c.classList.toggle('selected', c.dataset.day === day));
+  renderCalendarDay(calLoading);
+});
+
+$('cal-day').addEventListener('click', e => {
+  const item = e.target.closest('.cal-item');
+  const ev = item && (calEvents[calSelected] || [])[item.dataset.i];
+  if (!ev) return;
+  closeAuth();
+  openModal(ev.entry);
+});
+
 /* ─── INIT ─── */
 (async function init() {
+  if (importResult?.note) toast(importResult.note);
+  if (importResult?.askSignIn) showAuth('moved');
+  renderMyList();
+  renderAccount();   // guest menu until Firebase reports a signed-in user
+  if (inApp) checkAppUpdate();
+  if (localStorage.getItem(SIGNED_IN_KEY)) ensureFirebase().catch(err => console.warn('Account restore failed', err));
   loadGenres();
   await loadHero();
   loadTop10();
+  loadMyListRow();
+  loadWatchingRow();
   for (const cfg of CATEGORY_ROWS) loadRow(cfg);
 })();
 </script>
@@ -1520,15 +4007,15 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
 
   function setFocus(el, scroll = true) {
     if (!el) return;
+    // A ranked card, or the card around one of its buttons, stays lit up too
+    const litParent = e => e.closest('.rank-card') || e.parentElement?.closest('.card');
     if (cur) {
       cur.classList.remove('kf');
-      const rp = cur.closest('.rank-card');
-      if (rp) rp.classList.remove('kf-parent');
+      litParent(cur)?.classList.remove('kf-parent');
     }
     cur = el;
     el.classList.add('kf');
-    const rp = el.closest('.rank-card');
-    if (rp) rp.classList.add('kf-parent');
+    litParent(el)?.classList.add('kf-parent');
     // Real focus only where native behaviour needs it (selects open their
     // picker, buttons stay accessible). Inputs get focused on Enter so the
     // TV keyboard doesn't pop up just from navigating past the search box.
@@ -1538,28 +4025,69 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   }
 
   function getSections() {
+    // Account dialog open (it sits above the modal) → controls on the same
+    // line form one row, so ←/→ walk a calendar week or the footer links
+    if (authIsOpen()) {
+      const rows = [];
+      for (const el of [...$('auth-dialog').querySelectorAll('button, input, a[href]')].filter(vis)) {
+        const r = el.getBoundingClientRect();
+        const row = rows.find(x => Math.abs(x.top - r.top) < 12);
+        if (row) row.items.push(el); else rows.push({ top: r.top, items: [el] });
+      }
+      rows.sort((a, b) => a.top - b.top);
+      rows.forEach(x => x.items.sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left));
+      return rows.map(x => ({ key: null, items: x.items }));
+    }
     // Modal open → trap focus inside it
     if ($('modal-backdrop').classList.contains('open')) {
-      const s = [{ key: null, items: [$('modal-close')] }];
+      const s = [{ key: null, items: [$('modal-back'), $('modal-close')].filter(vis) }];
+      if (vis($('person-view'))) {
+        const more = $('person-bio-more');
+        if (vis(more)) s.push({ key: null, items: [more] });
+        const grid = $('person-grid');
+        if (grid) {
+          const cards = [...grid.querySelectorAll('.card')];
+          const cols = (getComputedStyle(grid).gridTemplateColumns || '').split(' ').filter(Boolean).length || 1;
+          for (let i = 0; i < cards.length; i += cols)
+            s.push({ key: null, items: cards.slice(i, i + cols) });
+        }
+        return s;
+      }
+      const cast = $('cast-scroller');
+      if (vis(cast)) {
+        const members = [...cast.querySelectorAll('.cast-member')];
+        if (members.length) s.push({ key: cast, items: members });
+      }
       if ($('tv-selectors').style.display !== 'none')
         s.push({ key: null, items: [$('season-select'), $('episode-select')] });
-      s.push({ key: null, items: [$('modal-watch-btn')] });
+      s.push({ key: null, items: [$('modal-watch-btn'), $('modal-list-btn')] });
       return s;
     }
+    // Side drawer open → its links, top to bottom, with ✕ first
+    if (drawerIsOpen())
+      return [$('drawer-close'), ...drawer.querySelectorAll('.drawer-link')].filter(vis).map(i => ({ key: null, items: [i] }));
     // Server dropdown open → trap focus on its items (one per "section",
     // so Up/Down walks the vertical list)
     if (serverMenu.classList.contains('open'))
       return [...serverMenu.querySelectorAll('.server-item')].map(i => ({ key: null, items: [i] }));
+    if (accountMenu.classList.contains('open'))
+      return [...accountMenu.querySelectorAll('.account-item')].map(i => ({ key: null, items: [i] }));
 
     const secs = [];
-    const header = [...document.querySelectorAll('.nav-link'), searchInput, $('support-btn'), serverBtn].filter(vis);
+    if ($('update-pop').classList.contains('show')) {
+      secs.push({ key: null, items: [$('update-pop-skip')] });
+      secs.push({ key: null, items: [$('update-pop-go'), $('update-pop-close')] });
+    }
+    const header = [$('menu-btn'), ...document.querySelectorAll('.nav-link'), searchInput, $('calendar-btn'), serverBtn, $('account-btn')].filter(vis);
     if (header.length) secs.push({ key: 'header', items: header });
 
     if ($('search-results-section').classList.contains('visible')) {
       const tabs = [...document.querySelectorAll('.filter-tab')].filter(vis);
       if (tabs.length) secs.push({ key: 'tabs', items: tabs });
+      const people = [...$('people-row').querySelectorAll('.person-card')].filter(vis);
+      if (people.length) secs.push({ key: $('people-row'), items: people });
       const grid = $('search-grid');
-      const cards = [...grid.querySelectorAll('.card')];
+      const cards = [...grid.querySelectorAll('.card, .person-card')];
       const cols = (getComputedStyle(grid).gridTemplateColumns || '').split(' ').filter(Boolean).length || 1;
       for (let i = 0; i < cards.length; i += cols)
         secs.push({ key: null, items: cards.slice(i, i + cols) });
@@ -1567,19 +4095,25 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
     }
 
     const heroPlay = document.querySelector('.hero-slide.active .hero-play');
-    if (heroPlay && vis(heroPlay)) secs.push({ key: 'hero', items: [heroPlay] });
+    if (heroPlay && vis(heroPlay))
+      secs.push({ key: 'hero', items: [heroPlay, document.querySelector('.hero-slide.active .hero-list')] });
 
     document.querySelectorAll('#rows-container .scroller').forEach(sc => {
       const items = [...sc.children]
         .map(c => c.classList.contains('rank-card') ? c.querySelector('.card') : c)
-        .filter(c => c && c.classList.contains('card'));
+        .filter(c => c && c.classList.contains('card'))
+        // Continue Watching: its cards play, so ⓘ and ✕ are stops of their own after each
+        .flatMap(c => [c, ...c.querySelectorAll('.card-details, .card-remove')]);
       if (items.length) secs.push({ key: sc, items });
     });
     return secs;
   }
 
   function focusInitial() {
-    if ($('modal-backdrop').classList.contains('open')) { setFocus($('modal-watch-btn'), false); return; }
+    if ($('modal-backdrop').classList.contains('open')) {
+      setFocus(vis($('person-view')) ? (vis($('modal-back')) ? $('modal-back') : $('modal-close')) : $('modal-watch-btn'), false);
+      return;
+    }
     const secs = getSections();
     if (!secs.length) return;
     const content = secs.find(s => s.key !== 'header' && s.key !== 'tabs');
@@ -1587,9 +4121,10 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   }
 
   function move(dx, dy) {
-    // The hero auto-rotates: re-attach to the now-active slide's button
-    if (cur && cur.classList.contains('hero-play') && !vis(cur)) {
-      const p = document.querySelector('.hero-slide.active .hero-play');
+    // The hero auto-rotates: re-attach to the same button on the now-active slide
+    const heroBtn = cur && ['hero-play', 'hero-list'].find(c => cur.classList.contains(c));
+    if (heroBtn && !cur.closest('.hero-slide.active')) {
+      const p = document.querySelector(`.hero-slide.active .${heroBtn}`);
       if (p) setFocus(p, false);
     }
     const secs = getSections();
@@ -1600,9 +4135,12 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
     const ii = sec.items.indexOf(cur);
 
     if (dx) {
-      if (sec.key === 'hero') {            // ←/→ on the hero switch slides
+      if (sec.key === 'hero') {
+        // ←/→ move between Play and My List; past either end they switch slides
+        if (ii + dx >= 0 && ii + dx < sec.items.length) { setFocus(sec.items[ii + dx], false); return; }
+        const btn = cur.classList.contains('hero-list') ? 'hero-list' : 'hero-play';
         goToHero(heroIndex + dx);
-        const p = document.querySelector('.hero-slide.active .hero-play');
+        const p = document.querySelector(`.hero-slide.active .${btn}`);
         if (p) setFocus(p, false);
         return;
       }
@@ -1642,6 +4180,7 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
 
     if (k === 'Escape') {
       if (serverMenu.classList.contains('open')) { serverMenu.classList.remove('open'); setFocus(serverBtn, false); }
+      else if (accountMenu.classList.contains('open')) { accountMenu.classList.remove('open'); setFocus($('account-btn'), false); }
       else if (typing) ae.blur();
       return;                       // modal Escape: the page's own handler closes it
     }
@@ -1659,19 +4198,27 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
         if (typeof cur.showPicker === 'function') { e.preventDefault(); try { cur.showPicker(); } catch (err) {} }
         return;
       }
-      if (cur === searchInput) { e.preventDefault(); searchInput.focus(); return; }
+      if (cur.tagName === 'INPUT') { e.preventDefault(); cur.focus(); return; }
       e.preventDefault();
       const el = cur;
       el.click();
       requestAnimationFrame(() => {
         if (serverMenu.classList.contains('open'))
           setFocus(serverMenu.querySelector('.server-item.active') || serverMenu.querySelector('.server-item'), false);
+        else if (accountMenu.classList.contains('open')) {
+          // Opened from the button → first item; a disabled item keeps focus
+          if (!el.classList.contains('account-item')) setFocus(accountMenu.querySelector('.account-item'), false);
+        }
+        else if (el.classList.contains('account-item')) { if (!authIsOpen()) setFocus($('account-btn'), false); }
         else if (el.classList.contains('server-item')) setFocus(serverBtn, false);
-        else if (el.classList.contains('nav-link') && el.dataset.nav && el.dataset.nav !== 'home') {
+        else if (drawerIsOpen()) { if (el === $('menu-btn')) return; }   // openDrawer already focused a link
+        else if (el.classList.contains('drawer-link') && el.dataset.nav === 'home') setFocus($('menu-btn'), false);
+        else if ((el.classList.contains('nav-link') || el.classList.contains('drawer-link')) && el.dataset.nav && el.dataset.nav !== 'home') {
           // Jump straight into the row the nav link scrolled to
           const sc = document.querySelector(`.row[data-anchor="${el.dataset.nav}"] .scroller`);
           const first = sc && sc.querySelector('.card');
           if (first) setFocus(first);
+          else if (el.classList.contains('drawer-link')) setFocus($('menu-btn'), false);
         }
         else if (!cur || !vis(cur)) focusInitial();
       });
@@ -1685,8 +4232,20 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   window.__knavModalOpened = () => {
     if (!active) return;
     lastCard = cur;
-    setFocus($('modal-watch-btn'), false);
+    mem.delete($('cast-scroller'));  // new title, new cast: start from the first actor
+    setFocus(vis($('modal-watch-btn')) ? $('modal-watch-btn') : $('modal-close'), false);
   };
+  /* Moving between views inside the modal: Back returns to the element that
+     opened the next view (when it's still there), forward starts fresh */
+  window.__knavCurrent = () => active ? cur : null;
+  window.__knavModalFocus = el => {
+    if (!active) return;
+    if (el && vis(el)) { setFocus(el); return; }
+    if (!el) mem.delete($('cast-scroller'));
+    focusInitial();
+  };
+  /* The account dialog moves focus into itself on open and back on close */
+  window.__knavFocus = el => { if (active && vis(el)) setFocus(el, false); };
   window.__knavModalClosed = () => {
     if (!active) return;
     if (lastCard && vis(lastCard)) setFocus(lastCard); else focusInitial();

@@ -3,7 +3,7 @@
 A native Windows app that wraps the live TFLIX website using
 [Electron](https://www.electronjs.org/).
 
-The window loads the deployed site (<https://tflix.nunesnetwork.com>) directly, so it's
+The window loads the deployed site (<https://tflix.stream>) directly, so it's
 **always up to date** — new stream servers, fixed embeds, and any other site change appear
 instantly, with no app update needed.
 
@@ -12,15 +12,28 @@ to open, so browsing and playback stay inside the app window — no stray browse
 
 ## Install
 
-📥 Download the latest installer (`TFLIX Setup <version>.exe`) from the
-[latest release](https://github.com/TomasTNunes/tflix/releases/latest), then run it.
+📥 Download the latest installer (`tflix-windows.setup.<version>.exe`) from **Get Apps** in the
+site's profile menu, or from the [latest release](https://github.com/TomasTNunes/tflix/releases/latest),
+then run it.
+
+The installer isn't code-signed, so the browser may say it "isn't commonly downloaded" (choose
+**Keep**) and Windows may show **Windows protected your PC** (click **More info → Run anyway**).
 
 ## Update
 
-TFLIX doesn't auto-update — you update it by downloading the newest installer and
-running it. Grab the latest `TFLIX Setup <version>.exe` from the
-[latest release](https://github.com/TomasTNunes/tflix/releases/latest) and run it;
-there's **no need to uninstall the old version first**.
+TFLIX doesn't auto-update, but it tells you when an update is out: a pop-up when the app
+opens (with **Don't show again for this update**; it closes itself after 20 seconds) and a
+yellow dot on the profile icon until you update.
+
+To update, click **Update** — in that pop-up, or on the Windows card in **Get Apps** (profile
+menu). The new installer downloads in your browser; run it. You can also grab the latest
+`tflix-windows.setup.<version>.exe` from the
+[latest release](https://github.com/TomasTNunes/tflix/releases/latest).
+There's **no need to uninstall the old version first**.
+
+> **Updating from 1.1.x:** TFLIX moved to `tflix.stream`, and version 1.2.0 is the first to use
+> the new address — older versions can't open it. After updating you may need to sign in again;
+> a My List saved to your account comes right back.
 
 The installer detects your existing install and upgrades it in place: it replaces the
 old version, keeps your desktop/Start-menu shortcuts, and **preserves your saved settings**
@@ -62,7 +75,8 @@ npm install
 npm run build
 ```
 
-The NSIS installer (`TFLIX Setup <version>.exe`) is written to `app/windows/dist/`. The app
+The NSIS installer (`tflix-windows.setup.<version>.exe`) is written to `app/windows/dist/`.
+To change the app version, edit `version` in `package.json`. The app
 ships as a thin shell — it loads the site over the network, so no site files are bundled.
 
 ## Project layout
@@ -70,5 +84,5 @@ ships as a thin shell — it loads the site over the network, so no site files a
 | File | Purpose |
 |------|---------|
 | `main.js` | Electron main process — window, menu, pop-up/ad blocking, loads the live site |
-| `preload-main.js` | Injects the version label + back-navigation state restore into the site |
+| `preload-main.js` | Injects the version label + back-navigation state restore into the site; stops ad scripts swallowing clicks inside the stream embeds |
 | `scripts/make-icon.js` | Builds `build/icon.ico` from `../../assets/icons/*.png` |

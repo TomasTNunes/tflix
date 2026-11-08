@@ -3,6 +3,11 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Android TV only: open the installer for a Get Apps download as soon as
+         it finishes (TV notifications usually can't be opened). Not a runtime
+         prompt: Android asks once, the first time an install is started. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <!-- Android TV: installable without touch, advertised in the Leanback launcher.
          Both are required=false so the same APK also installs on phones/tablets. -->
     <uses-feature

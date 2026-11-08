@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="1280" height="720">
+  <!-- Android TV banner: the lamp from the app icon as the T, with FLIX fading the way the beam does.
+       Source of app/android/app/src/main/res/drawable-xhdpi/tv_banner.png (320x180). -->
+  <defs>
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff3a44" stop-opacity="1"/>
+      <stop offset="1" stop-color="#ff3a44" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="flix" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff3a44"/>
+      <stop offset="1" stop-color="#8f0710"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="26"/></filter>
+  </defs>
+  <rect width="320" height="180" fill="#0a0a0d"/>
+  <g transform="translate(27.7 32.9) scale(.208)">
+    <rect x="88" y="92" width="336" height="92" rx="16" fill="#ff1a26" filter="url(#glow)" opacity="0.7"/>
+    <polygon points="196,170 316,170 366,512 146,512" fill="url(#beam)"/>
+    <rect x="88" y="92" width="336" height="92" rx="16" fill="#ff2a35"/>
+  </g>
+  <g fill="url(#flix)" transform="translate(124 52) scale(.503 .467) translate(-155 -181)">
+    <polygon points="155,181 227,181 227,211 185,211 185,241 219,241 219,269 185,269 185,331 155,331"/>
+    <polygon points="241,181 271,181 271,303 307,303 307,331 241,331"/>
+    <rect x="321" y="181" width="30" height="150"/>
+    <polygon points="365,181 397,181 411,230 425,181 457,181 428,254 457,331 425,331 411,279 397,331 365,331 394,254"/>
+  </g>
+</svg>
