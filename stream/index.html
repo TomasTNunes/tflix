@@ -477,8 +477,9 @@ function syncUrl() {
   p.set('id', state.id);
   if (state.type === 'tv') { p.set('s', state.season); p.set('e', state.episode); }
   p.set('server', state.server);
-  // Keeps the place across a refresh
-  if (session && !session.finished && session.time >= WATCH_MIN_RESUME) p.set('t', Math.floor(session.time));
+  // Keeps the place across a refresh, in the credits too: reopened there it just
+  // counts as finished again
+  if (session && session.time >= WATCH_MIN_RESUME) p.set('t', Math.floor(session.time));
   history.replaceState(null, '', `${location.pathname}?${p.toString()}`);
 }
 
@@ -570,7 +571,9 @@ function prepareSession() {
     session.tracked = !!((same && saved.status !== 'caughtup') || state.startAt);
     session.time = state.startAt || 0;
     if (same && saved.duration) session.duration = saved.duration;
-  } else if (previous.season === state.season && previous.episode === state.episode && !previous.finished) {
+  } else if (previous.season === state.season && previous.episode === state.episode) {
+    // Another server for the same video carries on from the same place; a finished
+    // one stays finished, so its credits don't bring it back
     state.startAt = previous.time >= WATCH_MIN_RESUME ? Math.floor(previous.time) : 0;
     previous.lastT = null;
     previous.gotEvents = false;
@@ -691,7 +694,11 @@ function onPlayerEvent(ev) {
   const limit = FINISHED_AT[state.type];
   if (s.finished) {
     // The credits keep reporting, which mustn't bring it back. Seeking back does.
-    if (s.time >= s.finishedAt - 10 || pct >= limit) return;
+    // The URL still follows them, for a refresh or another server.
+    if (s.time >= s.finishedAt - 10 || pct >= limit) {
+      if (Date.now() - s.lastLocal >= LOCAL_EVERY) { s.lastLocal = Date.now(); syncUrl(); }
+      return;
+    }
     s.finished = false;
     s.lastLocal = 0;   // it was removed, so save it again right away
   }
