@@ -9,96 +9,117 @@
     TFLIX webOS — LG TV (webOS)
 
     A thin web-app shell around the live TFLIX website
-    (https://tflix.nunesnetwork.com), the LG TV counterpart of the
-    Electron desktop and Android WebView apps. The packaged app is
-    just this one page: on launch it navigates the whole app card to
-    the deployed site, so any change to the site — new stream servers,
-    fixed embeds — appears instantly, with no app update.
+    (https://tflix.stream), the LG TV counterpart of the Electron
+    desktop and Android WebView apps. The packaged app is just this one
+    page: on launch it navigates the whole app card to the deployed
+    site, so any change to the site — new stream servers, fixed embeds —
+    appears instantly, with no app update.
 
     Why a top-level navigation (and not an <iframe>)?
       • webOS is Chromium-based, so the site's own arrow-key poster
-        navigation works natively when it owns the document — the same
-        way it does in a desktop browser. A cross-origin <iframe>
-        would swallow the remote's key events and break focus/back.
+        navigation works natively when it owns the document. A
+        cross-origin <iframe> would swallow the remote's key events and
+        break focus/back.
       • location.replace() (not assign) adds no history entry, so the
-        TV remote's Back button exits the app immediately from the
-        site rather than bouncing through this splash first.
+        TV remote's Back button exits the app from the site rather than
+        bouncing through this splash first.
 
-    Ad / pop-up note: the third-party stream embeds fire popunder ads
-    via window.open. webOS TV web apps are single-card and have no
-    pop-up surface, so those windows simply never open — the platform
-    gives us the ad-blocking the desktop/Android shells implement by
-    hand. (See README.)
+    Once the site has loaded, this page and its code are gone. Unlike
+    the other two apps this one has no native layer to deny pop-ups or
+    filter requests, so it has no ad blocking of its own. (See README.)
     ───────────────────────────────────────────────────────────────
   -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #0a0a0d; --accent: #e50914; --text: #f4f4f7; --muted: #9a9aa6;
-    }
     html, body { height: 100%; }
     body {
-      background: var(--bg); color: var(--text);
-      font-family: system-ui, sans-serif;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 100vh; overflow: hidden; -webkit-font-smoothing: antialiased;
+      background: #0a0a0d url(splash.png) center / cover no-repeat;
+      color: #f4f4f7; font-family: system-ui, sans-serif; overflow: hidden;
     }
-    .logo {
-      font-size: 3.2rem; font-weight: 800; letter-spacing: -0.04em;
-      color: var(--accent); text-shadow: 0 0 40px rgba(229,9,20,0.55);
+    #message {
+      position: absolute; left: 0; right: 0; top: 72%; padding: 0 10%;
+      text-align: center; font-size: 28px; line-height: 1.4;
     }
-    .status { margin-top: 1.6rem; color: var(--muted); font-size: 1.1rem; }
-    .spinner {
-      margin-top: 2.2rem; width: 44px; height: 44px; border-radius: 50%;
-      border: 4px solid rgba(255,255,255,0.12); border-top-color: var(--accent);
-      animation: spin 0.9s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .hidden { display: none; }
+    #message small { display: block; margin-top: 12px; font-size: 22px; color: #9a9aa6; }
   </style>
 </head>
 <body>
-  <div class="logo">TFLIX</div>
-  <div class="status" id="status">Loading…</div>
-  <div class="spinner" id="spinner"></div>
+  <div id="message" hidden></div>
 
   <script>
     'use strict';
 
-    // The live site this shell wraps. Changing the site needs no app update.
-    var SITE_URL = 'https://tflix.nunesnetwork.com/';
+    // The app's own address: Cloudflare redirects it (302, so it's rechecked on
+    // every launch) to https://tflix.stream/?app=webos. Pointing that redirect
+    // elsewhere retires or redirects every installed copy without an update.
+    var SITE_URL = 'https://appwebos.tflix.stream/';
 
-    // webOS TV remote key codes.
-    var KEY_BACK = 461;
+    var CHECK_TIMEOUT = 10000;   // ms to wait for the site to answer
+    var RETRY_EVERY = 15000;     // ms between tries while it can't be reached
+    var KEY_OK = 13;
 
-    var statusEl = document.getElementById('status');
+    var messageEl = document.getElementById('message');
+    var retryTimer = null;
+    var checking = false;
 
-    function showOffline() {
-      document.getElementById('spinner').classList.add('hidden');
-      statusEl.textContent = 'No internet connection — check your network and try again.';
+    function show(title, detail) {
+      messageEl.innerHTML = '';
+      messageEl.appendChild(document.createTextNode(title));
+      var small = document.createElement('small');
+      small.textContent = detail;
+      messageEl.appendChild(small);
+      messageEl.hidden = false;
     }
 
-    function go() {
-      if (navigator.onLine === false) { showOffline(); return; }
-      // Replace (don't push) so Back from the site exits the app directly.
-      window.location.replace(SITE_URL);
-    }
-
-    // On the splash, Back should close the app rather than do nothing.
-    document.addEventListener('keydown', function (e) {
-      if (e.keyCode === KEY_BACK) {
-        if (typeof window.close === 'function') window.close();
+    // The site's scripts need Chromium 85 (webOS 22, from 2022). On an older TV
+    // they don't even parse, which would leave a blank page. This is built from
+    // a string so that this page still runs there to say so.
+    function engineSupported() {
+      try {
+        new Function('var a = {}; a.b ||= a.c?.d;');
+        return true;
+      } catch (e) {
+        return false;
       }
-    });
+    }
 
-    // If we're still here (e.g. came back offline), retry when the network returns.
-    window.addEventListener('online', go);
+    function unreachable(title) {
+      checking = false;
+      show(title, 'Trying again automatically. Press OK to retry now.');
+      clearTimeout(retryTimer);
+      retryTimer = setTimeout(go, RETRY_EVERY);
+    }
 
-    // Let the splash paint one frame, then hand the card to the live site.
-    if (navigator.onLine === false) {
-      showOffline();
+    // A failed top-level navigation would strand the app on the TV's own error
+    // page, with no code left to retry. So check the site answers before leaving.
+    function go() {
+      if (checking) return;
+      clearTimeout(retryTimer);
+      if (navigator.onLine === false) {
+        unreachable('No internet connection');
+        return;
+      }
+      checking = true;
+      var abort = new AbortController();
+      var timeout = setTimeout(function () { abort.abort(); }, CHECK_TIMEOUT);
+      fetch(SITE_URL, { mode: 'no-cors', cache: 'no-store', signal: abort.signal }).then(function () {
+        clearTimeout(timeout);
+        // Replace (don't push) so Back from the site exits the app directly.
+        window.location.replace(SITE_URL);
+      }, function () {
+        clearTimeout(timeout);
+        unreachable("Can't reach TFLIX right now");
+      });
+    }
+
+    if (engineSupported()) {
+      document.addEventListener('keydown', function (e) {
+        if (e.keyCode === KEY_OK && !messageEl.hidden) go();
+      });
+      window.addEventListener('online', go);
+      go();
     } else {
-      window.requestAnimationFrame(function () { window.setTimeout(go, 50); });
+      show('This TV is too old for TFLIX', 'TFLIX needs webOS 22 (2022 TVs) or newer.');
     }
   </script>
 </body>
