@@ -786,6 +786,8 @@
     .modal-similar { padding-bottom: 1.2rem; }
     .modal-similar .field-label { padding: 0 2rem; margin-bottom: 0; }
     .similar-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); padding: 0.9rem 2rem 1rem; }
+    .similar-grid .card.is-current { cursor: default; box-shadow: 0 0 0 2px var(--accent); }
+    .similar-grid .card.is-current:hover { transform: none; }
 
     /* ── Person view (modal) ── */
     .person-hero { position: relative; padding: 4.6rem 2rem 1.4rem; overflow: hidden; }
@@ -1385,6 +1387,10 @@
           <div class="cast-scroller" id="cast-scroller"></div>
           <button class="arrow right" aria-label="Scroll right"><svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
         </div>
+      </div>
+      <div id="modal-collection" class="modal-similar" style="display:none">
+        <div class="field-label" id="collection-name">Collection</div>
+        <div class="grid similar-grid" id="collection-grid"></div>
       </div>
       <div id="modal-similar" class="modal-similar" style="display:none">
         <div class="field-label">Similar Titles</div>
@@ -2317,20 +2323,19 @@ async function showModalEntry(entry, dir) {
 }
 
 // Open scrolled to the title (just above "FILM // Title"); if it all fits, this stays at the top.
-// The cast row and similar titles are hidden while measuring so the opening scroll is the same with or without them.
+// The sections that load later (cast, collection, similar titles) are hidden while
+// measuring so the opening scroll is the same with or without them.
 function scrollTitleToDefault() {
   const sc = $('title-scroll');
   const hc = sc.querySelector('.modal-hero-content');
-  const cast = $('modal-cast'), similar = $('modal-similar');
-  const castDisplay = cast.style.display, similarDisplay = similar.style.display;
-  cast.style.display = 'none';
-  similar.style.display = 'none';
+  const late = ['modal-cast', 'modal-collection', 'modal-similar'].map(id => $(id));
+  const shown = late.map(el => el.style.display);
+  late.forEach(el => { el.style.display = 'none'; });
   sc.scrollTop = 0;
   const padTop = parseFloat(getComputedStyle(hc).paddingTop) || 0;
   sc.scrollTop = hc.getBoundingClientRect().top - sc.getBoundingClientRect().top + padTop / 2;
   const top = sc.scrollTop;
-  cast.style.display = castDisplay;
-  similar.style.display = similarDisplay;
+  late.forEach((el, i) => { el.style.display = shown[i]; });
   sc.scrollTop = top;
 }
 
@@ -2364,7 +2369,7 @@ async function renderTitle(item) {
   $('modal-overview').textContent = item.overview || 'No description available.';
 
   loadCast(type, item.id);
-  loadSimilar(type, item.id);
+  loadSimilar(type, item.id, loadCollection(type, item.id));
 
   const tvSel = $('tv-selectors');
   const drEl  = $('modal-digital-release');
@@ -2571,35 +2576,105 @@ async function loadCast(type, id) {
 /* ─── SIMILAR TITLES (modal) ───
    TMDB's recommendations (what people who liked this also watched) match far
    better than /similar (shared genres and keywords), which only fills in when
-   a title has no recommendations. Opening one pushes it like a cast member. */
-const similarCache = {};
+   a title has no recommendations. Opening one pushes it like a cast member.
+   Movies already in the collection above are left out, and when that (or
+   missing posters) leaves fewer than 20, TMDB's second page tops it up. */
+const similarCache = {};   // type-id → { path, more, items }
 
-async function loadSimilar(type, id) {
+async function loadSimilar(type, id, collectionIds) {
   const wrap = $('modal-similar');
   const grid = $('similar-grid');
   wrap.style.display = 'none';
   grid.innerHTML = '';
 
   const cacheKey = `${type}-${id}`;
+  const usable = results => (results || [])
+    .filter(r => r.poster_path && r.id !== id)
+    .map(r => ({ ...r, media_type: r.media_type || type }));
   try {
-    let items = similarCache[cacheKey];
-    if (!items) {
-      let data = await tmdb(`/${type}/${id}/recommendations`);
-      if (!data?.results?.length) data = await tmdb(`/${type}/${id}/similar`);
-      items = (data?.results || [])
-        .filter(r => r.poster_path && r.id !== id)
-        .map(r => ({ ...r, media_type: r.media_type || type }))
-        .slice(0, 20);
-      similarCache[cacheKey] = items;
+    let entry = similarCache[cacheKey];
+    if (!entry) {
+      let path = `/${type}/${id}/recommendations`;
+      let data = await tmdb(path);
+      if (!data?.results?.length) { path = `/${type}/${id}/similar`; data = await tmdb(path); }
+      entry = similarCache[cacheKey] = { path, more: (data?.total_pages || 1) > 1, items: usable(data?.results) };
+    }
+    const inCollection = await collectionIds;
+    const kept = () => entry.items.filter(r => !inCollection.has(r.id));
+    if (kept().length < 20 && entry.more) {
+      entry.more = false;
+      try {
+        const data = await tmdb(`${entry.path}?page=2`);
+        const seen = new Set(entry.items.map(r => r.id));
+        entry.items.push(...usable(data?.results).filter(r => !seen.has(r.id)));
+      } catch {}
     }
     // A different title may have been opened while this was loading
     if (!currentModalItem || currentModalItem.id !== id || currentModalItem.media_type !== type) return;
+    const items = kept().slice(0, 20);
     if (!items.length) return;
 
     grid.replaceChildren(...items.map(it => makeCard(it)));
     wrap.style.display = '';
   } catch {}
 }
+
+/* ─── COLLECTION (modal) ───
+   A movie in a TMDB collection (a franchise or series of films) lists every
+   film in it with a date, oldest first, the open one ringed. Shows have none.
+   Resolves to the ids shown, so Similar Titles can leave them out. */
+const movieCollection = {};   // movie id → collection id, 0 when it has none
+const collectionCache = {};
+
+async function loadCollection(type, id) {
+  const wrap = $('modal-collection');
+  const grid = $('collection-grid');
+  wrap.style.display = 'none';
+  grid.innerHTML = '';
+  if (type !== 'movie') return new Set();
+
+  try {
+    let cid = movieCollection[id];
+    if (cid === undefined) {
+      const m = await tmdb(`/movie/${id}`);
+      if (!m || !m.id) throw new Error('movie not found');
+      cid = movieCollection[id] = m.belongs_to_collection?.id || 0;
+    }
+    if (!cid) return new Set();
+    let col = collectionCache[cid];
+    if (!col) {
+      const d = await tmdb(`/collection/${cid}`);
+      if (!d || !Array.isArray(d.parts)) throw new Error('collection not found');
+      // Films with no date yet are mostly rumours, so they're left out
+      col = collectionCache[cid] = {
+        name: d.name || 'Collection',
+        parts: d.parts.filter(x => x.release_date)
+          .sort((a, b) => a.release_date.localeCompare(b.release_date))
+          .map(x => ({ ...x, media_type: 'movie' })),
+      };
+    }
+    // A different title may have been opened while this was loading
+    if (!currentModalItem || currentModalItem.id !== id || currentModalItem.media_type !== type) return new Set();
+    if (col.parts.length < 2) return new Set();
+
+    $('collection-name').textContent = col.name;
+    grid.replaceChildren(...col.parts.map(x => {
+      const card = makeCard(x);
+      if (x.id === id) {
+        card.classList.add('is-current');
+        card.querySelector('.card-badge').textContent = 'Viewing';
+      }
+      return card;
+    }));
+    wrap.style.display = '';
+    return new Set(col.parts.map(x => x.id));
+  } catch { return new Set(); }
+}
+
+// The open movie's card does nothing (its My List button still works)
+$('collection-grid').addEventListener('click', e => {
+  if (e.target.closest('.card.is-current') && !e.target.closest('.card-add')) e.stopPropagation();
+}, true);
 
 const seasonCache = {};
 
@@ -4106,10 +4181,10 @@ $('cal-day').addEventListener('click', e => {
         const members = [...cast.querySelectorAll('.cast-member')];
         if (members.length) s.push({ key: cast, items: members });
       }
-      const similar = $('similar-grid');
-      if (vis(similar)) {
-        const cards = [...similar.querySelectorAll('.card')];
-        const cols = (getComputedStyle(similar).gridTemplateColumns || '').split(' ').filter(Boolean).length || 1;
+      for (const grid of [$('collection-grid'), $('similar-grid')]) {
+        if (!vis(grid)) continue;
+        const cards = [...grid.querySelectorAll('.card')];
+        const cols = (getComputedStyle(grid).gridTemplateColumns || '').split(' ').filter(Boolean).length || 1;
         for (let i = 0; i < cards.length; i += cols)
           s.push({ key: null, items: cards.slice(i, i + cols) });
       }
