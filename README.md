@@ -34,6 +34,8 @@ Prefer a real app over a browser tab? TFLIX is also available as a native **desk
 
 📥 Download it from **Get Apps** in the site's profile menu, or from the [latest release](https://github.com/TomasTNunes/tflix/releases/latest).
 
+🛡️ On Windows, the installer isn't code-signed, so the browser may say it "isn't commonly downloaded" (choose **Keep**) and Windows may show **Windows protected your PC** (click **More info → Run anyway**). The same applies when updating.
+
 🔄 Already installed? The app tells you when an update is out (a pop-up when it opens, and a yellow dot on the profile icon). Click **Update** in Get Apps and install the new version over the old one — no uninstall needed. See the update steps for [Windows](app/desktop/README.md#update) and [Linux](app/desktop/README.md#update-1).
 
 👉 See the [desktop app guide](app/desktop/README.md) for more info.
@@ -51,6 +53,8 @@ tablets, and **Android TV** (it shows up in the TV launcher).
 📥 Download the APK from **Get Apps** in the site's profile menu, or from the
 [latest release](https://github.com/TomasTNunes/tflix/releases/latest), and sideload it
 (on TV: install via a file-manager app or `adb install`).
+
+🛡️ If Google Play Protect warns about or blocks the install or an update, select **More details** (or **More info**) and choose **Install anyway**.
 
 🔄 Already installed? The app tells you when an update is out. Tap **Update** in Get Apps: the APK downloads without a browser, then tap the finished download to install it over the old version (on Android TV the installer opens by itself; the first time, allow the install source and tap **Update** again) — no uninstall needed. See [Update](app/android/README.md#update) for details.
 

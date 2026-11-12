@@ -38,6 +38,10 @@ It also presents a plain-Chrome User-Agent (the WebView default carries `; wv` /
    *X-plore*, *LocalSend*)
    or with adb: `adb install tflix-android.<version>.apk`.
 
+> **Google Play Protect blocked the install?** TFLIX isn't from the Play Store, so Play Protect
+> may warn about it or block it. Select **More details** (or **More info**) and choose
+> **Install anyway**. The same applies when updating.
+
 ## Update
 
 The app tells you when an update is out: a pop-up when it opens (with **Don't show again for this
@@ -52,6 +56,9 @@ downloads with Android's Download Manager, no browser needed:
 - **Android TV**: the installer opens by itself when the download finishes (if TFLIX is still
   open). The first time, Android asks you to allow TFLIX to install apps — allow it, come
   back and tap **Update** again.
+
+If Google Play Protect warns about or blocks the update, select **More details** (or **More info**)
+and choose **Install anyway**.
 
 It installs over the old version, **no need to uninstall first**. You can also download the newest
 `tflix-android.<version>.apk` from the

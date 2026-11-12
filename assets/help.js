@@ -9,7 +9,7 @@ const TFLIX_FAQ = [
   ["The video won't play or keeps loading",
    "Pick another server. Each one pulls the video from a different source, so a title missing on one is often on another. On the watch page they're listed under the player; on the home page use the server button at the top."],
   ['Why do pop-ups or new tabs open?',
-   "They come from the streaming servers, not from TFLIX. Close them and go back to the video. The Windows and Android apps block them: get them from <b>Get Apps</b> in the profile menu. In a browser, an ad blocker such as uBlock Origin helps."],
+   "They come from the streaming servers, not from TFLIX. Close them and go back to the video. The Windows, Linux and Android apps block them: get them from <b>Get Apps</b> in the profile menu. In a browser, an ad blocker such as uBlock Origin helps."],
   ['How do I get subtitles or another language?',
    'Most players have a subtitles (CC) or settings button in their controls. Some servers also let you upload your own subtitle file. If the language you need is missing, try another server.'],
   ['How does Continue Watching work?',
@@ -21,11 +21,13 @@ const TFLIX_FAQ = [
   ["What's in the Calendar?",
    'New episodes and digital releases for the titles in your My List, so add a show or movie there to see its dates.'],
   ['Is there an app?',
-   'Yes, for Windows and for Android (phones, tablets and Android TV). The apps block the pop-ups and ad redirects, and they always load the latest version of TFLIX. Get them from <b>Get Apps</b> in the profile menu.'],
+   'Yes, for Windows, Linux and Android (phones, tablets and Android TV). The apps block the pop-ups and ad redirects, and they always load the latest version of TFLIX. Get them from <b>Get Apps</b> in the profile menu.'],
   ['Can I watch on a TV?',
    'Yes. The Android app also runs on Android TV and works with the remote: the arrows move around and OK selects. Get it from <b>Get Apps</b> in the profile menu.'],
   ['How do I update the app?',
    'When a new version is out, the app shows a notice and the profile icon gets a yellow dot. Open <b>Get Apps</b>, press <b>Update</b> and install it over the old version. There\'s no need to uninstall.'],
+  ['A warning blocks the app from installing',
+   "The apps aren't from an app store, so your device may warn about them. This is expected, both when installing and when updating. <b>Android:</b> if Google Play Protect blocks the install, select <b>More details</b> (or <b>More info</b>) and choose <b>Install anyway</b>. <b>Windows:</b> if your browser says the file isn't commonly downloaded, choose <b>Keep</b>. If Windows then shows <b>Windows protected your PC</b>, click <b>More info</b> and then <b>Run anyway</b>. <b>Linux:</b> on Ubuntu 24.04 and later, the AppImage asks for permission the first time it opens: click <b>Allow and open TFLIX</b> and enter your password, or use the .deb instead."],
 ];
 
 function renderFaq(el) {
