@@ -417,11 +417,17 @@
     }
 
     .scroller-wrap { position: relative; overflow-y: clip; }
+    /* The row clips at its left edge, so it reaches --row-bleed into the
+       gutter (and pads the cards back by as much): room for the first card
+       to grow on hover / remote focus (scale 1.09 + the 3px outline) without
+       losing its left side. The left arrow moves out with the edge. */
+    .row { --row-bleed: 14px; }
     .scroller {
       display: flex; gap: 0.7rem;
       overflow-x: hidden;
       overflow-y: clip;
-      padding: 20px var(--gutter) 20px 0;
+      margin-left: calc(-1 * var(--row-bleed));
+      padding: 20px var(--gutter) 20px var(--row-bleed);
       scrollbar-width: none;
       overscroll-behavior-x: contain;
     }
@@ -438,6 +444,7 @@
     }
     .arrow.right { right: 0; transform: scaleX(-1); }
     .arrow.left { left: 0; }
+    .row .arrow.left { left: calc(-1 * var(--row-bleed)); }
     .scroller-wrap:hover .arrow { opacity: 1; pointer-events: auto; }
     .arrow svg { transition: transform .15s var(--ease); }
     .arrow:hover svg { transform: scale(1.3); }
