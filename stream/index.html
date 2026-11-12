@@ -36,6 +36,18 @@
     }
 
     html { overflow-x: hidden; }
+    /* Slim dark scrollbars, as on the main page (Firefox gets the standard
+       properties; Chrome isn't given those, as they would override these) */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background-color: rgba(255,255,255,0.2); border-radius: 99px;
+      border: 2px solid transparent; background-clip: padding-box;
+    }
+    ::-webkit-scrollbar-thumb:hover { background-color: rgba(255,255,255,0.4); }
+    @supports not selector(::-webkit-scrollbar) {
+      html { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.25) transparent; }
+    }
     body {
       background: var(--bg);
       color: var(--text);
