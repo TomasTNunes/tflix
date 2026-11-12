@@ -1129,7 +1129,7 @@
     .merge-meta { font-size: 0.74rem; color: var(--muted); margin-top: 1px; }
     @media (max-width: 560px) { .auth-dialog { --pad-x: 1.3rem; padding: 2rem var(--pad-x) 1.5rem; } }
 
-    /* ─────────────── UPDATE POP-UP (apps) ─────────────── */
+    /* ─────────────── POP-UP CARDS (app update, sign-up nudge) ─────────────── */
     .update-pop {
       /* Under the header (its dropdowns open over it) and any open title */
       position: fixed; top: 78px; right: var(--gutter); z-index: 290;
@@ -1140,12 +1140,15 @@
       transition: opacity .28s var(--ease), transform .28s var(--ease);
     }
     .update-pop.show { opacity: 1; transform: none; pointer-events: auto; }
-    /* Countdown to the auto-close: empties towards the left, paused while
-       the pointer or focus is on the pop-up */
+    /* Countdown to the auto-close: empties towards the left, paused while a
+       mouse is over the pop-up or the remote / arrow keys are on it. (Not on
+       mere focus or touch: a clicked or tapped tick box keeps both after the
+       pointer has left, which would stop the countdown for good.) */
     .update-pop-timer { height: 3px; background: rgba(229,9,20,0.18); }
     .update-pop-timer i { display: block; height: 100%; background: var(--accent); transform-origin: left; }
     .update-pop.show .update-pop-timer i { animation: update-pop-countdown 20s linear forwards; }
-    .update-pop:hover .update-pop-timer i, .update-pop:focus-within .update-pop-timer i { animation-play-state: paused; }
+    @media (hover: hover) { .update-pop:hover .update-pop-timer i { animation-play-state: paused; } }
+    html.keynav .update-pop:focus-within .update-pop-timer i { animation-play-state: paused; }
     @keyframes update-pop-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
     .update-pop-body { padding: 1rem 1.1rem 1.1rem; }
     .update-pop-title { display: flex; align-items: center; gap: 0.55rem; font-size: 1rem; font-weight: 700; }
@@ -1441,6 +1444,20 @@
     <div class="update-pop-actions">
       <button class="btn btn-danger" id="update-pop-go" type="button">Update</button>
       <button class="btn btn-ghost" id="update-pop-close" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────── SIGN-UP POP-UP (guests) ─────────────── -->
+<div class="update-pop" id="signup-pop" role="dialog" aria-labelledby="signup-pop-title" hidden>
+  <div class="update-pop-timer"><i></i></div>
+  <div class="update-pop-body">
+    <div class="update-pop-title" id="signup-pop-title">Sync across your devices</div>
+    <div class="update-pop-text">You can now create an account to keep <b>My List</b> and <b>Continue Watching</b> in sync on all your devices.</div>
+    <button class="update-pop-check" id="signup-pop-skip" type="button" role="checkbox" aria-checked="false"><span class="box"></span>Don't show again</button>
+    <div class="update-pop-actions">
+      <button class="btn btn-danger" id="signup-pop-go" type="button">Create Account</button>
+      <button class="btn btn-ghost" id="signup-pop-close" type="button">Close</button>
     </div>
   </div>
 </div>
@@ -3316,6 +3333,10 @@ function ensureFirebase() {
 function onAuthChange(user) {
   authUser = user;
   if (user) localStorage.setItem(SIGNED_IN_KEY, '1'); else localStorage.removeItem(SIGNED_IN_KEY);
+  if (user) {   // the sign-up card is moot now, and may show again after a sign-out
+    closeSignupPop();
+    try { localStorage.removeItem(SIGNUP_SKIP_KEY); } catch {}
+  }
   renderAccount();
   startListSync();
   if (user && !canSync(user)) refreshVerified();
@@ -3579,9 +3600,7 @@ function showUpdatePop() {
   const pop = $('update-pop');
   const name = inApp === 'windows' ? 'Windows' : 'Android';
   $('update-pop-text').innerHTML = `TFLIX <b>v${esc(appUpdate.version)}</b> for ${name} is out. You have v${esc(appUpdate.installed)}.`;
-  $('update-pop-skip').setAttribute('aria-checked', 'false');
-  pop.hidden = false;
-  requestAnimationFrame(() => requestAnimationFrame(() => pop.classList.add('show')));
+  showPop(pop);
 }
 
 function closeUpdatePop() {
@@ -3589,19 +3608,62 @@ function closeUpdatePop() {
   if (!pop.classList.contains('show')) return;
   if ($('update-pop-skip').getAttribute('aria-checked') === 'true')
     try { localStorage.setItem(UPDATE_SKIP_KEY, appUpdate.version); } catch {}
+  hidePop(pop);
+  // The sign-up card waited for this one; it follows once this has slid away
+  if (signupAfterUpdate) { signupAfterUpdate = false; setTimeout(maybeShowSignupPop, 800); }
+}
+
+function showPop(pop) {
+  pop.querySelector('.update-pop-check').setAttribute('aria-checked', 'false');
+  pop.hidden = false;
+  requestAnimationFrame(() => requestAnimationFrame(() => pop.classList.add('show')));
+}
+
+function hidePop(pop) {
   const hadFocus = pop.contains(document.activeElement) || !!pop.querySelector('.kf');
   pop.classList.remove('show');
   setTimeout(() => { pop.hidden = true; }, 300);
   if (hadFocus) window.__knavFocus($('account-btn'));
 }
 
-$('update-pop-skip').addEventListener('click', e => {
-  const b = e.currentTarget;
+document.querySelectorAll('.update-pop-check').forEach(b => b.addEventListener('click', () => {
   b.setAttribute('aria-checked', b.getAttribute('aria-checked') === 'true' ? 'false' : 'true');
-});
+}));
 $('update-pop-close').addEventListener('click', closeUpdatePop);
 $('update-pop-go').addEventListener('click', () => { closeUpdatePop(); showAuth('apps'); });
 $('update-pop').addEventListener('animationend', closeUpdatePop);   // the 20s countdown ran out
+
+/* ─── SIGN-UP NUDGE ───
+   A guest (no account signed in on this device) gets a card like the update
+   one once per launch, a few seconds in, pointing at accounts. If the update
+   card is up it waits for that to close. "Don't show again" sticks until
+   someone signs in here: signing in clears it, so after a later sign-out
+   the card comes back. */
+const SIGNUP_SEEN_KEY = 'tflix_signup_seen';        // sessionStorage: this launch was checked
+const SIGNUP_SKIP_KEY = 'tflix_signup_dismissed';   // localStorage: "Don't show again" ticked
+let signupAfterUpdate = false;
+
+function maybeShowSignupPop() {
+  if (authUser || localStorage.getItem(SIGNED_IN_KEY) || authIsOpen()) return;
+  if ($('update-pop').classList.contains('show')) { signupAfterUpdate = true; return; }
+  try {
+    if (sessionStorage.getItem(SIGNUP_SEEN_KEY) || localStorage.getItem(SIGNUP_SKIP_KEY)) return;
+    sessionStorage.setItem(SIGNUP_SEEN_KEY, '1');
+  } catch { return; }
+  showPop($('signup-pop'));
+}
+
+function closeSignupPop() {
+  const pop = $('signup-pop');
+  if (!pop.classList.contains('show')) return;
+  if ($('signup-pop-skip').getAttribute('aria-checked') === 'true')
+    try { localStorage.setItem(SIGNUP_SKIP_KEY, '1'); } catch {}
+  hidePop(pop);
+}
+
+$('signup-pop-close').addEventListener('click', closeSignupPop);
+$('signup-pop-go').addEventListener('click', () => { closeSignupPop(); showAuth('form', 'signup'); });
+$('signup-pop').addEventListener('animationend', closeSignupPop);   // the 20s countdown ran out
 
 // In a browser every button reads Download. On the card of the app you're in,
 // it reads Update when a newer release exists (and downloads straight away),
@@ -4102,7 +4164,8 @@ $('cal-day').addEventListener('click', e => {
   if (importResult?.askSignIn) showAuth('moved');
   renderMyList();
   renderAccount();   // guest menu until Firebase reports a signed-in user
-  if (inApp) checkAppUpdate();
+  // The sign-up card comes after the app-update check, so it can wait its turn
+  Promise.resolve(inApp && checkAppUpdate()).catch(() => {}).then(() => setTimeout(maybeShowSignupPop, 3000));
   if (localStorage.getItem(SIGNED_IN_KEY)) ensureFirebase().catch(err => console.warn('Account restore failed', err));
   loadGenres();
   await loadHero();
@@ -4213,10 +4276,11 @@ $('cal-day').addEventListener('click', e => {
       return [...accountMenu.querySelectorAll('.account-item')].map(i => ({ key: null, items: [i] }));
 
     const secs = [];
-    if ($('update-pop').classList.contains('show')) {
-      secs.push({ key: null, items: [$('update-pop-skip')] });
-      secs.push({ key: null, items: [$('update-pop-go'), $('update-pop-close')] });
-    }
+    for (const p of ['update', 'signup'])
+      if ($(`${p}-pop`).classList.contains('show')) {
+        secs.push({ key: null, items: [$(`${p}-pop-skip`)] });
+        secs.push({ key: null, items: [$(`${p}-pop-go`), $(`${p}-pop-close`)] });
+      }
     const header = [$('menu-btn'), ...document.querySelectorAll('.nav-link'), searchInput, $('calendar-btn'), serverBtn, $('account-btn')].filter(vis);
     if (header.length) secs.push({ key: 'header', items: header });
 
