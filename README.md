@@ -20,12 +20,12 @@ It lets users discover movies and TV shows and stream them directly within the w
 - ⏯️ **Continue Watching** picks up where you stopped, on the right episode
 - ➕ Save titles to **My List**, optionally synced across devices with a free account
 - 📅 **Calendar** of upcoming episodes and digital releases for titles in your list
-- 🖥️ Use it as a native **Windows desktop app** or **Android app** (phone + TV) with no ads —
+- 🖥️ Use it as a native **Windows or Linux desktop app** or **Android app** (phone + TV) with no ads —
   download them from **Get Apps** in the profile menu
 
-## Desktop App (Windows)
+## Desktop App (Windows & Linux)
 
-Prefer a real app over a browser tab? TFLIX is also available as a native **Windows desktop app**.
+Prefer a real app over a browser tab? TFLIX is also available as a native **desktop app for Windows and Linux** (Linux: a `.deb` for Ubuntu, Debian and Mint, or an AppImage for any distro — for Intel/AMD or ARM64).
 
 - 🪟 Runs in its own window — no browser needed
 - 🚫 Blocks the pop-ups and ad redirects (No Ads)
@@ -34,9 +34,9 @@ Prefer a real app over a browser tab? TFLIX is also available as a native **Wind
 
 📥 Download it from **Get Apps** in the site's profile menu, or from the [latest release](https://github.com/TomasTNunes/tflix/releases/latest).
 
-🔄 Already installed? The app tells you when an update is out (a pop-up when it opens, and a yellow dot on the profile icon). Click **Update** in Get Apps and run the new installer over the old version — no uninstall needed. See [Update](app/windows/README.md#update) for details.
+🔄 Already installed? The app tells you when an update is out (a pop-up when it opens, and a yellow dot on the profile icon). Click **Update** in Get Apps and install the new version over the old one — no uninstall needed. See the update steps for [Windows](app/desktop/README.md#update) and [Linux](app/desktop/README.md#update-1).
 
-👉 See the [Windows app guide](app/windows/README.md) for more info.
+👉 See the [desktop app guide](app/desktop/README.md) for more info.
 
 ## Android App (Phone + Android TV)
 

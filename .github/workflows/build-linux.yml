@@ -1,0 +1,119 @@
+name: Build Linux App
+
+# Builds the desktop app (app/desktop) for Linux: an AppImage and a .deb, for
+# Intel/AMD (x64) and ARM64, each on its own kind of runner so the smoke test
+# runs natively. Runs only by hand, from the Actions tab (Run workflow). A
+# release tag can be given to attach the four files to that (already created)
+# release, where the site's Get Apps finds them.
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Attach the files to this existing release (e.g. v1.3.0). Leave empty to only build.'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false   # one CPU failing still lets the other finish
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    name: build (${{ matrix.arch }})
+    permissions:
+      contents: write   # only used to attach files to a release
+    defaults:
+      run:
+        working-directory: app/desktop
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/desktop/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build AppImage and .deb
+        run: node scripts/make-icon.js && npx electron-builder --linux --${{ matrix.arch }} && node scripts/linux-names.js
+
+      # Starts each build in a virtual display for 20s. "Opened" means still
+      # running at the end (timeout's exit code 124) with no sandbox error.
+      # Only sandbox errors count: stopping the AppImage at 20s unmounts it
+      # under its helper processes, which then log unrelated FATAL lines.
+      # Where the system blocks the sandbox (Ubuntu 23.10+, like this runner),
+      # the AppImage must refuse to run without it (main.js offers the fix
+      # instead), then open once that exact rule, read from main.js, is added
+      # (as its "Allow and open TFLIX" button does, minus the password prompt).
+      - name: Smoke test
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb
+          sudo apt-get install -y -qq ./dist/tflix-linux.*.deb
+          restricted=$(cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns 2>/dev/null || echo 0)
+          echo "AppArmor user-namespace restriction: $restricted"
+          launch() {
+            set +e
+            xvfb-run -a timeout 20 "$@" > run.log 2>&1
+            code=$?
+            set -e
+            cat run.log
+          }
+          opened() {
+            launch "$@"
+            if [ $code -ne 124 ] || grep -qiE 'no usable sandbox|setuid_sandbox_host|sandbox is blocked' run.log; then
+              echo "::error::$* did not open with the sandbox (exit $code)"
+              return 1
+            fi
+          }
+          echo "── .deb ──"
+          opened tflix
+          echo "── AppImage ──"
+          chmod +x dist/tflix-linux.*.AppImage
+          if [ "$restricted" = 1 ]; then
+            launch ./dist/tflix-linux.*.AppImage
+            if ! grep -q 'the sandbox is blocked' run.log; then
+              echo "::error::the AppImage didn't stop at the sandbox-blocked message"
+              exit 1
+            fi
+            echo "── AppImage, after the one-time AppArmor fix ──"
+            node -e 'const s = require("fs").readFileSync("main.js", "utf8");
+              process.stdout.write(eval(s.match(/const APPARMOR_PROFILE =([\s\S]*?);\r?\n/)[1]))' > tflix-appimage.rule
+            cat tflix-appimage.rule
+            sudo cp tflix-appimage.rule /etc/apparmor.d/tflix-appimage
+            sudo apparmor_parser -r /etc/apparmor.d/tflix-appimage
+          fi
+          opened ./dist/tflix-linux.*.AppImage
+
+      - name: Read version
+        id: version
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build
+        uses: actions/upload-artifact@v5
+        with:
+          name: tflix-linux-${{ steps.version.outputs.version }}-${{ matrix.arch }}
+          path: |
+            app/desktop/dist/tflix-linux.*.AppImage
+            app/desktop/dist/tflix-linux.*.deb
+          if-no-files-found: error
+          compression-level: 0   # already compressed
+
+      - name: Attach to release
+        if: inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag }}
+        run: gh release upload "$TAG" dist/tflix-linux.*.AppImage dist/tflix-linux.*.deb --clobber

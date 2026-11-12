@@ -51,6 +51,11 @@ if (window.top === window.self) {
   // so ask the main process for it synchronously.
   let APP_VERSION = '';
   try { APP_VERSION = ipcRenderer.sendSync('tflix:get-version') || ''; } catch {}
+  // Linux only: { kind: 'deb' | 'appimage', arch: 'x64' | 'arm64' }, carried
+  // on the label as data-pkg / data-arch so the site's Update button offers
+  // the same kind of file for the same CPU. Null on Windows.
+  let APP_PACKAGE = null;
+  try { APP_PACKAGE = ipcRenderer.sendSync('tflix:get-package') || null; } catch {}
 
   const VER_ID = 'tflix-version-label';
 
@@ -70,6 +75,7 @@ if (window.top === window.self) {
     const label = document.createElement('div');
     label.id = VER_ID;
     label.textContent = 'v' + APP_VERSION;
+    if (APP_PACKAGE) { label.dataset.pkg = APP_PACKAGE.kind; label.dataset.arch = APP_PACKAGE.arch; }
 
     Object.assign(label.style, {
       position: 'fixed',

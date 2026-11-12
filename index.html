@@ -1052,6 +1052,25 @@
     .auth-dialog .btn.app-dl.update { background: var(--accent); color: #fff; }
     .auth-dialog .btn.app-dl.update:hover { background: var(--accent-h); box-shadow: 0 6px 22px rgba(229,9,20,0.45); }
     .auth-dialog .btn.app-dl { width: auto; flex-shrink: 0; padding: 0.6rem 1.1rem; font-size: 0.88rem; text-decoration: none; }
+    /* Linux chooser (Get Apps → Linux → Download): four files, by processor */
+    .linux-group + .linux-group { margin-top: 1rem; }
+    .linux-group-head {
+      display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.45rem;
+      font-size: 0.74rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+    }
+    .linux-group-head .acct-badge { margin-left: 0; letter-spacing: 0; text-transform: none; }
+    .linux-tag { color: var(--text); background: rgba(255,255,255,0.1); }
+    .linux-arch-id { text-transform: none; }
+    .linux-opt { display: flex; align-items: center; gap: 0.9rem; padding: 0.75rem 1rem; }
+    .linux-opt + .linux-opt { border-top: 1px solid var(--line); }
+    .linux-opt.mine { background: rgba(255,255,255,0.05); box-shadow: inset 3px 0 var(--accent); }
+    .linux-opt:first-child.mine { border-radius: 10px 10px 0 0; }
+    .linux-opt:last-child.mine { border-radius: 0 0 10px 10px; }
+    .linux-opt-info { flex: 1; min-width: 0; }
+    .linux-opt-name { display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; font-weight: 700; }
+    .linux-opt-for { margin-top: 2px; font-size: 0.78rem; color: var(--muted); }
+    .linux-opt-name .acct-badge { margin-left: 0; }
+    #auth-linux .auth-note b { color: var(--text); }
     .app-howto-btn {
       display: flex; align-items: center; gap: 0.35rem; margin: 0 0 0.55rem calc(1rem + 44px + 0.9rem);
       padding: 0.15rem 0; background: none; border: none; color: var(--muted);
@@ -1066,11 +1085,13 @@
     .app-howto b { color: var(--text); font-weight: 700; }
     .app-howto-head { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.35rem; }
     .app-howto p { margin: 0; }
+    .app-howto > p:first-child { margin-bottom: 0.75rem; }
     .app-howto ol + .app-howto-head { margin-top: 0.2rem; }
     @media (max-width: 420px) {
       .app-row { flex-wrap: wrap; }
       .app-howto-btn { margin-left: 1rem; }
       .auth-dialog .btn.app-dl { width: 100%; }
+      .auth-dialog .linux-opt .btn.app-dl { width: auto; }
     }
 
     /* Help: FAQ list, with the GitHub link pinned under it */
@@ -1553,6 +1574,35 @@
         <div class="app-card">
           <div class="app-row">
             <div class="app-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v7c0 .83.67 1.5 1.5 1.5S5 17.33 5 16.5v-7C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zm-4.97-5.84l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48A5.84 5.84 0 0 0 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31A5.98 5.98 0 0 0 6 7h12c0-1.99-.97-3.75-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/></svg>
+            </div>
+            <div class="app-info">
+              <div class="app-name">Android &amp; Android TV<span class="s-dot warn app-dot" data-app="android" title="Update available" hidden></span></div>
+              <div class="app-meta"><span class="acct-badge ok">No Ads</span><span class="app-ver" data-app="android"></span></div>
+            </div>
+            <a class="btn btn-primary app-dl" data-app="android" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
+          </div>
+          <button class="app-howto-btn" type="button" aria-expanded="false" aria-controls="howto-android"><span>How to install &amp; update</span><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="app-howto" id="howto-android" hidden>
+            <div class="app-howto-head">Phone or tablet</div>
+            <ol>
+              <li>Download the APK, then open it from the download notification or your Downloads folder.</li>
+              <li>When asked, allow <b>Install unknown apps</b> for your browser or Files app.</li>
+              <li>Tap <b>Install</b>, then open TFLIX.</li>
+            </ol>
+            <div class="app-howto-head">Android TV</div>
+            <ol>
+              <li>Install a file manager or file-sharing app from the Play Store, such as <b>Send files to TV</b>, <b>X-plore</b> or <b>LocalSend</b>.</li>
+              <li>Get the APK onto the TV with it (or download it on the TV), open it and allow unknown apps when asked.</li>
+              <li>TFLIX then shows up in the TV's app list.</li>
+            </ol>
+            <div class="app-howto-head">Updating</div>
+            <p>If a new version is out, a notice appears when you open the app and your profile icon gets a yellow dot. Tap <b>Update</b> here and the new APK downloads, no browser needed. On a phone or tablet, tap the finished download to install it over the old version. On a TV the installer opens by itself. The first time, Android asks you to allow installs from that source (your Downloads or Files app on a phone, TFLIX on a TV): allow it, come back and tap <b>Update</b> again. There's no need to uninstall.</p>
+          </div>
+        </div>
+        <div class="app-card">
+          <div class="app-row">
+            <div class="app-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5l7.5-1.05V11.5H3v-6zm0 13l7.5 1.05V12.5H3v6zm8.5 1.2L21 21v-8.5h-9.5v7.2zm0-15.4v7.2H21V3l-9.5 1.3z"/></svg>
             </div>
             <div class="app-info">
@@ -1575,35 +1625,82 @@
         <div class="app-card">
           <div class="app-row">
             <div class="app-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v7c0 .83.67 1.5 1.5 1.5S5 17.33 5 16.5v-7C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zm-4.97-5.84l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48A5.84 5.84 0 0 0 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31A5.98 5.98 0 0 0 6 7h12c0-1.99-.97-3.75-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.5c-3.6 0-6 3.4-6 8V15c0 3.6 2.7 6.5 6 6.5s6-2.9 6-6.5v-4.5c0-4.6-2.4-8-6-8zm-1.7 3.7a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm3.4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM12 10.5c-2.2 0-3.6 2-3.6 4.6 0 2.4 1.6 4.4 3.6 4.4s3.6-2 3.6-4.4c0-2.6-1.4-4.6-3.6-4.6z"/><path d="M4.5 20.6c0-1.2 1.4-2.1 3.2-2.1 1.6 0 2.8.9 2.8 1.9S9.4 22 7.7 22c-1.8 0-3.2-.5-3.2-1.4zm15 0c0-1.2-1.4-2.1-3.2-2.1-1.6 0-2.8.9-2.8 1.9s1.1 1.6 2.8 1.6c1.8 0 3.2-.5 3.2-1.4z"/></svg>
             </div>
             <div class="app-info">
-              <div class="app-name">Android &amp; Android TV<span class="s-dot warn app-dot" data-app="android" title="Update available" hidden></span></div>
-              <div class="app-meta"><span class="acct-badge ok">No Ads</span><span class="app-ver" data-app="android"></span></div>
+              <div class="app-name">Linux<span class="s-dot warn app-dot" data-app="linux" title="Update available" hidden></span></div>
+              <div class="app-meta"><span class="acct-badge ok">No Ads</span><span class="app-ver" data-app="linux"></span></div>
             </div>
-            <a class="btn btn-primary app-dl" data-app="android" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
+            <!-- Download opens the chooser (#auth-linux); Update fetches this app's own file -->
+            <a class="btn btn-primary app-dl" id="linux-dl" data-app="linux" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
           </div>
-          <button class="app-howto-btn" type="button" aria-expanded="false" aria-controls="howto-android"><span>How to install &amp; update</span><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
-          <div class="app-howto" id="howto-android" hidden>
-            <div class="app-howto-head">Phone or tablet</div>
+          <button class="app-howto-btn" type="button" aria-expanded="false" aria-controls="howto-linux"><span>How to install &amp; update</span><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="app-howto" id="howto-linux" hidden>
+            <p><b>Download</b> lists the Linux files: a .deb or an AppImage, for <b>Intel/AMD (x64)</b> (most computers) or <b>ARM64</b> (a Raspberry Pi or an ARM laptop).</p>
+            <div class="app-howto-head">.deb (Ubuntu, Debian, Mint, Raspberry Pi OS)</div>
             <ol>
-              <li>Download the APK, then open it from the download notification or your Downloads folder.</li>
-              <li>When asked, allow <b>Install unknown apps</b> for your browser or Files app.</li>
-              <li>Tap <b>Install</b>, then open TFLIX.</li>
+              <li>Download the .deb and open it, or run <b>sudo apt install ./tflix-linux.*.deb</b> in the folder you saved it to.</li>
+              <li>Open TFLIX from your app menu.</li>
             </ol>
-            <div class="app-howto-head">Android TV</div>
+            <div class="app-howto-head">AppImage (other distros)</div>
             <ol>
-              <li>Install a file manager from the Play Store, such as <b>Send files to TV</b> or <b>X-plore</b>.</li>
-              <li>Get the APK onto the TV with it (or download it on the TV), open it and allow unknown apps when asked.</li>
-              <li>TFLIX then shows up in the TV's app list.</li>
+              <li>Download the AppImage, then right-click it → <b>Properties → Allow executing as program</b> (or run <b>chmod +x</b> on it).</li>
+              <li>Double-click it to open TFLIX. Nothing gets installed.</li>
+              <li>On Ubuntu 24.04 and later, the first time you open it, click <b>Allow and open TFLIX</b> and enter your password (or use the .deb instead).</li>
             </ol>
             <div class="app-howto-head">Updating</div>
-            <p>If a new version is out, a notice appears when you open the app and your profile icon gets a yellow dot. Tap <b>Update</b> here and the new APK downloads, no browser needed. On a phone or tablet, tap the finished download to install it over the old version. On a TV the installer opens by itself. The first time, Android asks you to allow installs from that source (your Downloads or Files app on a phone, TFLIX on a TV): allow it, come back and tap <b>Update</b> again. There's no need to uninstall.</p>
+            <p>If a new version is out, a notice appears when you open the app and your profile icon gets a yellow dot. Click <b>Update</b> here: the Linux files open with yours (the same kind, for the same processor) highlighted, so click its <b>Update</b>. Open the new .deb to install it over the old version, or swap the old AppImage for the new one. There's no need to uninstall, and your settings are kept.</p>
           </div>
         </div>
       </div>
       <div class="auth-note">Already have the app? Install the new version over it to update. There's no need to uninstall.</div>
       <div class="apps-src">Older versions and what's new · <a id="apps-releases" href="https://github.com/TomasTNunes/tflix/releases" target="_blank" rel="noopener noreferrer">View all releases</a></div>
+    </div>
+
+    <!-- Get Apps → Linux → Download: every Linux file, grouped by processor.
+         syncLinuxChooser puts this computer's processor first and tags it. -->
+    <div id="auth-linux">
+      <div id="linux-groups">
+        <div class="linux-group" data-arch="x64">
+          <div class="linux-group-head"><span>Intel / AMD <span class="linux-arch-id">(x64)</span></span><span class="acct-badge linux-tag" hidden></span></div>
+          <div class="app-card">
+            <div class="linux-opt">
+              <div class="linux-opt-info">
+                <div class="linux-opt-name">.deb<span class="acct-badge ok linux-installed" hidden>Installed</span></div>
+                <div class="linux-opt-for">Ubuntu, Debian, Linux Mint</div>
+              </div>
+              <a class="btn btn-primary app-dl" data-app="linux-deb-x64" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
+            </div>
+            <div class="linux-opt">
+              <div class="linux-opt-info">
+                <div class="linux-opt-name">AppImage<span class="acct-badge ok linux-installed" hidden>Installed</span></div>
+                <div class="linux-opt-for">Any other distro</div>
+              </div>
+              <a class="btn btn-primary app-dl" data-app="linux-appimage-x64" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
+            </div>
+          </div>
+        </div>
+        <div class="linux-group" data-arch="arm64">
+          <div class="linux-group-head">ARM64 · Raspberry Pi, ARM laptops<span class="acct-badge linux-tag" hidden></span></div>
+          <div class="app-card">
+            <div class="linux-opt">
+              <div class="linux-opt-info">
+                <div class="linux-opt-name">.deb<span class="acct-badge ok linux-installed" hidden>Installed</span></div>
+                <div class="linux-opt-for">Raspberry Pi OS, Ubuntu, Debian</div>
+              </div>
+              <a class="btn btn-primary app-dl" data-app="linux-deb-arm64" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
+            </div>
+            <div class="linux-opt">
+              <div class="linux-opt-info">
+                <div class="linux-opt-name">AppImage<span class="acct-badge ok linux-installed" hidden>Installed</span></div>
+                <div class="linux-opt-for">Any other distro</div>
+              </div>
+              <a class="btn btn-primary app-dl" data-app="linux-appimage-arm64" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="auth-note">Not sure which processor you have? Run <b>uname -m</b> in a terminal: <b>x86_64</b> means Intel/AMD, <b>aarch64</b> means ARM64.</div>
     </div>
 
     <div id="auth-help" class="faq-list"></div>
@@ -1701,8 +1798,8 @@ const CATEGORY_ROWS = [
 ];
 
 /* ─── APP FLAG ───
-   The apps open appwindows./appandroid.tflix.stream, which Cloudflare
-   redirects here with ?app=windows|android. It's kept for the session
+   The apps open appwindows./applinux./appandroid.tflix.stream, which Cloudflare
+   redirects here with ?app=windows|linux|android. It's kept for the session
    (sessionStorage survives the trip to the player and back), dropped from
    the address, and exposed as <html data-app="…"> for app-only tweaks.
    Cosmetic only: anyone can add the parameter. */
@@ -1711,7 +1808,7 @@ const inApp = (() => {
   const params = new URLSearchParams(location.search);
   if (params.has('app')) {
     const app = params.get('app');
-    try { if (app === 'windows' || app === 'android') sessionStorage.setItem(APP_KEY, app); } catch {}
+    try { if (['windows', 'linux', 'android'].includes(app)) sessionStorage.setItem(APP_KEY, app); } catch {}
     params.delete('app');
     const rest = params.toString();
     history.replaceState(history.state, '', location.pathname + (rest ? `?${rest}` : '') + location.hash);
@@ -3496,9 +3593,56 @@ const RELEASES_KEY = 'tflix_releases';            // localStorage: { at, best }
 const RELEASES_TTL = 60 * 60 * 1000;
 const APP_ASSETS = {
   windows: /^tflix-windows\.setup\.(\d+(?:\.\d+)*)\.exe$/,
+  'linux-deb-x64': /^tflix-linux\.(\d+(?:\.\d+)*)\.x64\.deb$/,
+  'linux-appimage-x64': /^tflix-linux\.(\d+(?:\.\d+)*)\.x64\.AppImage$/,
+  'linux-deb-arm64': /^tflix-linux\.(\d+(?:\.\d+)*)\.arm64\.deb$/,
+  'linux-appimage-arm64': /^tflix-linux\.(\d+(?:\.\d+)*)\.arm64\.AppImage$/,
   android: /^tflix-android\.(\d+(?:\.\d+)*)\.apk$/,   // not the .debug. build
 };
+const APP_NAMES = { windows: 'Windows', linux: 'Linux', android: 'Android' };
 let appReleases = null;
+
+// The Linux app's own build, from its version label (data-pkg: deb or
+// appimage, data-arch: x64 or arm64, from app/desktop/main.js); a Linux
+// app without them is taken for the x64 .deb
+function linuxBuild() {
+  const l = $('tflix-version-label');
+  return { kind: l?.dataset.pkg === 'appimage' ? 'appimage' : 'deb', arch: l?.dataset.arch === 'arm64' ? 'arm64' : 'x64' };
+}
+
+// The release asset this app updates from: Linux has one per kind and CPU
+function appAsset() {
+  if (inApp !== 'linux') return inApp;
+  const { kind, arch } = linuxBuild();
+  return `linux-${kind}-${arch}`;
+}
+
+// This computer's processor, for the Linux chooser: the Linux app's own, or
+// the browser's when it runs on Linux. Chromium tells via userAgentData (its
+// user agent says x86_64 even on ARM); Firefox's user agent tells the truth.
+// Null when unsure: the chooser then lists x64 first and tags neither.
+let linuxArchSeen = null;
+if (!navigator.userAgentData && /\bLinux\b/.test(navigator.userAgent) && !/Android/.test(navigator.userAgent))
+  linuxArchSeen = /\b(aarch64|arm64)\b/i.test(navigator.userAgent) ? 'arm64' : /\b(x86_64|amd64)\b/i.test(navigator.userAgent) ? 'x64' : null;
+navigator.userAgentData?.getHighEntropyValues?.(['architecture', 'bitness'])
+  .then(v => {
+    if (navigator.userAgentData.platform !== 'Linux' || v.bitness !== '64') return;
+    linuxArchSeen = v.architecture === 'arm' ? 'arm64' : v.architecture === 'x86' ? 'x64' : null;
+    syncLinuxChooser();
+  }).catch(() => {});
+const linuxArch = () => inApp === 'linux' ? linuxBuild().arch : linuxArchSeen;
+
+// This computer's processor first, tagged
+function syncLinuxChooser() {
+  const own = linuxArch();
+  const list = $('linux-groups');
+  list.prepend(list.querySelector(`.linux-group[data-arch="${own || 'x64'}"]`));
+  list.querySelectorAll('.linux-group').forEach(g => {
+    const tag = g.querySelector('.linux-tag');
+    tag.hidden = g.dataset.arch !== own;
+    tag.textContent = inApp === 'linux' ? 'This app' : 'Your computer';
+  });
+}
 
 const cmpVersion = (a, b) => {
   const x = a.split('.').map(Number), y = b.split('.').map(Number);
@@ -3534,7 +3678,7 @@ function loadReleases(maxAge = RELEASES_TTL) {
 function loadAppReleases() { loadReleases().then(paintAppButtons); }
 
 // Inside an app: the installed version, from the small "v1.2.3" label the
-// app adds to the page (app/windows/preload-main.js, app/android's
+// app adds to the page (app/desktop/preload-main.js, app/android's
 // assets/version-label.js). Null in a browser or an app without the label.
 // The Android app only added the label after 1.1.0, so an Android app that
 // never adds one is 1.1.0. (Every Windows version that can open tflix.stream
@@ -3607,7 +3751,7 @@ async function checkAppUpdate() {
   if (!installed) return;
   let launch = false;
   try { launch = !sessionStorage.getItem(UPDATE_SEEN_KEY); sessionStorage.setItem(UPDATE_SEEN_KEY, '1'); } catch {}
-  const latest = (await loadReleases(launch ? 0 : RELEASES_TTL))[inApp];
+  const latest = (await loadReleases(launch ? 0 : RELEASES_TTL))[appAsset()];
   const now = installedAppVersion() || installed;   // a late label may have replaced the guess meanwhile
   if (!latest || cmpVersion(now, latest.version) >= 0) return;
   appUpdate = { version: latest.version, installed: now };
@@ -3619,8 +3763,7 @@ async function checkAppUpdate() {
 
 function showUpdatePop() {
   const pop = $('update-pop');
-  const name = inApp === 'windows' ? 'Windows' : 'Android';
-  $('update-pop-text').innerHTML = `TFLIX <b>v${esc(appUpdate.version)}</b> for ${name} is out. You have v${esc(appUpdate.installed)}.`;
+  $('update-pop-text').innerHTML = `TFLIX <b>v${esc(appUpdate.version)}</b> for ${APP_NAMES[inApp]} is out. You have v${esc(appUpdate.installed)}.`;
   showPop(pop);
 }
 
@@ -3651,7 +3794,12 @@ document.querySelectorAll('.update-pop-check').forEach(b => b.addEventListener('
   b.setAttribute('aria-checked', b.getAttribute('aria-checked') === 'true' ? 'false' : 'true');
 }));
 $('update-pop-close').addEventListener('click', closeUpdatePop);
-$('update-pop-go').addEventListener('click', () => { closeUpdatePop(); showAuth('apps'); });
+// In the Linux app it goes on to the file list, where Back leads to Get Apps
+$('update-pop-go').addEventListener('click', () => {
+  closeUpdatePop();
+  showAuth('apps');
+  if (inApp === 'linux') showAuth('linux');
+});
 $('update-pop').addEventListener('animationend', closeUpdatePop);   // the 20s countdown ran out
 
 /* ─── SIGN-UP NUDGE ───
@@ -3689,33 +3837,72 @@ $('signup-pop').addEventListener('animationend', closeSignupPop);   // the 20s c
 // In a browser every button reads Download. On the card of the app you're in,
 // it reads Update when a newer release exists (and downloads straight away),
 // or stays Download and asks first when you already have the latest.
+// Linux has four files, so its card's button, Download or Update, opens a
+// chooser (#auth-linux) instead, where the Linux app's own file is
+// highlighted, as Installed or Update.
+const RELEASES_PAGE = 'https://github.com/TomasTNunes/tflix/releases/latest';
+let lastAppReleases = null;
+
+// One download button. a: its release file, if any; mine: the file this app updates from
+function paintLink(link, a, mine, outdated) {
+  // No such file (yet): the latest release page, in a new tab
+  link.href = a ? a.url : RELEASES_PAGE;
+  // A browser saves the file without leaving the page, so it needs no new
+  // tab (that only flashes open and shut). The apps block navigating away,
+  // so there it stays a pop-up, which they hand to the system browser.
+  if (a && !inApp) link.removeAttribute('target'); else link.target = '_blank';
+  link.textContent = outdated ? 'Update' : 'Download';
+  link.classList.toggle('update', outdated);
+  link.dataset.state = !mine ? '' : outdated ? 'update' : 'latest';
+}
+
+const verText = (a, mine, outdated, installed) => !a ? ''
+  : outdated ? `v${a.version} · You have v${installed}` : mine ? `v${a.version} · Installed` : `v${a.version}`;
+
 function paintAppButtons(best) {
+  lastAppReleases = best;
   const installed = installedAppVersion();
-  for (const app of Object.keys(APP_ASSETS)) {
-    const a = best[app];
-    const link = document.querySelector(`.app-dl[data-app="${app}"]`);
-    const ver = document.querySelector(`.app-ver[data-app="${app}"]`);
-    const mine = !!a && app === inApp && !!installed;
-    const outdated = mine && cmpVersion(installed, a.version) < 0;
-    if (a) link.href = a.url;
-    // A browser saves the file without leaving the page, so it needs no new
-    // tab (that only flashes open and shut). The apps block navigating away,
-    // so there it stays a pop-up, which they hand to the system browser.
-    if (a && !inApp) link.removeAttribute('target');
-    link.textContent = outdated ? 'Update' : 'Download';
-    link.classList.toggle('update', outdated);
+  const myAsset = installed ? appAsset() : null;
+  const myLatest = myAsset ? best[myAsset] : null;
+  const myOutdated = !!myLatest && cmpVersion(installed, myLatest.version) < 0;
+
+  // Windows and Android: one file each, on the card
+  for (const app of ['windows', 'android']) {
+    const mine = !!best[app] && app === myAsset, outdated = mine && myOutdated;
+    paintLink(document.querySelector(`#auth-apps .app-dl[data-app="${app}"]`), best[app], mine, outdated);
+    document.querySelector(`.app-ver[data-app="${app}"]`).textContent = verText(best[app], mine, outdated, installed);
     document.querySelector(`.app-dot[data-app="${app}"]`).hidden = !outdated;
-    link.dataset.state = !mine ? '' : outdated ? 'update' : 'latest';
-    ver.textContent = !a ? '' : outdated ? `v${a.version} · You have v${installed}`
-                               : mine ? `v${a.version} · Installed` : `v${a.version}`;
   }
+
+  // Linux chooser: four files; this app's own is highlighted
+  document.querySelectorAll('#auth-linux .linux-opt').forEach(row => {
+    const link = row.querySelector('.app-dl'), key = link.dataset.app;
+    const mine = !!best[key] && key === myAsset, outdated = mine && myOutdated;
+    paintLink(link, best[key], mine, outdated);
+    link.dataset.state = '';   // a chosen file downloads, no "again?" step
+    row.classList.toggle('mine', mine);
+    row.querySelector('.linux-installed').hidden = !mine || outdated;
+  });
+  syncLinuxChooser();
+
+  // Linux card: Download or Update, both open the chooser.
+  // Its version is this app's file's, or else the newest Linux file's.
+  const linuxMine = inApp === 'linux' && !!myLatest, linuxOutdated = linuxMine && myOutdated;
+  const newest = Object.keys(best).filter(k => k.startsWith('linux-')).map(k => best[k])
+    .reduce((n, a) => !n || cmpVersion(a.version, n.version) > 0 ? a : n, null);
+  const lin = $('linux-dl');
+  paintLink(lin, linuxOutdated ? myLatest : null, linuxMine, linuxOutdated);
+  lin.dataset.state = 'choose';
+  document.querySelector('.app-ver[data-app="linux"]').textContent = verText(linuxMine ? myLatest : newest, linuxMine, linuxOutdated, installed);
+  document.querySelector('.app-dot[data-app="linux"]').hidden = !linuxOutdated;
 }
 
 $('auth-apps').addEventListener('click', e => {
   const link = e.target.closest('.app-dl');
+  if (link?.dataset.state === 'choose') { e.preventDefault(); showAuth('linux'); return; }
   if (!link || link.dataset.state !== 'latest') return;
   e.preventDefault();
-  const name = link.dataset.app === 'windows' ? 'Windows' : 'Android';
+  const name = APP_NAMES[link.dataset.app.split('-')[0]];
   showAuth('apps-again');
   $('auth-sub').textContent = `You already have the latest version of TFLIX for ${name} (v${installedAppVersion()}). Download it again?`;
   $('again-download').href = link.href;
@@ -3740,7 +3927,7 @@ async function signOutUser() {
   toast('Signed out');
 }
 
-const AUTH_VIEWS = ['form', 'verify', 'merge', 'moved', 'account', 'calendar', 'help', 'apps', 'apps-again', 'add-email', 'password', 'delete'];
+const AUTH_VIEWS = ['form', 'verify', 'merge', 'moved', 'account', 'calendar', 'help', 'apps', 'apps-again', 'linux', 'add-email', 'password', 'delete'];
 const AUTH_TEXT = {
   moved:       ['Welcome to tflix.stream', "TFLIX has a new address, so you'll need to sign in again. Your My List is saved in your account and comes right back."],
   account:     ['My Account', ''],
@@ -3748,6 +3935,7 @@ const AUTH_TEXT = {
   help:        ['Help', 'Answers to common questions about watching on TFLIX.'],
   apps:        ['Get the Apps', 'Watch TFLIX in its own app. The apps block the pop-ups and ad redirects (No Ads).'],
   'apps-again': ["You're up to date", ''],   // the line below is filled in by confirmRedownload
+  linux:       ['TFLIX for Linux', 'Pick the file for your computer.'],
   'add-email': ['Add email', "Use it to recover your password. Once you confirm it, you'll sign in with your email instead of your username."],
   password:    ['Change password', 'Enter your current password, then the new one.'],
   delete:      ['Delete account?', "This permanently deletes your account and My List. It can't be undone."],
@@ -3759,14 +3947,14 @@ function showAuth(view, mode = authMode) {
   // Pages opened from My Account get a Back button to it
   const from = authView;
   if (view !== authView) authBackTo = authView === 'account' && view !== 'account' ? 'account'
-                                    : authView === 'apps' && view === 'apps-again' ? 'apps' : null;
+                                    : authView === 'apps' && (view === 'apps-again' || view === 'linux') ? 'apps' : null;
   authView = view;
   authMode = mode;
   for (const v of AUTH_VIEWS) $(`auth-${v}`).hidden = v !== view;
   $('auth-back').hidden = !authBackTo;
   $('auth-dialog').classList.toggle('has-back', !!authBackTo);
   $('auth-dialog').classList.toggle('wide', view === 'calendar');
-  $('auth-dialog').classList.toggle('apps', view === 'apps');
+  $('auth-dialog').classList.toggle('apps', view === 'apps' || view === 'linux');
   $('auth-dialog').classList.toggle('help', view === 'help');
   $('help-foot').hidden = view !== 'help';
   $('auth-dialog').querySelectorAll('.auth-msg').forEach(m => { m.textContent = ''; });
@@ -3775,7 +3963,7 @@ function showAuth(view, mode = authMode) {
   if (view === 'calendar') openCalendar();
   if (view === 'help' && from !== 'help') { collapseFaq($('auth-help')); $('auth-help').closest('.auth-body').scrollTop = 0; }
   if (view === 'apps') {
-    if (from !== 'apps-again') $('auth-apps').querySelectorAll('.app-howto-btn').forEach(b => setHowto(b, false));
+    if (from !== 'apps-again' && from !== 'linux') $('auth-apps').querySelectorAll('.app-howto-btn').forEach(b => setHowto(b, false));
     loadAppReleases();
   }
   if (AUTH_TEXT[view]) {
@@ -3800,8 +3988,10 @@ function showAuth(view, mode = authMode) {
   }
 
   $('auth-backdrop').classList.add('open');
-  // In an app, Get Apps starts on that app's card (Update / Download), not Windows
-  const first = (view === 'apps' && inApp && document.querySelector(`.app-dl[data-app="${inApp}"]`))
+  if (view === 'linux') { syncLinuxChooser(); loadAppReleases(); }
+  // In an app, Get Apps starts on that app's card, and the Linux chooser on its file
+  const first = (view === 'apps' && inApp && document.querySelector(`#auth-apps .app-dl[data-app="${inApp}"]`))
+             || (view === 'linux' && $('auth-linux').querySelector('.linux-opt.mine .app-dl'))
              || $(`auth-${view}`).querySelector('input:not([hidden]), button, a[href]');
   if (document.documentElement.classList.contains('keynav')) window.__knavFocus(first);
   else if (first.tagName === 'INPUT' && matchMedia('(hover: hover)').matches) first.focus();

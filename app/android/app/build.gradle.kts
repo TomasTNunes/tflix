@@ -13,8 +13,8 @@ android {
         targetSdk = 35
         // App version: bump BOTH on every release — versionName is what users
         // see; versionCode must strictly increase for Android to accept an update.
-        versionCode = 4
-        versionName = "1.2.1"
+        versionCode = 5
+        versionName = "1.2.2"
     }
 
     buildTypes {

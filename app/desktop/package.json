@@ -1,0 +1,73 @@
+{
+  "name": "tflix-app",
+  "version": "1.3.0",
+  "description": "TFLIX — Watch Movies & TV, as a desktop app for Windows and Linux.",
+  "author": "Tomas Nunes",
+  "homepage": "https://tflix.stream",
+  "desktopName": "tflix.desktop",
+  "license": "MIT",
+  "main": "main.js",
+  "scripts": {
+    "make-icon": "node scripts/make-icon.js",
+    "start": "node scripts/make-icon.js && electron .",
+    "build": "node scripts/make-icon.js && electron-builder --win",
+    "build:linux": "node scripts/make-icon.js && electron-builder --linux --x64 --arm64 && node scripts/linux-names.js"
+  },
+  "devDependencies": {
+    "electron": "^42.3.3",
+    "electron-builder": "^26.15.0",
+    "png-to-ico": "^2.1.8"
+  },
+  "build": {
+    "appId": "com.nunesnetwork.tflix",
+    "productName": "TFLIX",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "toolsets": {
+      "appimage": "1.0.3"
+    },
+    "files": [
+      "main.js",
+      "preload-main.js",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "artifactName": "tflix-windows.setup.${version}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "TFLIX"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "build/icons",
+      "executableName": "tflix",
+      "syncDesktopName": true,
+      "category": "AudioVideo",
+      "synopsis": "Watch Movies & TV",
+      "description": "Watch Movies & TV, without the pop-up ads.",
+      "maintainer": "Tomas Nunes <tflix.hq@gmail.com>",
+      "files": [
+        "build/icons/256x256.png"
+      ]
+    },
+    "appImage": {
+      "artifactName": "tflix-linux.${version}.${arch}.${ext}",
+      "executableArgs": []
+    },
+    "deb": {
+      "artifactName": "tflix-linux.${version}.${arch}.${ext}"
+    }
+  }
+}

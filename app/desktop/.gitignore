@@ -2,3 +2,4 @@ node_modules/
 dist/
 build/icon.ico
 tflix.config.json
+build/icons/

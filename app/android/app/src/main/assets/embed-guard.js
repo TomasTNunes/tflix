@@ -4,7 +4,7 @@
    MainActivity runs this before any page script, in every frame.
    It only acts inside the embeds, never on the TFLIX site itself.
 
-   Same click fix as the Windows app (app/windows/preload-main.js):
+   Same click fix as the Windows app (app/desktop/preload-main.js):
    popunder scripts catch every tap on window/document in the capture
    phase, cancel it and try to open their ad, then re-arm a few seconds
    later — so on Naafiri tap after tap never reaches the player. Cancelling

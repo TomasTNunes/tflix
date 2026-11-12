@@ -1,7 +1,7 @@
 /* ───────────────────────────────────────────────────────────────
    TFLIX Android — version label
 
-   The Android twin of the label app/windows/preload-main.js adds: a
+   The Android twin of the label app/desktop/preload-main.js adds: a
    small "v1.2.3" in the lower-left corner of the browse pages, shown
    only once you scroll to the very bottom. The site's Get Apps menu
    also reads it to tell whether this install is out of date.
