@@ -2325,8 +2325,9 @@ async function showModalEntry(entry, dir) {
 // Open scrolled to the title (just above "FILM // Title"); if it all fits, this stays at the top.
 // The sections that load later (cast, collection, similar titles) are hidden while
 // measuring so the opening scroll is the same with or without them.
-function scrollTitleToDefault() {
+function scrollTitleToDefault(smooth = false) {
   const sc = $('title-scroll');
+  const from = sc.scrollTop;
   const hc = sc.querySelector('.modal-hero-content');
   const late = ['modal-cast', 'modal-collection', 'modal-similar'].map(id => $(id));
   const shown = late.map(el => el.style.display);
@@ -2336,7 +2337,8 @@ function scrollTitleToDefault() {
   sc.scrollTop = hc.getBoundingClientRect().top - sc.getBoundingClientRect().top + padTop / 2;
   const top = sc.scrollTop;
   late.forEach((el, i) => { el.style.display = shown[i]; });
-  sc.scrollTop = top;
+  if (smooth) { sc.scrollTop = from; sc.scrollTo({ top, behavior: 'smooth' }); }
+  else sc.scrollTop = top;
 }
 
 async function renderTitle(item) {
@@ -2779,7 +2781,9 @@ $('modal-backdrop').addEventListener('click', e => { if (e.target === $('modal-b
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
   if (drawerIsOpen()) closeDrawer();
-  else if (authIsOpen()) closeAuth(); else closeModal();
+  else if (authIsOpen()) closeAuth();
+  else if (window.__knavModalEscape && window.__knavModalEscape()) return;   // went back to Play instead
+  else closeModal();
 });
 // Go through history so the pushed entry is consumed; popstate below does the actual step back
 $('modal-back').addEventListener('click', () => history.back());
@@ -4188,9 +4192,14 @@ $('cal-day').addEventListener('click', e => {
         for (let i = 0; i < cards.length; i += cols)
           s.push({ key: null, items: cards.slice(i, i + cols) });
       }
+      // Up from the bar at the bottom goes to the top of the content (the cast),
+      // not to the last row of similar titles just above it
+      const content = s.length > 1 ? s[1] : null;
+      const footer = s.length;
       if ($('tv-selectors').style.display !== 'none')
         s.push({ key: null, items: [$('season-select'), $('episode-select')] });
       s.push({ key: null, items: [$('modal-watch-btn'), $('modal-list-btn')] });
+      if (content) s[footer].up = content;
       return s;
     }
     // Side drawer open → its links, top to bottom, with ✕ first
@@ -4282,11 +4291,21 @@ $('cal-day').addEventListener('click', e => {
       return;
     }
     if (dy) {
-      const ns = secs[si + dy];
+      const ns = (dy < 0 && sec.up) || secs[si + dy];
       if (!ns) return;
       if (sec.key) mem.set(sec.key, ii);
       const want = (ns.key != null && mem.has(ns.key)) ? mem.get(ns.key) : ii;
-      setFocus(ns.items[Math.max(0, Math.min(want, ns.items.length - 1))]);
+      const next = ns.items[Math.max(0, Math.min(want, ns.items.length - 1))];
+      const from = cur;
+      setFocus(next);
+      // ✕ and Back float over the card, so focusing them scrolls nothing:
+      // going up to them shows the top of the card (the title) instead
+      if (next === $('modal-close') || next === $('modal-back'))
+        viewScroll(vis($('person-view')) ? 'person' : 'title').scrollTo({ top: 0, behavior: 'smooth' });
+      // The Play bar is pinned below the card too: coming down into it from the
+      // content takes the card back to the title, as Esc does
+      const bar = titleBar();
+      if (bar.includes(next) && !bar.includes(from)) scrollTitleToDefault(true);
     }
   }
 
@@ -4368,6 +4387,21 @@ $('cal-day').addEventListener('click', e => {
   /* Moving between views inside the modal: Back returns to the element that
      opened the next view (when it's still there), forward starts fresh */
   window.__knavCurrent = () => active ? cur : null;
+  // The bar pinned at the bottom of a title card
+  function titleBar() {
+    return [$('modal-watch-btn'), $('modal-list-btn'), $('season-select'), $('episode-select')];
+  }
+  /* Esc in a title card: from the cast, the grids or ✕ it first goes back to
+     Play (and the card back to the title); from Play's bar it closes the card */
+  window.__knavModalEscape = () => {
+    const play = $('modal-watch-btn');
+    // A closed card is only faded out, so vis() alone would still pass
+    if (!active || !cur || !modalIsOpen() || !vis($('title-view')) || !vis(play)) return false;
+    if (titleBar().includes(cur)) return false;
+    setFocus(play, false);
+    scrollTitleToDefault(true);
+    return true;
+  };
   window.__knavModalFocus = el => {
     if (!active) return;
     if (el && vis(el)) { setFocus(el); return; }
