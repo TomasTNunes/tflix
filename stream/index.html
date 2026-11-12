@@ -186,8 +186,9 @@
     .sel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.28); border-radius: 99px; }
     .sel::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.45); }
 
+    .ep-nav { display: flex; gap: 0.6rem; }
     .nextep-btn {
-      width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
       padding: 0.7rem; border-radius: 7px; border: 1px solid var(--line);
       background: rgba(255,255,255,0.05); color: var(--text);
       font-size: 0.88rem; font-weight: 700; cursor: pointer;
@@ -195,6 +196,8 @@
     }
     .nextep-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
     .nextep-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .nextep-btn.prev { flex: 0 0 auto; padding: 0.7rem 1rem; }
+    @media (max-width: 340px) { .nextep-btn.prev span { display: none; } }
 
     /* Servers */
     .server-grid { display: flex; flex-direction: column; gap: 0.55rem; }
@@ -362,10 +365,16 @@
           <select id="episode-select" class="sel"></select>
         </div>
       </div>
-      <button class="nextep-btn" id="nextep-btn">
-        <span>Next Episode</span>
-        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M4 5v14l11-7zM18 5h2v14h-2z"/></svg>
-      </button>
+      <div class="ep-nav">
+        <button class="nextep-btn prev" id="prevep-btn" aria-label="Previous Episode">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M20 5v14L9 12zM4 5h2v14H4z"/></svg>
+          <span>Previous</span>
+        </button>
+        <button class="nextep-btn" id="nextep-btn">
+          <span>Next Episode</span>
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M4 5v14l11-7zM18 5h2v14h-2z"/></svg>
+        </button>
+      </div>
     </div>
 
     <div class="panel" id="servers-panel">
@@ -779,7 +788,7 @@ function followEpisode(season, episode) {
   session = newSession();
   session.gotEvents = true;
   if (seasonChanged) { $('season-select').value = season; populateEpisodes(true); }
-  else { $('episode-select').value = episode; updateNextBtn(); }
+  else { $('episode-select').value = episode; updateEpNav(); }
   syncUrl();
   if (state.title) updateTitleBar();
 }
@@ -894,10 +903,12 @@ async function setupTv() {
   });
   episodeSel.addEventListener('change', () => {
     state.episode = parseInt(episodeSel.value) || 1;
+    updateEpNav();
     loadPlayer();
   });
 
   $('nextep-btn').addEventListener('click', goNextEpisode);
+  $('prevep-btn').addEventListener('click', goPrevEpisode);
 }
 
 async function populateEpisodes(setToState) {
@@ -926,7 +937,7 @@ async function populateEpisodes(setToState) {
     if (![...episodeSel.options].some(o => parseInt(o.value) === state.episode)) state.episode = 1;
     episodeSel.value = state.episode;
   }
-  updateNextBtn();
+  updateEpNav();
 }
 
 function episodeCountFor(seasonNum) {
@@ -945,11 +956,40 @@ function computeNext() {
   return null;
 }
 
-function updateNextBtn() {
+// Back one episode, or to the last episode of the season before
+function computePrev() {
+  if (state.episode > 1) return { season: state.season, episode: state.episode - 1 };
+  const prevSeason = state.season - 1;
+  if (prevSeason < 1 || !(tvData?.seasons || []).some(s => s.season_number === prevSeason)) return null;
+  return { season: prevSeason, episode: episodeCountFor(prevSeason) };
+}
+
+function updateEpNav() {
   const btn = $('nextep-btn');
   const next = computeNext();
   btn.disabled = !next;
   btn.title = next ? `Next: S${next.season} E${next.episode}` : 'No next episode';
+  const pbtn = $('prevep-btn');
+  const prev = computePrev();
+  pbtn.disabled = !prev;
+  pbtn.title = !prev ? 'No previous episode'
+    : prev.episode ? `Previous: S${prev.season} E${prev.episode}` : `Previous: Season ${prev.season}`;
+}
+
+async function goPrevEpisode() {
+  const prev = computePrev();
+  if (!prev) return;
+  if (prev.season !== state.season) {
+    // The season's real list decides its last episode, not TMDB's count
+    state.season = prev.season;
+    $('season-select').value = state.season;
+    await populateEpisodes(false);
+    const opts = $('episode-select').options;
+    state.episode = parseInt(opts[opts.length - 1]?.value) || 1;
+  } else state.episode = prev.episode;
+  $('episode-select').value = state.episode;
+  updateEpNav();
+  loadPlayer();
 }
 
 async function goNextEpisode() {
@@ -960,7 +1000,7 @@ async function goNextEpisode() {
   state.episode = next.episode;
   if (seasonChanged) { $('season-select').value = state.season; await populateEpisodes(true); }
   else $('episode-select').value = state.episode;
-  updateNextBtn();
+  updateEpNav();
   loadPlayer();
 }
 
@@ -1056,7 +1096,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHelp();
 /* ─── TV / D-PAD NAVIGATION ───
    Same model as the main page: arrow keys + Enter (what a TV remote sends)
    walk the page's controls — back/help buttons → season/episode →
-   next episode → server cards. Activates on the first arrow key, deactivates on mouse or
+   previous/next episode → server cards. Activates on the first arrow key, deactivates on mouse or
    touch, so pointer users never see it. Back itself is handled outside the
    page (browser/back gesture/Android app). */
 (function () {
@@ -1085,8 +1125,8 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHelp();
     if (tv && !tv.hidden) {
       const sels = [$('season-select'), $('episode-select')].filter(vis);
       if (sels.length) secs.push({ items: sels });
-      const next = $('nextep-btn');
-      if (vis(next)) secs.push({ items: [next] });
+      const epNav = [$('prevep-btn'), $('nextep-btn')].filter(vis);
+      if (epNav.length) secs.push({ items: epNav });
     }
     // The player itself is a focus stop: selecting it just scrolls the video
     // to the middle of the screen (handy on a TV). It's a cross-origin iframe,
