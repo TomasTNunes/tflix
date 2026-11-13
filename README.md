@@ -63,7 +63,7 @@ tablets, and **Android TV** (it shows up in the TV launcher).
 ## Tech Stack
 
 - HTML, CSS, JavaScript
-- [Electron](https://www.electronjs.org/) (Windows desktop app)
+- [Electron](https://www.electronjs.org/) (Windows and Linux desktop app)
 - [Kotlin](https://kotlinlang.org/) (Android phone + TV app)
 - [TMDB API](https://developers.themoviedb.org/)
 - [Firebase](https://firebase.google.com/) (accounts + My List and Continue Watching sync)
