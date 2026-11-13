@@ -89,12 +89,16 @@ jobs:
       # the AppImage must refuse to run without it (main.js offers the fix
       # instead), then open once that exact rule, read from main.js, is added
       # (as its "Allow and open TFLIX" button does, minus the password prompt).
-      # --disable-gpu: the runner has no GPU, and Chromium's GPU process could
-      # crash as the timeout stopped the app; writing that core dump once held
-      # the step up for 5 minutes. timeout-minutes stops any hang early.
+      # No core dumps: the timeout stops all of the app's processes at once, and
+      # Chromium sometimes aborts as it does ("GPU process isn't usable"); the
+      # runner's crash reporter then took 3-5 minutes saving that dump. A
+      # plain core file with a size limit of 0 is never written. timeout-minutes
+      # stops any other hang early.
       - name: Smoke test
         timeout-minutes: 10
         run: |
+          sudo sysctl -q -w kernel.core_pattern=core
+          ulimit -c 0
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb
           sudo apt-get install -y -qq ./dist/tflix-linux.*.deb
@@ -102,7 +106,7 @@ jobs:
           echo "AppArmor user-namespace restriction: $restricted"
           launch() {
             set +e
-            xvfb-run -a timeout 20 "$@" --disable-gpu > run.log 2>&1
+            xvfb-run -a timeout 20 "$@" > run.log 2>&1
             code=$?
             set -e
             cat run.log
