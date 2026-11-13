@@ -1934,11 +1934,11 @@ const HEADERS = {
 };
 
 const SERVERS = [
-  { name: 'Rakan',   id: 1 },
   { name: 'Bard',    id: 2 },
   { name: 'Xayah',   id: 3 },
-  { name: 'Ekko',    id: 4 },
   { name: 'Naafiri', id: 5 },
+  { name: 'Ekko',    id: 4 },
+  { name: 'Rakan',   id: 1 },
   { name: 'Ryze',    id: 6 },
 ];
 
@@ -2043,7 +2043,7 @@ const importResult = (() => {
 
 let currentServer = (() => {
   const saved = localStorage.getItem(STORAGE_KEY);
-  return saved ? parseInt(saved, 10) : 1;
+  return saved ? parseInt(saved, 10) : SERVERS[0].id;
 })();
 let currentFilter = 'all';
 let searchResults = [];

@@ -436,29 +436,28 @@ const HEADERS = {
 const STORAGE_KEY = 'tflix_server';
 
 const SERVERS = [
-  { id: 1, name: 'Rakan',   note: 'Generally better quality.' },
-  { id: 2, name: 'Bard',    note: 'Recommended for recently released movies.' },
+  { id: 2, name: 'Bard',    note: 'May have 4K. Generally better quality.' },
   { id: 3, name: 'Xayah',   note: 'Recommended for recently released movies.' },
-  { id: 4, name: 'Ekko',    note: 'May have 4K. Generally better quality.' },
   { id: 5, name: 'Naafiri', note: 'May have 4K. Generally better quality.' },
+  { id: 4, name: 'Ekko',    note: 'May have 4K. Generally better quality.' },
+  { id: 1, name: 'Rakan',   note: 'Generally better quality.' },
   { id: 6, name: 'Ryze',    note: 'Generally better quality.' },
 ];
 
 /* Exact streaming source resolvers (ported from the original player) */
 // Bard, Xayah, Naafiri and Ryze remember where you stopped and jump there by
 // themselves, unless they're given a start time. This page decides where playback
-// starts, so their links carry the smallest one each accepts (Bard takes whole
-// numbers only, Ryze needs more than 1). withStartTime replaces it when resuming.
+// starts, so their links carry the smallest one each accepts (Bard takes 0,
+// Ryze needs more than 1). withStartTime replaces it when resuming.
 const serverUrlResolvers = {
-  //1: (p) => p.type === 'movie' ? `https://vidsrc.cc/v2/embed/movie/${p.id}?autoPlay=false` : `https://vidsrc.cc/v2/embed/tv/${p.id}/${p.season}/${p.episode}?autoPlay=false`, // Rakan (vidsrc.cc)
-  1: (p) => p.type === 'movie' ? `https://vixsrc.to/movie/${p.id}?autoPlay=true&lang=en` : `https://vixsrc.to/tv/${p.id}/${p.season}/${p.episode}?autoPlay=true&lang=en`,                                   // Rakan
-  2: (p) => p.type === 'movie' ? `https://moviesapi.to/movie/${p.id}?startAt=1` : `https://moviesapi.to/tv/${p.id}-${p.season}-${p.episode}?startAt=1`,                                                                            // Bard
+  1: (p) => p.type === 'movie' ? `https://vixsrc.to/movie/${p.id}?autoPlay=true&lang=en&primaryColor=e50914` : `https://vixsrc.to/tv/${p.id}/${p.season}/${p.episode}?autoPlay=true&lang=en&primaryColor=e50914`,                                   // Rakan
+  2: (p) => p.type === 'movie' ? `https://www.vidy.st/movie/${p.id}?autoplay=true&color=e50914&progress=0` : `https://www.vidy.st/tv/${p.id}/${p.season}/${p.episode}?autoplay=true&color=e50914&episodeSelector=true&nextEpisode=true&progress=0`, // Bard
   3: (p) => p.type === 'movie' ? `https://vidsrc.sh/embed/movie?tmdb=${p.id}&autoplay=1&startAt=1` : `https://vidsrc.sh/embed/tv?tmdb=${p.id}&season=${p.season}&episode=${p.episode}&autoplay=1&autonext=1&startAt=1`,                        // Xayah
-  4: (p) => p.type === 'movie' ? `https://cinesrc.st/embed/movie/${p.id}?autoplay=true&prioritize=true&lastserver=wave` : `https://cinesrc.st/embed/tv/${p.id}?s=${p.season}&e=${p.episode}&autoplay=true&autonext=true&prioritize=true&lastserver=wave`, // Ekko
-  5: (p) => p.type === 'movie' ? `https://vidfast.vc/movie/${p.id}?autoPlay=true&startAt=1` : `https://vidfast.vc/tv/${p.id}/${p.season}/${p.episode}?autoPlay=true&startAt=1`,                                                   // Naafiri
+  4: (p) => p.type === 'movie' ? `https://cinesrc.st/embed/movie/${p.id}?autoplay=true&prioritize=true&lastserver=wave&color=%23e50914` : `https://cinesrc.st/embed/tv/${p.id}?s=${p.season}&e=${p.episode}&autoplay=true&autonext=true&prioritize=true&lastserver=wave&color=%23e50914`, // Ekko
+  5: (p) => p.type === 'movie' ? `https://vidfast.vc/movie/${p.id}?autoPlay=true&startAt=1&theme=e50914` : `https://vidfast.vc/tv/${p.id}/${p.season}/${p.episode}?autoPlay=true&startAt=1&theme=e50914`,                                                   // Naafiri
   // Ryze has no autoplay parameter on purpose: there it also forces the player to mute.
   // Without it, the video still starts by itself, with sound, when the browser allows that.
-  6: (p) => p.type === 'movie' ? `https://vidlink.pro/movie/${p.id}?title=true&poster=true&nextbutton=true&player=jw&primaryColor=ffffff&secondaryColor=ffffff&iconColor=ffffff&startAt=1.01` : `https://vidlink.pro/tv/${p.id}/${p.season}/${p.episode}?title=true&poster=true&nextbutton=true&player=jw&primaryColor=ffffff&secondaryColor=ffffff&iconColor=ffffff&startAt=1.01` // Ryze
+  6: (p) => p.type === 'movie' ? `https://vidlink.pro/movie/${p.id}?title=true&poster=true&nextbutton=true&player=jw&primaryColor=e50914&secondaryColor=ffffff&iconColor=ffffff&startAt=1.01` : `https://vidlink.pro/tv/${p.id}/${p.season}/${p.episode}?title=true&poster=true&nextbutton=true&player=jw&primaryColor=e50914&secondaryColor=ffffff&iconColor=ffffff&startAt=1.01` // Ryze
 };
 
 /* ─── STATE ─── */
@@ -483,7 +482,7 @@ function readParams() {
   let server = parseInt(p.get('server'), 10);
   if (!server || !serverUrlResolvers[server]) {
     const saved = parseInt(localStorage.getItem(STORAGE_KEY), 10);
-    server = (saved && serverUrlResolvers[saved]) ? saved : 1;
+    server = (saved && serverUrlResolvers[saved]) ? saved : SERVERS[0].id;
   }
 
   const out = { type, id, server };
@@ -563,7 +562,7 @@ const FINISHED_AT     = { movie: 0.90, tv: 0.95 };   // a film's credits run 5-1
 const MAX_EVENT_GAP   = 15;        // seconds; a bigger jump in position is a seek, not playback
 
 // Where each server's messages come from, besides the host in its embed URL
-const EXTRA_ORIGINS = { 2: ['https://vidspark.to'] };   // moviesapi.to redirects there
+const EXTRA_ORIGINS = {};
 
 let session = null;   // the episode or movie on screen; survives a server switch
 
@@ -621,6 +620,8 @@ function withStartTime(src) {
   if (state.server === 4) {
     u.searchParams.set('t', state.startAt);
     u.searchParams.set('continueprompt', 'false');
+  } else if (state.server === 2) {
+    u.searchParams.set('progress', state.startAt);
   } else {
     u.searchParams.set('startAt', state.startAt);
   }
@@ -628,12 +629,13 @@ function withStartTime(src) {
 }
 
 function readPlayerEvent(server, d) {
+  // Bard sends its messages as JSON text
+  if (server === 2 && typeof d === 'string') {
+    try { d = JSON.parse(d); } catch { return null; }
+  }
   if (!d || typeof d !== 'object') return null;
   let name, time, duration, season, episode, id;
-  if (server === 2) {
-    if (d.source !== 'vidspark-player') return null;
-    name = d.event; time = d.currentTime; duration = d.duration;
-  } else if (server === 4) {
+  if (server === 4) {
     if (typeof d.type !== 'string' || !d.type.startsWith('cinesrc:')) return null;
     name = d.type.slice('cinesrc:'.length);
     time = d.currentTime; duration = d.duration;
@@ -647,7 +649,7 @@ function readPlayerEvent(server, d) {
       season = p.player_info?.season; episode = p.player_info?.episode; id = p.player_info?.tmdb;
     } else {
       name = p.event; time = p.currentTime; duration = p.duration;
-      season = p.season; episode = p.episode; id = p.tmdbId;
+      season = p.season; episode = p.episode; id = server === 2 ? p.id : p.tmdbId;
     }
   }
   const num = v => (v != null && Number.isFinite(Number(v)) && Number(v) >= 0) ? Number(v) : undefined;
@@ -685,6 +687,14 @@ function onPlayerEvent(ev) {
   // Ryze's own next button keeps the start time and can't change season, so this
   // page takes over and loads the next episode itself
   if (ev.next) { if (state.type === 'tv') goNextEpisode(); return; }
+  trackPlayerEvent(ev);
+  // Bard's own move to the next episode at the end drops the link's settings
+  // (autoplay, colour, its episode buttons) and stays within the season, so this
+  // page does it instead, once the finished episode is recorded
+  if (ev.ended && state.server === 2 && state.type === 'tv') goNextEpisode();
+}
+
+function trackPlayerEvent(ev) {
   if (state.type === 'tv' && ev.season > 0 && ev.episode > 0 &&
       (ev.season !== state.season || ev.episode !== state.episode)) {
     followEpisode(ev.season, ev.episode);
