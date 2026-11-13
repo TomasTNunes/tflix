@@ -22,6 +22,7 @@ It lets users discover movies and TV shows and stream them directly within the w
 - 📅 **Calendar** of upcoming episodes and digital releases for titles in your list
 - 🖥️ Use it as a native **Windows or Linux desktop app** or **Android app** (phone + TV) with no ads —
   download them from **Get Apps** in the profile menu
+- 🍎 On **iPhone, iPad and Mac**, add TFLIX to the Home Screen or Dock to open it like an app
 
 ## Desktop App (Windows & Linux)
 
@@ -59,6 +60,21 @@ tablets, and **Android TV** (it shows up in the TV launcher).
 🔄 Already installed? The app tells you when an update is out. Tap **Update** in Get Apps: the APK downloads without a browser, then tap the finished download to install it over the old version (on Android TV the installer opens by itself; the first time, allow the install source and tap **Update** again) — no uninstall needed. See [Update](app/android/README.md#update) for details.
 
 👉 See the [Android app guide](app/android/README.md) for more info.
+
+## iPhone, iPad & Mac
+
+There's no native Apple app, but you can add the website to your **Home Screen** (iPhone and iPad)
+or **Dock** (Mac, Safari on macOS Sonoma or later) so it opens in its own window, like an app.
+
+- 📲 **iPhone / iPad:** in Safari, tap **Share → Add to Home Screen** (on iOS 26, tap **•••** first), turn on **Open as Web App** if you see it, then tap **Add**
+- 💻 **Mac:** in Safari, choose **File → Add to Dock**, then click **Add**
+
+⚠️ Unlike the other apps, this doesn't block the servers' ads. To block most of them, use
+**AdGuard DNS** on iPhone and iPad (the profile downloads from **Get Apps**) or a Safari ad blocker on Mac.
+
+📥 The full steps, with screenshots, are in **Get Apps → iPhone, iPad & Mac → How to Add** in the site's profile menu.
+
+👉 See the [Apple guide](app/apple/README.md) for more info.
 
 ## Tech Stack
 
