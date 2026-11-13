@@ -977,6 +977,39 @@
     .auth-tab[aria-selected="true"] { color: #fff; cursor: default; }
     html.keynav .auth-tab.kf { border-radius: 999px; outline-offset: 1px; }
     #auth-form-foot { justify-content: center; }
+    /* Sign in / Create account (.brand): the wordmark under a red spotlight
+       replaces the title (kept for screen readers), with underline tabs,
+       icons in the fields and a red button */
+    .auth-banner, .auth-field-icon { display: none; }
+    .auth-field { position: relative; }
+    .auth-dialog.brand { overflow: hidden; border-radius: 22px; }
+    .auth-dialog.brand::before {
+      content: ''; position: absolute; left: 50%; top: -150px; width: 560px; height: 330px; transform: translateX(-50%);
+      background: radial-gradient(closest-side, rgba(229,9,20,0.30), rgba(229,9,20,0.08) 60%, transparent);
+      pointer-events: none;
+    }
+    .auth-dialog.brand::after {
+      content: ''; position: absolute; top: 0; left: 12%; right: 12%; height: 2px;
+      background: linear-gradient(90deg, transparent, #ff2a35, transparent); pointer-events: none;
+    }
+    .auth-dialog.brand .auth-body { position: relative; z-index: 1; }
+    .auth-dialog.brand .auth-banner { display: block; width: auto; height: 64px; margin: -0.4rem auto 0.6rem; }
+    .auth-dialog.brand .auth-title {
+      position: absolute; width: 1px; height: 1px; margin: 0; padding: 0;
+      overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+    }
+    .auth-dialog.brand .auth-sub { text-align: center; margin-bottom: 1.6rem; }
+    .auth-dialog.brand .auth-tabs { padding: 0; background: none; border: none; border-bottom: 1px solid var(--line); border-radius: 0; }
+    .auth-dialog.brand .auth-tabs::before { top: auto; bottom: -1px; left: 0; width: 50%; height: 2px; border-radius: 2px; }
+    .auth-dialog.brand .auth-tab { border-radius: 0; }
+    .auth-dialog.brand .auth-tab[aria-selected="true"] { color: var(--text); }
+    .auth-dialog.brand .auth-field-icon {
+      display: block; position: absolute; left: 0.95rem; top: 14px; z-index: 1;
+      color: var(--muted); pointer-events: none;
+    }
+    .auth-dialog.brand .auth-field .auth-input { padding-left: 2.7rem; border-radius: 12px; }
+    .auth-dialog.brand #auth-submit { background: var(--accent); color: #fff; border-radius: 12px; }
+    .auth-dialog.brand #auth-submit:hover { background: var(--accent-h); }
     /* Pinned to the top: the day list below the grid changes height, and
        re-centring would move the month arrows under the cursor */
     .auth-dialog.wide { max-width: 780px; align-self: flex-start; margin-top: 4vh; }
@@ -1200,6 +1233,7 @@
        reason on hover (same line, so nothing changes size) */
     .acct-action.disabled, .acct-action.disabled:hover { color: rgba(255,255,255,0.32); background: var(--card); border-color: var(--line); cursor: not-allowed; }
     .acct-action.disabled::after { content: none; }
+    .acct-action.no-arrow::after { content: none; }
     .acct-action .acc-hint { display: none; font-weight: 500; }
     .acct-action.disabled:hover .acc-label, html.keynav .acct-action.disabled.kf .acc-label { display: none; }
     .acct-action.disabled:hover .acc-hint, html.keynav .acct-action.disabled.kf .acc-hint { display: inline; }
@@ -1561,6 +1595,8 @@
     </button>
     <button class="modal-close" id="auth-close" aria-label="Close">✕</button>
     <div class="auth-body">
+    <!-- Sign in / Create account only (.brand): the wordmark stands in for the title -->
+    <img class="auth-banner" src="./assets/tflix-wordmark.svg" alt="" width="150" height="64">
     <div class="auth-title" id="auth-title"></div>
     <div class="auth-sub" id="auth-sub"></div>
 
@@ -1570,9 +1606,9 @@
         <button class="auth-tab" type="button" role="tab" data-mode="signup">Create account</button>
       </div>
       <label class="field-label" for="auth-id">Username or email</label>
-      <input class="auth-input" id="auth-id" type="text" autocomplete="username" autocapitalize="none" spellcheck="false">
+      <div class="auth-field"><svg class="auth-field-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><input class="auth-input" id="auth-id" type="text" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
       <label class="field-label" for="auth-pass">Password</label>
-      <input class="auth-input" id="auth-pass" type="password" autocomplete="current-password">
+      <div class="auth-field"><svg class="auth-field-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><input class="auth-input" id="auth-pass" type="password" autocomplete="current-password"></div>
       <div class="auth-msg" id="auth-msg"></div>
       <button class="btn btn-primary" id="auth-submit" type="submit"></button>
       <div class="auth-note" id="auth-note">Email is optional. Without one, you can't recover your password if you forget it.</div>
@@ -3672,12 +3708,16 @@ function renderAccountCard() {
     <button class="acct-action${username ? ' disabled' : ''}" data-act="password" type="button">
       <span class="acc-label">Change password</span><span class="acc-hint">Only available with an email</span>
     </button>
+    <button class="acct-action no-arrow" data-act="signout" type="button">Sign Out</button>
     <button class="acct-action danger" data-act="delete" type="button">Delete account</button>`;
 }
 
 $('acct-actions').addEventListener('click', e => {
   const action = e.target.closest('.acct-action');
-  if (action && !action.classList.contains('disabled')) showAuth(action.dataset.act);
+  if (!action || action.classList.contains('disabled')) return;
+  // Close first: with nobody signed in, My Account has nothing to show
+  if (action.dataset.act === 'signout') { closeAuth(); signOutUser(); return; }
+  showAuth(action.dataset.act);
 });
 
 $('account-btn').addEventListener('click', e => {
@@ -4077,6 +4117,7 @@ function showAuth(view, mode = authMode) {
   $('auth-dialog').classList.toggle('wide', view === 'calendar');
   $('auth-dialog').classList.toggle('apps', ['apps', 'linux', 'apple'].includes(view));
   $('auth-dialog').classList.toggle('help', view === 'help');
+  $('auth-dialog').classList.toggle('brand', view === 'form');
   $('help-foot').hidden = view !== 'help';
   $('auth-dialog').querySelectorAll('.auth-msg').forEach(m => { m.textContent = ''; });
 

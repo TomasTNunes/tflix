@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="362 0 300 128" width="300" height="128" preserveAspectRatio="xMidYMid meet" role="img" aria-label="TFLIX">
+  <!-- The TFLIX wordmark alone: tflix-banner.svg cropped to the mark. Used above the Sign in / Create account form. -->
+  <defs>
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff3a44" stop-opacity="1"/>
+      <stop offset="1" stop-color="#ff3a44" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="flix" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff3a44"/>
+      <stop offset="1" stop-color="#8f0710"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="26"/></filter>
+  </defs>
+  <g transform="translate(315.4 -49.4) scale(1.22)">
+    <g transform="translate(27.7 32.9) scale(.208)">
+      <rect x="88" y="92" width="336" height="92" rx="16" fill="#ff1a26" filter="url(#glow)" opacity="0.7"/>
+      <polygon points="196,170 316,170 366,512 146,512" fill="url(#beam)"/>
+      <rect x="88" y="92" width="336" height="92" rx="16" fill="#ff2a35"/>
+    </g>
+    <g fill="url(#flix)" transform="translate(124 52) scale(.503 .467) translate(-155 -181)">
+      <polygon points="155,181 227,181 227,211 185,211 185,241 219,241 219,269 185,269 185,331 155,331"/>
+      <polygon points="241,181 271,181 271,303 307,303 307,331 241,331"/>
+      <rect x="321" y="181" width="30" height="150"/>
+      <polygon points="365,181 397,181 411,230 425,181 457,181 428,254 457,331 425,331 411,279 397,331 365,331 394,254"/>
+    </g>
+  </g>
+</svg>
