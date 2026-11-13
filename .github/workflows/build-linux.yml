@@ -89,7 +89,11 @@ jobs:
       # the AppImage must refuse to run without it (main.js offers the fix
       # instead), then open once that exact rule, read from main.js, is added
       # (as its "Allow and open TFLIX" button does, minus the password prompt).
+      # --disable-gpu: the runner has no GPU, and Chromium's GPU process could
+      # crash as the timeout stopped the app; writing that core dump once held
+      # the step up for 5 minutes. timeout-minutes stops any hang early.
       - name: Smoke test
+        timeout-minutes: 10
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq xvfb
@@ -98,7 +102,7 @@ jobs:
           echo "AppArmor user-namespace restriction: $restricted"
           launch() {
             set +e
-            xvfb-run -a timeout 20 "$@" > run.log 2>&1
+            xvfb-run -a timeout 20 "$@" --disable-gpu > run.log 2>&1
             code=$?
             set -e
             cat run.log
