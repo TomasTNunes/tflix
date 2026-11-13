@@ -52,7 +52,8 @@ jobs:
       # The AppStream metadata (build/com.nunesnetwork.tflix.appdata.xml) as
       # app stores and the AppImage catalog read it: inside the built AppImage,
       # next to the desktop file it names, with its newest release at this
-      # version. Fails on validator errors (E:), only lists the rest.
+      # version. Fails on validator errors (E:, indented in its output), only
+      # lists the rest.
       - name: Check AppStream metadata
         run: |
           sudo apt-get update -qq
@@ -74,7 +75,7 @@ jobs:
           appstreamcli validate-tree --explain dist/squashfs-root > appstream.log 2>&1
           set -e
           cat appstream.log
-          if grep -qE '^E: ' appstream.log; then
+          if grep -qE '^\s*E: ' appstream.log; then
             echo "::error::appstreamcli found errors in the AppStream metadata"
             exit 1
           fi
