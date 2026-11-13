@@ -49,6 +49,37 @@ jobs:
       - name: Build AppImage and .deb
         run: node scripts/make-icon.js && npx electron-builder --linux --${{ matrix.arch }} && node scripts/linux-names.js
 
+      # The AppStream metadata (build/com.nunesnetwork.tflix.appdata.xml) as
+      # app stores and the AppImage catalog read it: inside the built AppImage,
+      # next to the desktop file it names, with its newest release at this
+      # version. Fails on validator errors (E:), only lists the rest.
+      - name: Check AppStream metadata
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq appstream
+          appstreamcli --version
+          version=$(node -p "require('./package.json').version")
+          newest=$(grep -oP '<release version="\K[^"]+' build/com.nunesnetwork.tflix.appdata.xml | head -n 1)
+          if [ "$newest" != "$version" ]; then
+            echo "::error::the newest <release> in the AppStream file is $newest, but package.json is $version"
+            exit 1
+          fi
+          appimage=$(ls dist/tflix-linux.*.AppImage)
+          chmod +x "$appimage"
+          (cd dist && "../$appimage" --appimage-extract >/dev/null)
+          for f in usr/share/metainfo/com.nunesnetwork.tflix.appdata.xml usr/share/applications/tflix.desktop; do
+            [ -f "dist/squashfs-root/$f" ] || { echo "::error::$f is missing from the AppImage"; exit 1; }
+          done
+          set +e
+          appstreamcli validate-tree --explain dist/squashfs-root > appstream.log 2>&1
+          set -e
+          cat appstream.log
+          if grep -qE '^E: ' appstream.log; then
+            echo "::error::appstreamcli found errors in the AppStream metadata"
+            exit 1
+          fi
+          rm -rf dist/squashfs-root
+
       # Starts each build in a virtual display for 20s. "Opened" means still
       # running at the end (timeout's exit code 124) with no sandbox error.
       # Only sandbox errors count: stopping the AppImage at 20s unmounts it

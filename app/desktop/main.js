@@ -112,6 +112,18 @@ function createMainWindow() {
   mainWindow.webContents.on('will-navigate', blockNav);
   mainWindow.webContents.on('will-redirect', blockNav);
 
+  // No internet, or the site unreachable: show the packed offline page, not
+  // an empty window. It goes back to the page that didn't load (Try again, or
+  // by itself once back online). ERR_ABORTED (-3) is a navigation cancelled
+  // or replaced, not a failure. Only the main frame: embeds handle their own.
+  mainWindow.webContents.on('did-fail-load', (_e, code, desc, url, isMainFrame) => {
+    if (!isMainFrame || code === -3 || url.startsWith('file:')) return;
+    console.error(`[tflix] ${url} didn't load (${desc}); showing the offline page`);
+    mainWindow.loadFile(path.join(__dirname, 'offline.html'), {
+      query: { retry: isAllowedSite(url) ? url : SITE_URL },
+    });
+  });
+
   mainWindow.loadURL(SITE_URL);
 
   mainWindow.on('closed', () => { mainWindow = null; });

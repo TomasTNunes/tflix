@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TFLIX
+Exec=AppRun %U
+Terminal=false
+Type=Application
+Icon=tflix
+StartupWMClass=tflix
+Comment=Watch Movies & TV, without the pop-up ads.
+Categories=AudioVideo;

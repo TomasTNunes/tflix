@@ -193,6 +193,9 @@ the `node_modules` installed on Windows don't work on Linux.
 |------|---------|
 | `main.js` | Electron main process — window, menu, pop-up/ad blocking, loads the live site; on Linux, keeps the AppImage from running without the sandbox |
 | `preload-main.js` | Injects the version label (and, on Linux, whether it's the .deb or the AppImage) + back-navigation state restore into the site; stops ad scripts swallowing clicks inside the stream embeds |
+| `offline.html` | Shown instead of an empty window when the site doesn't load (no internet); Try again, or reloads by itself once back online |
+| `build/com.nunesnetwork.tflix.appdata.xml` | AppStream metadata in the AppImage (description, screenshot, license) for app stores and the AppImage catalog; its newest `<release>` must match `package.json`'s version |
+| `build/tflix.desktop` | Copy of the AppImage's desktop file at `usr/share/applications/`, where AppStream looks for it; keep it like the one electron-builder generates |
 | `scripts/make-icon.js` | Builds `build/icon.ico` (Windows) and `build/icons/*.png` (Linux) from `../../assets/icons/*.png` |
 | `build/installer.nsh` | Windows installer extras (optional "remove my data" on uninstall) |
 | `../../.github/workflows/build-linux.yml` | Builds, checks and (optionally) releases the Linux packages |

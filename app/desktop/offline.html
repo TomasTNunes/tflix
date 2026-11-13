@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!-- Shown by main.js when the TFLIX site doesn't load (no internet, or the
+     site unreachable), instead of a blank window. Packed in the app, so it
+     works offline: no web fonts, no outside files. Comes back to the page
+     that didn't load (?retry=…) on Try again, or by itself once the system
+     is back online. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+  <title>TFLIX</title>
+  <style>
+    :root {
+      --bg: #0a0a0d;
+      --text: #f4f4f7;
+      --muted: #b4b4bf;
+      --accent: #e50914;
+      --accent-h: #ff222e;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    html, body { height: 100%; }
+    body {
+      background: radial-gradient(ellipse at 50% 0%, #2a0a0e 0%, var(--bg) 60%) var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, 'Segoe UI', Ubuntu, Cantarell, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px 16px;
+      user-select: none;
+    }
+    main { max-width: 560px; text-align: center; }
+    svg { width: 220px; height: auto; margin-bottom: 20px; }
+    h1 { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 14px; }
+    p { font-size: 1.15rem; line-height: 1.55; color: var(--muted); margin-bottom: 28px; }
+    button {
+      font: inherit; font-size: 1.1rem; font-weight: 700;
+      color: #fff; background: var(--accent);
+      border: 0; border-radius: 8px; padding: 12px 30px;
+      cursor: pointer; transition: background .15s;
+    }
+    button:hover, button:focus-visible { background: var(--accent-h); outline: none; }
+    button:disabled { opacity: .6; cursor: default; }
+  </style>
+</head>
+<body>
+  <main>
+    <!-- assets/tflix-wordmark.svg, inline -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="362 0 300 128" width="300" height="128" role="img" aria-label="TFLIX">
+      <defs>
+        <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ff3a44" stop-opacity="1"/>
+          <stop offset="1" stop-color="#ff3a44" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="flix" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ff3a44"/>
+          <stop offset="1" stop-color="#8f0710"/>
+        </linearGradient>
+        <filter id="glow" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="26"/></filter>
+      </defs>
+      <g transform="translate(315.4 -49.4) scale(1.22)">
+        <g transform="translate(27.7 32.9) scale(.208)">
+          <rect x="88" y="92" width="336" height="92" rx="16" fill="#ff1a26" filter="url(#glow)" opacity="0.7"/>
+          <polygon points="196,170 316,170 366,512 146,512" fill="url(#beam)"/>
+          <rect x="88" y="92" width="336" height="92" rx="16" fill="#ff2a35"/>
+        </g>
+        <g fill="url(#flix)" transform="translate(124 52) scale(.503 .467) translate(-155 -181)">
+          <polygon points="155,181 227,181 227,211 185,211 185,241 219,241 219,269 185,269 185,331 155,331"/>
+          <polygon points="241,181 271,181 271,303 307,303 307,331 241,331"/>
+          <rect x="321" y="181" width="30" height="150"/>
+          <polygon points="365,181 397,181 411,230 425,181 457,181 428,254 457,331 425,331 411,279 397,331 365,331 394,254"/>
+        </g>
+      </g>
+    </svg>
+    <h1 id="title">You're offline</h1>
+    <p id="text">TFLIX needs an internet connection to browse and play movies and TV shows. It opens again by itself as soon as you're back online.</p>
+    <button id="retry" type="button">Try again</button>
+  </main>
+  <script>
+    // Where to go back to: the page that didn't load, if it's an https one
+    // (main.js only passes TFLIX pages, and still guards every navigation).
+    var target = new URLSearchParams(location.search).get('retry') || '';
+    if (!/^https:\/\//.test(target)) target = 'https://tflix.stream/';
+
+    // Online but the site didn't answer: say so rather than "offline".
+    if (navigator.onLine) {
+      document.getElementById('title').textContent = "TFLIX isn't answering";
+      document.getElementById('text').textContent =
+        'The connection to TFLIX dropped or the site is busy. Check your internet, give it a moment, and try again.';
+    }
+
+    var btn = document.getElementById('retry');
+    function retry() {
+      btn.disabled = true;
+      btn.textContent = 'Connecting…';
+      location.replace(target);
+    }
+    btn.addEventListener('click', retry);
+    window.addEventListener('online', retry);
+    btn.focus();
+  </script>
+</body>
+</html>
