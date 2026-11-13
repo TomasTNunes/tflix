@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="1024" height="1024">
+  <!-- TFLIX home-screen icon for iPhone/iPad (apple-touch-icon): same art as
+       icon.svg but a full square, because iOS rounds the corners itself.
+       Source of apple-touch-icon.png (180x180). -->
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1e1e27"/>
+      <stop offset="1" stop-color="#0d0d11"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff3a44" stop-opacity="1"/>
+      <stop offset="1" stop-color="#ff3a44" stop-opacity="0.12"/>
+    </linearGradient>
+    <clipPath id="tileClip"><rect width="512" height="512"/></clipPath>
+    <filter id="glow" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="26"/></filter>
+  </defs>
+  <rect width="512" height="512" fill="url(#tile)"/>
+  <g clip-path="url(#tileClip)">
+    <rect x="88" y="92" width="336" height="92" rx="16" fill="#ff1a26" filter="url(#glow)" opacity="0.7"/>
+    <polygon points="196,170 316,170 366,512 146,512" fill="url(#beam)"/>
+    <rect x="88" y="92" width="336" height="92" rx="16" fill="#ff2a35"/>
+  </g>
+</svg>
