@@ -1095,6 +1095,29 @@
     .linux-opt-for { margin-top: 2px; font-size: 0.78rem; color: var(--muted); }
     .linux-opt-name .acct-badge { margin-left: 0; }
     #auth-linux .auth-note b { color: var(--text); }
+    /* Get Apps → iPhone, iPad & Mac: steps to add TFLIX and block the ads */
+    .apple-sec + .apple-sec { margin-top: 1.1rem; }
+    .apple-head {
+      display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.45rem;
+      font-size: 0.74rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+    }
+    .apple-head .acct-badge { margin-left: 0; letter-spacing: 0; text-transform: none; }
+    .apple-card { padding: 0.9rem 1rem; font-size: 0.84rem; line-height: 1.5; color: rgba(255,255,255,0.78); }
+    .apple-card b, .apple-know b { color: var(--text); font-weight: 700; }
+    .apple-sub { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+    .apple-card ol + .apple-sub, .apple-card .apple-credit + .apple-sub { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px solid var(--line); }
+    .apple-card ol { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.45rem; }
+    .apple-card p { margin: 0 0 0.6rem; }
+    .apple-card p:last-child { margin-bottom: 0; }
+    .apple-glyph { display: inline-block; vertical-align: -2px; color: var(--text); }
+    .auth-dialog .btn.apple-dl { margin: 0.2rem 0 0.9rem; }
+    .apple-shot, .apple-shot-icon { display: block; margin-top: 0.5rem; border: 1px solid var(--line); }
+    .apple-shot { width: 100%; max-width: 240px; height: auto; border-radius: 10px; }
+    .apple-shot-icon { width: 48px; height: 48px; border-radius: 12px; }
+    .apple-credit { margin-top: 0.6rem; font-size: 0.72rem; color: var(--muted); }
+    .apple-credit a, .apple-aside a { color: inherit; text-decoration: underline; }
+    .apple-aside { font-size: 0.78rem; color: var(--muted); }
+    .apple-know { font-size: 0.84rem; line-height: 1.5; color: rgba(255,255,255,0.78); }
     .app-howto-btn {
       display: flex; align-items: center; gap: 0.35rem; margin: 0 0 0.55rem calc(1rem + 44px + 0.9rem);
       padding: 0.15rem 0; background: none; border: none; color: var(--muted);
@@ -1681,6 +1704,20 @@
             <p>If a new version is out, a notice appears when you open the app and your profile icon gets a yellow dot. Click <b>Update</b> here: the Linux files open with yours (the same kind, for the same processor) highlighted, so click its <b>Update</b>. Open the new .deb to install it over the old version, or swap the old AppImage for the new one. There's no need to uninstall, and your settings are kept.</p>
           </div>
         </div>
+        <!-- No app to download: Apple devices add the website to the Home Screen
+             or Dock. The button opens the steps (#auth-apple) -->
+        <div class="app-card">
+          <div class="app-row">
+            <div class="app-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12.15 6.9c-.95 0-2.42-1.08-3.96-1.04-2.04.03-3.91 1.18-4.96 3.01-2.12 3.68-.55 9.1 1.52 12.09 1.01 1.45 2.21 3.09 3.79 3.04 1.52-.07 2.09-.99 3.94-.99 1.83 0 2.35.99 3.96.95 1.64-.03 2.68-1.48 3.68-2.95 1.16-1.69 1.64-3.33 1.66-3.42-.04-.01-3.18-1.22-3.22-4.86-.03-3.04 2.48-4.49 2.6-4.56-1.43-2.09-3.62-2.32-4.39-2.38-2-.16-3.68 1.09-4.62 1.09zm3.38-3.07c.84-1.01 1.4-2.43 1.25-3.83-1.21.05-2.66.81-3.53 1.82-.78.9-1.45 2.34-1.27 3.71 1.34.1 2.71-.69 3.55-1.7z"/></svg>
+            </div>
+            <div class="app-info">
+              <div class="app-name">iPhone, iPad &amp; Mac</div>
+              <div class="app-meta"><span class="acct-badge warn">Might Have Ads</span><span>Website shortcut</span></div>
+            </div>
+            <button class="btn btn-primary app-dl" id="apple-add" type="button">How to Add</button>
+          </div>
+        </div>
       </div>
       <div class="auth-note">Already have the app? Install the new version over it to update. There's no need to uninstall.</div>
       <div class="apps-src">Older versions and what's new · <a id="apps-releases" href="https://github.com/TomasTNunes/tflix/releases" target="_blank" rel="noopener noreferrer">View all releases</a></div>
@@ -1730,6 +1767,56 @@
         </div>
       </div>
       <div class="auth-note">Not sure which processor you have? Run <b>uname -m</b> in a terminal: <b>x86_64</b> means Intel/AMD, <b>aarch64</b> means ARM64.</div>
+    </div>
+
+    <!-- Get Apps → iPhone, iPad & Mac: add the website to the Home Screen or
+         Dock, then block the servers' ads (AdGuard DNS on iPhone and iPad, a
+         Safari ad blocker on Mac). The profile is AdGuard's own, signed by
+         them; Deploy Website keeps it fresh (.github/scripts/adguard_profile.py).
+         Screenshots and the Settings icon: AdGuard (adguard-dns.io). -->
+    <div id="auth-apple">
+      <div class="apple-sec">
+        <div class="apple-head">Add TFLIX</div>
+        <div class="app-card apple-card">
+          <div class="apple-sub">iPhone and iPad</div>
+          <ol>
+            <li>Open <b>tflix.stream</b> in Safari.</li>
+            <li>Tap <b>Share</b> <svg class="apple-glyph" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 9H6a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10a1 1 0 0 0-1-1h-2"/><path d="M12 15V3M8.5 6.5 12 3l3.5 3.5"/></svg>. On iOS 26, tap <b>•••</b> first. It's at the bottom on iPhone and at the top on iPad.</li>
+            <li>Tap <b>Add to Home Screen</b>. If you don't see it, scroll down or tap <b>View More</b>.</li>
+            <li>Tap <b>Add</b>. TFLIX shows up on your Home Screen.</li>
+          </ol>
+          <div class="apple-sub">Mac</div>
+          <ol>
+            <li>Open <b>tflix.stream</b> in Safari (macOS Sonoma or later).</li>
+            <li>Choose <b>File → Add to Dock</b>, then click <b>Add</b>.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="apple-sec">
+        <div class="apple-head">Block the ads<span class="acct-badge ok">Recommended</span></div>
+        <div class="app-card apple-card">
+          <div class="apple-sub">iPhone and iPad: AdGuard DNS</div>
+          <p>Free, and it blocks ads, pop-ups and redirects on the whole device, not only in TFLIX. You can turn it off anytime in Settings.</p>
+          <a class="btn btn-primary apple-dl" href="assets/adguard/adguard-dns.mobileconfig">Download AdGuard DNS</a>
+          <ol>
+            <li>Tap <b>Download AdGuard DNS</b> in Safari, then <b>Allow</b>.</li>
+            <li>Open the <b>Settings</b> app.<img class="apple-shot-icon" src="assets/adguard/settings-icon.svg" alt="The Settings app icon" width="56" height="56" loading="lazy"></li>
+            <li>Tap <b>Profile Downloaded</b>, near the top.<img class="apple-shot" src="assets/adguard/ios-profile-downloaded.jpg" alt="Settings, with Profile Downloaded circled" width="288" height="389" loading="lazy"></li>
+            <li>Tap <b>Install</b> and follow the steps on screen.<img class="apple-shot" src="assets/adguard/ios-install-profile.jpg" alt="The Install Profile screen for AdGuard DNS, with Install circled" width="288" height="223" loading="lazy"></li>
+            <li>If it isn't on by itself, go to <b>Settings → General → VPN &amp; Device Management → DNS</b> and choose <b>AdGuard DNS</b>.</li>
+          </ol>
+          <div class="apple-credit">Screenshots: <a href="https://adguard-dns.io/en/public-dns.html" target="_blank" rel="noopener noreferrer">AdGuard</a></div>
+          <div class="apple-sub">Mac: an ad blocker for Safari</div>
+          <p>Get one from the Mac App Store, such as <b>AdGuard for Safari</b> or <b>uBlock Origin Lite</b>, and turn it on in <b>Safari → Settings → Extensions</b>. On macOS Sequoia or later it also works in TFLIX in the Dock (check <b>TFLIX → Settings → Extensions</b>).</p>
+          <p class="apple-aside">AdGuard DNS works on a Mac too, but it filters every app on the computer. <a href="https://adguard-dns.io/en/public-dns.html" target="_blank" rel="noopener noreferrer">Set it up on AdGuard's site</a>.</p>
+        </div>
+      </div>
+
+      <div class="apple-sec">
+        <div class="apple-head">Good to know</div>
+        <p class="apple-know">TFLIX on the Home Screen or Dock keeps its own data, apart from Safari. Sign in, or create a free account, to keep My List and Continue Watching in sync. There's nothing to update: it always opens the latest TFLIX.</p>
+      </div>
     </div>
 
     <div id="auth-help" class="faq-list"></div>
@@ -3949,6 +4036,8 @@ function setHowto(btn, open) {
 $('auth-apps').addEventListener('click', e => {
   const btn = e.target.closest('.app-howto-btn');
   if (btn) setHowto(btn, btn.getAttribute('aria-expanded') !== 'true');
+  // The Apple card has nothing to download: its button opens the steps
+  if (e.target.closest('#apple-add')) showAuth('apple');
 });
 
 async function signOutUser() {
@@ -3956,15 +4045,16 @@ async function signOutUser() {
   toast('Signed out');
 }
 
-const AUTH_VIEWS = ['form', 'verify', 'merge', 'moved', 'account', 'calendar', 'help', 'apps', 'apps-again', 'linux', 'add-email', 'password', 'delete'];
+const AUTH_VIEWS = ['form', 'verify', 'merge', 'moved', 'account', 'calendar', 'help', 'apps', 'apps-again', 'linux', 'apple', 'add-email', 'password', 'delete'];
 const AUTH_TEXT = {
   moved:       ['Welcome to tflix.stream', "TFLIX has a new address, so you'll need to sign in again. Your My List is saved in your account and comes right back."],
   account:     ['My Account', ''],
   calendar:    ['Calendar', 'New episodes and digital releases for titles in My List.'],
   help:        ['Help', 'Answers to common questions about watching on TFLIX.'],
-  apps:        ['Get the Apps', 'Watch TFLIX in its own app. The apps block the pop-ups and ad redirects (No Ads).'],
+  apps:        ['Get the Apps', 'Watch TFLIX in its own app. The Android, Windows and Linux apps block the pop-ups and ad redirects (No Ads).'],
   'apps-again': ["You're up to date", ''],   // the line below is filled in by confirmRedownload
   linux:       ['TFLIX for Linux', 'Pick the file for your computer.'],
+  apple:       ['TFLIX on Apple devices', "There's no TFLIX app for iPhone, iPad or Mac, but you can add the website to your Home Screen or Dock and open it like an app. The servers' pop-ups and ads still show there, as in the browser, so we recommend blocking them as shown below."],
   'add-email': ['Add email', "Use it to recover your password. Once you confirm it, you'll sign in with your email instead of your username."],
   password:    ['Change password', 'Enter your current password, then the new one.'],
   delete:      ['Delete account?', "This permanently deletes your account and My List. It can't be undone."],
@@ -3976,23 +4066,24 @@ function showAuth(view, mode = authMode) {
   // Pages opened from My Account get a Back button to it
   const from = authView;
   if (view !== authView) authBackTo = authView === 'account' && view !== 'account' ? 'account'
-                                    : authView === 'apps' && (view === 'apps-again' || view === 'linux') ? 'apps' : null;
+                                    : authView === 'apps' && ['apps-again', 'linux', 'apple'].includes(view) ? 'apps' : null;
   authView = view;
   authMode = mode;
   for (const v of AUTH_VIEWS) $(`auth-${v}`).hidden = v !== view;
   $('auth-back').hidden = !authBackTo;
   $('auth-dialog').classList.toggle('has-back', !!authBackTo);
   $('auth-dialog').classList.toggle('wide', view === 'calendar');
-  $('auth-dialog').classList.toggle('apps', view === 'apps' || view === 'linux');
+  $('auth-dialog').classList.toggle('apps', ['apps', 'linux', 'apple'].includes(view));
   $('auth-dialog').classList.toggle('help', view === 'help');
   $('help-foot').hidden = view !== 'help';
   $('auth-dialog').querySelectorAll('.auth-msg').forEach(m => { m.textContent = ''; });
 
   if (view === 'account') renderAccountCard();
   if (view === 'calendar') openCalendar();
+  if (view === 'apple' && from !== 'apple') $('auth-apple').closest('.auth-body').scrollTop = 0;
   if (view === 'help' && from !== 'help') { collapseFaq($('auth-help')); $('auth-help').closest('.auth-body').scrollTop = 0; }
   if (view === 'apps') {
-    if (from !== 'apps-again' && from !== 'linux') $('auth-apps').querySelectorAll('.app-howto-btn').forEach(b => setHowto(b, false));
+    if (!['apps-again', 'linux', 'apple'].includes(from)) $('auth-apps').querySelectorAll('.app-howto-btn').forEach(b => setHowto(b, false));
     loadAppReleases();
   }
   if (AUTH_TEXT[view]) {

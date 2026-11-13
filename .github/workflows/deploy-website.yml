@@ -16,6 +16,12 @@ jobs:
           sed -i "s|__TMDB_TOKEN__|${{ secrets.TMDB_TOKEN }}|g" index.html
           sed -i "s|__TMDB_TOKEN__|${{ secrets.TMDB_TOKEN }}|g" stream/index.html
 
+      # Get Apps → iPhone, iPad & Mac offers AdGuard's signed DNS profile: deploy
+      # the valid copy that expires latest (a fresh one from AdGuard, the live
+      # one or the repo's). Never fails the deploy; see the script for details.
+      - name: Get the AdGuard DNS profile
+        run: python3 .github/scripts/adguard_profile.py pick assets/adguard/adguard-dns.mobileconfig
+
       - name: Prepare Pages artifact
         run: mkdir -p public && mv index.html 404.html assets stream public/
 

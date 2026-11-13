@@ -21,7 +21,7 @@ const TFLIX_FAQ = [
   ["What's in the Calendar?",
    'New episodes and digital releases for the titles in your My List, so add a show or movie there to see its dates.'],
   ['Is there an app?',
-   'Yes, for Windows, Linux and Android (phones, tablets and Android TV). The apps block the pop-ups and ad redirects, and they always load the latest version of TFLIX. Get them from <b>Get Apps</b> in the profile menu.'],
+   'Yes, for Windows, Linux and Android (phones, tablets and Android TV). The apps block the pop-ups and ad redirects, and they always load the latest version of TFLIX. Get them from <b>Get Apps</b> in the profile menu. On iPhone, iPad and Mac you can add the website to your Home Screen or Dock instead: <b>Get Apps</b> shows how.'],
   ['Can I watch on a TV?',
    'Yes. The Android app also runs on Android TV and works with the remote: the arrows move around and OK selects. Get it from <b>Get Apps</b> in the profile menu.'],
   ['How do I update the app?',

@@ -1,0 +1,31 @@
+name: AdGuard Profile Check
+
+# Keeps the AdGuard DNS profile on the site (Get Apps → iPhone, iPad & Mac)
+# signed with a valid certificate. Once a month: if the live copy expires
+# within 30 days and AdGuard has a newer one, runs Deploy Website, which picks
+# it up. If AdGuard has none, this run fails, and GitHub emails about it.
+# Can also be run by hand from the Actions tab.
+
+on:
+  schedule:
+    - cron: '0 6 1 * *'   # the 1st of every month, 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write   # only used to start Deploy Website
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check the live profile
+        id: check
+        run: python3 .github/scripts/adguard_profile.py check
+
+      - name: Run Deploy Website
+        if: steps.check.outputs.renew == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-website.yml --ref main
