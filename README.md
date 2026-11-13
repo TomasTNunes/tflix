@@ -71,6 +71,7 @@ or **Dock** (Mac, Safari on macOS Sonoma or later) so it opens in its own window
 
 ⚠️ Unlike the other apps, this doesn't block the servers' ads. To block most of them, use
 **AdGuard DNS** on iPhone and iPad (the profile downloads from **Get Apps**) or a Safari ad blocker on Mac.
+See [Block the ads](app/apple/README.md#block-the-ads) in the Apple guide.
 
 📥 The full steps, with screenshots, are in **Get Apps → iPhone, iPad & Mac → How to Add** in the site's profile menu, or in the [Apple guide](app/apple/README.md#add-tflix).
 
