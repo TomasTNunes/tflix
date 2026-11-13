@@ -953,6 +953,28 @@
     .auth-link.disabled:hover .acc-hint, html.keynav .auth-link.disabled.kf .acc-hint { display: inline; }
     .auth-dialog [hidden] { display: none; }
     .auth-sub:empty { display: none; }
+    /* Sign in / Create account switch: a red pill slides under the chosen side */
+    .auth-tabs {
+      position: relative; display: grid; grid-template-columns: 1fr 1fr;
+      padding: 4px; margin-bottom: 1.4rem;
+      background: var(--bg); border: 1px solid var(--line); border-radius: 999px;
+    }
+    .auth-tabs::before {
+      content: ''; position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px);
+      border-radius: 999px; background: var(--accent);
+      transition: transform .3s var(--ease);
+    }
+    .auth-tabs.up::before { transform: translateX(100%); }
+    .auth-tab {
+      position: relative; z-index: 1; height: 40px; padding: 0 0.6rem;
+      background: none; border: none; border-radius: 999px;
+      color: var(--muted); font-family: inherit; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: color .2s;
+    }
+    .auth-tab:hover { color: var(--text); }
+    .auth-tab[aria-selected="true"] { color: #fff; cursor: default; }
+    html.keynav .auth-tab.kf { border-radius: 999px; outline-offset: 1px; }
+    #auth-form-foot { justify-content: center; }
     /* Pinned to the top: the day list below the grid changes height, and
        re-centring would move the month arrows under the cursor */
     .auth-dialog.wide { max-width: 780px; align-self: flex-start; margin-top: 4vh; }
@@ -1518,6 +1540,10 @@
     <div class="auth-sub" id="auth-sub"></div>
 
     <form id="auth-form" novalidate>
+      <div class="auth-tabs" id="auth-tabs" role="tablist" aria-label="Account">
+        <button class="auth-tab" type="button" role="tab" data-mode="signin">Sign in</button>
+        <button class="auth-tab" type="button" role="tab" data-mode="signup">Create account</button>
+      </div>
       <label class="field-label" for="auth-id">Username or email</label>
       <input class="auth-input" id="auth-id" type="text" autocomplete="username" autocapitalize="none" spellcheck="false">
       <label class="field-label" for="auth-pass">Password</label>
@@ -1525,8 +1551,7 @@
       <div class="auth-msg" id="auth-msg"></div>
       <button class="btn btn-primary" id="auth-submit" type="submit"></button>
       <div class="auth-note" id="auth-note">Email is optional. Without one, you can't recover your password if you forget it.</div>
-      <div class="auth-foot">
-        <button class="auth-link" id="auth-switch" type="button"></button>
+      <div class="auth-foot" id="auth-form-foot">
         <button class="auth-link" id="auth-forgot" type="button">Forgot password?</button>
       </div>
     </form>
@@ -3982,10 +4007,11 @@ function showAuth(view, mode = authMode) {
     $('auth-title').textContent  = up ? 'Create account' : 'Sign in';
     $('auth-sub').textContent    = up ? 'Pick a username, or use your email.' : 'Keep My List in sync on every device.';
     $('auth-submit').textContent = up ? 'Create account' : 'Sign in';
-    $('auth-switch').textContent = up ? 'Have an account? Sign in' : 'New here? Create an account';
+    $('auth-tabs').classList.toggle('up', up);
+    $('auth-tabs').querySelectorAll('.auth-tab').forEach(t => t.setAttribute('aria-selected', t.dataset.mode === mode));
     $('auth-pass').autocomplete  = up ? 'new-password' : 'current-password';
-    $('auth-note').hidden   = !up;
-    $('auth-forgot').hidden = up;
+    $('auth-note').hidden      = !up;
+    $('auth-form-foot').hidden = up;
   } else if (view === 'verify') {
     $('auth-title').textContent = 'Check your inbox';
     $('auth-sub').textContent = `We sent a verification link to ${fb.auth.currentUser.email}. Open it to turn on My List sync.`;
@@ -3996,6 +4022,7 @@ function showAuth(view, mode = authMode) {
   // In an app, Get Apps starts on that app's card, and the Linux chooser on its file
   const first = (view === 'apps' && inApp && document.querySelector(`#auth-apps .app-dl[data-app="${inApp}"]`))
              || (view === 'linux' && $('auth-linux').querySelector('.linux-opt.mine .app-dl'))
+             || (view === 'form' && $('auth-id'))   // past the Sign in / Create account tabs
              || $(`auth-${view}`).querySelector('input:not([hidden]), button, a[href]');
   if (document.documentElement.classList.contains('keynav')) window.__knavFocus(first);
   else if (first.tagName === 'INPUT' && matchMedia('(hover: hover)').matches) first.focus();
@@ -4047,7 +4074,11 @@ function authErrorText(err, isEmail) {
 renderFaq($('auth-help'));
 $('calendar-btn').addEventListener('click', () => { showAuth('calendar'); authOpener = $('calendar-btn'); });
 
-$('auth-switch').addEventListener('click', () => showAuth('form', authMode === 'signup' ? 'signin' : 'signup'));
+$('auth-tabs').querySelectorAll('.auth-tab').forEach(tab => tab.addEventListener('click', () => {
+  if (tab.dataset.mode === authMode) return;
+  showAuth('form', tab.dataset.mode);
+  window.__knavFocus(tab);   // on a remote, stay on the tabs rather than jumping to the field
+}));
 $('auth-close').addEventListener('click', closeAuth);
 $('auth-back').addEventListener('click', () => showAuth(authBackTo));
 $('auth-backdrop').addEventListener('click', e => { if (e.target === $('auth-backdrop')) closeAuth(); });
