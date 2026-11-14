@@ -40,15 +40,13 @@ jobs:
       - name: Lint the manifest
         run: flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest stream.tflix.TFLIX.yml
 
-      # Screenshots mirrored into the repo, as Flathub's own builds do, so
-      # the linter can check them: the builder saves them to the repo's
-      # screenshots/<arch> ref itself. In its own D-Bus session: the
-      # builder, a Flatpak itself, installs the runtime through the session
-      # bus, which the runner doesn't have
+      # flathub-build: the builder with Flathub's own options (as in its
+      # submission docs), so screenshots and icons are mirrored the way the
+      # linter checks, into ./repo. In its own D-Bus session: the builder, a
+      # Flatpak itself, installs the runtime through the session bus, which
+      # the runner doesn't have
       - name: Build
-        run: |
-          dbus-run-session -- flatpak run org.flatpak.Builder --force-clean --sandbox --user --install-deps-from=flathub \
-            --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir stream.tflix.TFLIX.yml
+        run: dbus-run-session -- flatpak run --command=flathub-build org.flatpak.Builder stream.tflix.TFLIX.yml
 
       - name: Lint the build
         run: flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
