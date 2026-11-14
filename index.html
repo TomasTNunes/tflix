@@ -1129,6 +1129,8 @@
     .linux-opt-name { display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; font-weight: 700; }
     .linux-opt-for { margin-top: 2px; font-size: 0.78rem; color: var(--muted); }
     .linux-opt-name .acct-badge { margin-left: 0; }
+    /* The apps' version label (bottom left) names the build too: see labelBuild */
+    #tflix-version-label[data-build]::after { content: ' (' attr(data-build) ')'; }
     #auth-linux .auth-note b { color: var(--text); }
     /* Get Apps → iPhone, iPad & Mac: steps to add TFLIX and block the ads */
     .apple-sec + .apple-sec { margin-top: 1.1rem; }
@@ -3854,6 +3856,25 @@ function labelVersion() {
 }
 const installedAppVersion = () => labelVersion() || appVersionGuess;
 
+// The label names the build as well: "v1.3.1 (Windows)", "v1.3.1 (deb x64)".
+// The site adds that as CSS (::after from data-build), so it reaches every
+// installed app without a new release, and the label's own text, which
+// labelVersion reads, stays "v1.3.1".
+const LINUX_KIND_NAMES = { deb: 'deb', appimage: 'AppImage', flatpak: 'Flatpak', flathub: 'Flathub' };
+function appBuildName() {
+  if (inApp !== 'linux') return APP_NAMES[inApp];
+  const { kind, arch } = linuxBuild();
+  return `${LINUX_KIND_NAMES[kind]} ${arch === 'arm64' ? 'ARM64' : 'x64'}`;
+}
+function labelBuild() {
+  const l = $('tflix-version-label');
+  if (l && !l.dataset.build) l.dataset.build = appBuildName();
+}
+if (APP_NAMES[inApp]) {
+  labelBuild();
+  new MutationObserver(labelBuild).observe(document.body, { childList: true });
+}
+
 // Wait for the label until LABEL_GRACE past the load event. An Android app
 // that still has none is taken for 1.1.0, but keep watching: if the label was
 // only late, correctAppUpdate puts right what that guess showed.
@@ -4036,8 +4057,9 @@ function paintAppButtons(best) {
   document.querySelectorAll('#auth-linux .linux-opt').forEach(row => {
     const link = row.querySelector('.app-dl'), key = link.dataset.app;
     const mine = !!best[key] && key === myAsset, outdated = mine && myOutdated;
+    // This app's own file asks first when it's already current, as the
+    // Windows and Android cards do; the other files download straight away
     paintLink(link, best[key], mine, outdated);
-    link.dataset.state = '';   // a chosen file downloads, no "again?" step
     row.classList.toggle('mine', mine);
     row.querySelector('.linux-installed').hidden = !mine || outdated;
   });
@@ -4055,20 +4077,23 @@ function paintAppButtons(best) {
   document.querySelector('.app-dot[data-app="linux"]').hidden = !linuxOutdated;
 }
 
-$('auth-apps').addEventListener('click', e => {
+// The card or Linux file of the app you're in, when it's already current
+function confirmRedownload(e) {
   const link = e.target.closest('.app-dl');
   if (link?.dataset.state === 'choose') { e.preventDefault(); showAuth('linux'); return; }
   if (!link || link.dataset.state !== 'latest') return;
   e.preventDefault();
-  const name = APP_NAMES[link.dataset.app.split('-')[0]];
   showAuth('apps-again');
-  $('auth-sub').textContent = `You already have the latest version of TFLIX for ${name} (v${installedAppVersion()}). Download it again?`;
+  $('auth-sub').textContent = `You already have the latest version of TFLIX for ${APP_NAMES[inApp]} (v${installedAppVersion()}${inApp === 'linux' ? `, ${appBuildName()}` : ''}). Download it again?`;
   $('again-download').href = link.href;
-});
+}
+$('auth-apps').addEventListener('click', confirmRedownload);
+$('auth-linux').addEventListener('click', confirmRedownload);
 // Download anyway opens the link itself (as a pop-up, like the card's), then
-// goes back to the list; Cancel just goes back
-$('again-download').addEventListener('click', () => setTimeout(() => showAuth('apps'), 0));
-$('again-cancel').addEventListener('click', () => showAuth('apps'));
+// goes back to the list it came from (Get Apps or the Linux files); Cancel
+// just goes back
+$('again-download').addEventListener('click', () => setTimeout(() => showAuth(authBackTo), 0));
+$('again-cancel').addEventListener('click', () => showAuth(authBackTo));
 
 function setHowto(btn, open) {
   btn.setAttribute('aria-expanded', open);
@@ -4105,10 +4130,13 @@ let authBackTo = null;   // view the top-left Back returns to, if any
 let authOpener = null;   // header button that opened the dialog, focused again on close
 
 function showAuth(view, mode = authMode) {
-  // Pages opened from My Account get a Back button to it
+  // Pages opened from My Account get a Back button to it, and those under
+  // Get Apps one to it; "Download it again?" goes back to the list it came
+  // from, Get Apps or the Linux files
   const from = authView;
   if (view !== authView) authBackTo = authView === 'account' && view !== 'account' ? 'account'
-                                    : authView === 'apps' && ['apps-again', 'linux', 'apple'].includes(view) ? 'apps' : null;
+                                    : view === 'apps-again' && ['apps', 'linux'].includes(authView) ? authView
+                                    : ['linux', 'apple'].includes(view) && ['apps', 'apps-again'].includes(authView) ? 'apps' : null;
   authView = view;
   authMode = mode;
   for (const v of AUTH_VIEWS) $(`auth-${v}`).hidden = v !== view;
