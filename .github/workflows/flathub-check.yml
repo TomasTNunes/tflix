@@ -56,7 +56,7 @@ jobs:
       - name: Check for updates like Flathub's bot
         if: matrix.arch == 'x64'
         run: |
-          docker run --rm -v "$PWD:/app" -w /app ghcr.io/flathub/flatpak-external-data-checker \
+          docker run --rm -v "$PWD:/work" -w /work ghcr.io/flathub/flatpak-external-data-checker \
             stream.tflix.TFLIX.yml 2>&1 | tee checker.log
           if grep -qiE 'error|failed|traceback' checker.log; then
             echo "::error::the update checker couldn't read the release files"
