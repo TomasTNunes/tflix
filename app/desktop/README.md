@@ -231,8 +231,8 @@ The workflow builds it the same way, then bundles it into the `.flatpak` file.
 |------|---------|
 | `main.js` | Electron main process — window, menu, pop-up/ad blocking, loads the live site; on Linux, keeps the AppImage from running without the sandbox |
 | `preload-main.js` | Injects the version label (and, on Linux, whether it's the .deb, the Flatpak or the AppImage) + back-navigation state restore into the site; stops ad scripts swallowing clicks inside the stream embeds |
-| `flatpak/stream.tflix.TFLIX.yml` | Flatpak manifest: repackages the .deb, with the desktop file, icons and AppStream file renamed to the Flatpak's ID |
-| `flatpak/tflix.sh` | The Flatpak's launcher: starts TFLIX through zypak, which gives Chromium its sandbox inside Flatpak |
+| `flatpak/stream.tflix.TFLIX.yml` | Flatpak manifest: repackages the .deb, with its desktop file, icons and AppStream file renamed to the Flatpak's ID, and starts TFLIX through zypak, which gives Chromium its sandbox inside Flatpak |
+| `flatpak/flathub/stream.tflix.TFLIX.yml` | Flathub's copy of the manifest: the same build, with the .deb downloaded from the release; checked by [Check Flathub Manifest](../../.github/workflows/flathub-check.yml) before it goes to Flathub |
 | `offline.html` | Shown instead of an empty window when the site doesn't load (no internet); Try again, or reloads by itself once back online |
 | `build/com.nunesnetwork.tflix.appdata.xml` | AppStream metadata in the AppImage and the Flatpak (description, screenshot, license) for app stores and the AppImage catalog; its newest `<release>` must match `package.json`'s version |
 | `build/tflix.desktop` | Copy of the AppImage's desktop file at `usr/share/applications/`, where AppStream looks for it; keep it like the one electron-builder generates |

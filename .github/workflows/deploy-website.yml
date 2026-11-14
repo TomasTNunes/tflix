@@ -22,8 +22,13 @@ jobs:
       - name: Get the AdGuard DNS profile
         run: python3 .github/scripts/adguard_profile.py pick assets/adguard/adguard-dns.mobileconfig
 
+      # .well-known/ (when there is one): files other sites read at a fixed
+      # address, like org.flathub.VerifiedApps.txt, Flathub's proof that
+      # tflix.stream owns the stream.tflix.TFLIX app ID
       - name: Prepare Pages artifact
-        run: mkdir -p public && mv index.html 404.html assets stream public/
+        run: |
+          mkdir -p public && mv index.html 404.html assets stream public/
+          if [ -d .well-known ]; then mv .well-known public/; fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

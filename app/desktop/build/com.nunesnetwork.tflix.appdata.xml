@@ -7,7 +7,8 @@
      catalog looks for. Keep the newest <release> at the package.json version:
      the Linux workflow checks it, and validates this file.
      The Flatpak uses it too, renamed to stream.tflix.TFLIX.metainfo.xml with
-     that ID and desktop file name (flatpak/stream.tflix.TFLIX.yml), so keep
+     that ID and desktop file name (flatpak/stream.tflix.TFLIX.yml and its
+     Flathub copy in flatpak/flathub/), so keep
      <id> and <launchable> on one line each, as they are. -->
 <component type="desktop-application">
   <id>com.nunesnetwork.tflix</id>

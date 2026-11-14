@@ -1,0 +1,65 @@
+name: Check Flathub Manifest
+
+# Checks Flathub's copy of the Flatpak manifest
+# (app/desktop/flatpak/flathub/stream.tflix.TFLIX.yml) the way Flathub does,
+# before it goes into a PR there: builds it from the release files it names,
+# for Intel/AMD and ARM64, runs Flathub's linter on the manifest and on the
+# build, and runs the checker that opens Flathub's update PRs, which must
+# find the release files the manifest names. Runs only by hand.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    name: check (${{ matrix.arch }})
+    defaults:
+      run:
+        working-directory: app/desktop/flatpak/flathub
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install Flatpak and Flathub's builder
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq flatpak ostree
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user -y --noninteractive flathub org.flatpak.Builder
+
+      - name: Lint the manifest
+        run: flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest stream.tflix.TFLIX.yml
+
+      # As in Flathub's docs: screenshots mirrored into the repo, as
+      # Flathub's own builds do, so the linter can check them
+      - name: Build
+        run: |
+          flatpak run org.flatpak.Builder --force-clean --sandbox --user --install-deps-from=flathub \
+            --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir stream.tflix.TFLIX.yml
+          mkdir -p builddir/files/share/app-info/media
+          ostree commit --repo=repo --canonical-permissions --branch=screenshots/$(uname -m) builddir/files/share/app-info/media
+
+      - name: Lint the build
+        run: flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
+
+      # Flathub's bot: reads x-checker-data and reports whether each file is
+      # current. It changes nothing here (no --update)
+      - name: Check for updates like Flathub's bot
+        if: matrix.arch == 'x64'
+        run: |
+          docker run --rm -v "$PWD:/app" -w /app ghcr.io/flathub/flatpak-external-data-checker \
+            stream.tflix.TFLIX.yml 2>&1 | tee checker.log
+          if grep -qiE 'error|failed|traceback' checker.log; then
+            echo "::error::the update checker couldn't read the release files"
+            exit 1
+          fi
