@@ -58,7 +58,7 @@ jobs:
         run: |
           docker run --rm -v "$PWD:/work" -w /work ghcr.io/flathub/flatpak-external-data-checker \
             stream.tflix.TFLIX.yml 2>&1 | tee checker.log
-          if grep -qiE 'error|failed|traceback' checker.log; then
+          if ! grep -q 'Check finished with 0 error(s)' checker.log; then
             echo "::error::the update checker couldn't read the release files"
             exit 1
           fi
