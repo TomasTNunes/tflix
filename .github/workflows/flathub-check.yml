@@ -41,9 +41,12 @@ jobs:
         run: flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest stream.tflix.TFLIX.yml
 
       # As in Flathub's docs: screenshots mirrored into the repo, as
-      # Flathub's own builds do, so the linter can check them
+      # Flathub's own builds do, so the linter can check them. In its own
+      # D-Bus session: the builder, a Flatpak itself, installs the runtime
+      # through the session bus, which the runner doesn't have
       - name: Build
         run: |
+          dbus-run-session -- flatpak run org.flatpak.Builder|
           flatpak run org.flatpak.Builder --force-clean --sandbox --user --install-deps-from=flathub \
             --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir stream.tflix.TFLIX.yml
           mkdir -p builddir/files/share/app-info/media
