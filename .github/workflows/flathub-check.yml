@@ -46,8 +46,7 @@ jobs:
       # through the session bus, which the runner doesn't have
       - name: Build
         run: |
-          dbus-run-session -- flatpak run org.flatpak.Builder|
-          flatpak run org.flatpak.Builder --force-clean --sandbox --user --install-deps-from=flathub \
+          dbus-run-session -- flatpak run org.flatpak.Builder --force-clean --sandbox --user --install-deps-from=flathub \
             --mirror-screenshots-url=https://dl.flathub.org/media/ --repo=repo builddir stream.tflix.TFLIX.yml
           mkdir -p builddir/files/share/app-info/media
           ostree commit --repo=repo --canonical-permissions --branch=screenshots/$(uname -m) builddir/files/share/app-info/media
