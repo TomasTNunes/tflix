@@ -27,9 +27,18 @@ const SITE_URL = IS_LINUX ? 'https://applinux.tflix.stream/' : 'https://appwindo
 
 /* How this copy was installed, so the site's Update button fetches the same
    kind of file for the same CPU: on Linux, the AppImage runtime sets
-   $APPIMAGE to the file's path, and the .deb never does; process.arch is
-   'x64' or 'arm64', as in the file names. Null on Windows (one installer). */
-const PACKAGE = !IS_LINUX ? null : { kind: process.env.APPIMAGE ? 'appimage' : 'deb', arch: process.arch };
+   $APPIMAGE to the file's path; Flatpak sets $FLATPAK_ID in every app, and
+   our .flatpak file also sets $TFLIX_FLATPAK_SOURCE=file (flatpak/
+   stream.tflix.TFLIX.yml), which Flathub's build leaves out: 'flathub'
+   installs update from Flathub, so the site offers them no file. Otherwise
+   it's the .deb. process.arch is 'x64' or 'arm64', as in the file names.
+   Null on Windows (one installer). */
+function packageKind() {
+  if (process.env.APPIMAGE) return 'appimage';
+  if (process.env.FLATPAK_ID) return process.env.TFLIX_FLATPAK_SOURCE === 'file' ? 'flatpak' : 'flathub';
+  return 'deb';
+}
+const PACKAGE = !IS_LINUX ? null : { kind: packageKind(), arch: process.arch };
 
 /* The top frame may navigate anywhere on these domains or their subdomains
    (over HTTPS) — the old and new TFLIX domains, so moving between them and

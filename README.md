@@ -26,7 +26,7 @@ It lets users discover movies and TV shows and stream them directly within the w
 
 ## Desktop App (Windows & Linux)
 
-Prefer a real app over a browser tab? TFLIX is also available as a native **desktop app for Windows and Linux** (Linux: a `.deb` for Ubuntu, Debian and Mint, or an AppImage for any distro — for Intel/AMD or ARM64).
+Prefer a real app over a browser tab? TFLIX is also available as a native **desktop app for Windows and Linux** (Linux: a `.deb` for Ubuntu, Debian and Mint, a Flatpak for Fedora, Steam Deck and any distro with Flatpak, or an AppImage for any distro — for Intel/AMD or ARM64).
 
 - 🪟 Runs in its own window — no browser needed
 - 🚫 Blocks the pop-ups and ad redirects (No Ads)

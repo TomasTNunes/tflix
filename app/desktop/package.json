@@ -56,7 +56,7 @@
       "executableName": "tflix",
       "syncDesktopName": true,
       "category": "AudioVideo",
-      "synopsis": "Watch Movies & TV",
+      "synopsis": "Watch Movies & TV Shows",
       "description": "Watch Movies & TV, without the pop-up ads.",
       "maintainer": "Tomas Nunes <tflix.hq@gmail.com>",
       "files": [
@@ -78,7 +78,12 @@
       "executableArgs": []
     },
     "deb": {
-      "artifactName": "tflix-linux.${version}.${arch}.${ext}"
+      "artifactName": "tflix-linux.${version}.${arch}.${ext}",
+      "fpm": [
+        "--description",
+        "Watch Movies & TV Shows\nTFLIX is a movie and TV show site, powered by TMDB, that streams titles right in the app. The desktop app opens the site in its own window and blocks the pop-ups and ads that the video players try to open.\n\n - Search movies and TV shows, and see their details\n - Choose between several streaming servers\n - Continue Watching picks up where you stopped, on the right episode\n - Save titles to My List, synced across devices with a free account\n - A calendar of upcoming episodes and releases for titles in your list",
+        "build/com.nunesnetwork.tflix.appdata.xml=/usr/share/metainfo/com.nunesnetwork.tflix.appdata.xml"
+      ]
     }
   }
 }

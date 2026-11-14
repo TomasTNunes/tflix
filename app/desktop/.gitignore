@@ -3,3 +3,7 @@ dist/
 build/icon.ico
 tflix.config.json
 build/icons/
+flatpak/tflix.deb
+flatpak/build/
+flatpak/repo/
+.flatpak-builder/

@@ -51,7 +51,7 @@ if (window.top === window.self) {
   // so ask the main process for it synchronously.
   let APP_VERSION = '';
   try { APP_VERSION = ipcRenderer.sendSync('tflix:get-version') || ''; } catch {}
-  // Linux only: { kind: 'deb' | 'appimage', arch: 'x64' | 'arm64' }, carried
+  // Linux only: { kind: 'deb' | 'appimage' | 'flatpak' | 'flathub', arch: 'x64' | 'arm64' }, carried
   // on the label as data-pkg / data-arch so the site's Update button offers
   // the same kind of file for the same CPU. Null on Windows.
   let APP_PACKAGE = null;

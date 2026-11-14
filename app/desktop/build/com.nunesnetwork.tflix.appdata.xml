@@ -1,17 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- AppStream metadata for the Linux AppImage: what app stores and the
+<!-- AppStream metadata for the Linux AppImage and .deb: what app stores and the
      AppImage catalog (appimage.github.io) show about TFLIX. Packed into the
-     AppImage at usr/share/metainfo/ (extraFiles in package.json). The name
+     AppImage at usr/share/metainfo/ (extraFiles in package.json), and into
+     /usr/share/metainfo/ by the .deb (deb.fpm in package.json). The name
      ends in .appdata.xml, not .metainfo.xml, because that's the name the
      catalog looks for. Keep the newest <release> at the package.json version:
-     the Linux workflow checks it, and validates this file. -->
+     the Linux workflow checks it, and validates this file.
+     The Flatpak uses it too, renamed to stream.tflix.TFLIX.metainfo.xml with
+     that ID and desktop file name (flatpak/stream.tflix.TFLIX.yml), so keep
+     <id> and <launchable> on one line each, as they are. -->
 <component type="desktop-application">
   <id>com.nunesnetwork.tflix</id>
   <name>TFLIX</name>
   <summary>Watch movies and TV shows</summary>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
-  <developer_name>Tomas Nunes</developer_name>
+  <developer id="stream.tflix">
+    <name>Tomas Nunes</name>
+  </developer>
+  <content_rating type="oars-1.1">
+    <content_attribute id="social-info">mild</content_attribute>
+  </content_rating>
 
   <description>
     <p>
@@ -31,6 +40,7 @@
   <launchable type="desktop-id">tflix.desktop</launchable>
   <url type="homepage">https://tflix.stream/</url>
   <url type="bugtracker">https://github.com/TomasTNunes/tflix/issues</url>
+  <url type="vcs-browser">https://github.com/TomasTNunes/tflix</url>
 
   <screenshots>
     <screenshot type="default">

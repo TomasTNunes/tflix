@@ -1,0 +1,79 @@
+# Flatpak build of the desktop app: the .deb from electron-builder, repackaged.
+# The Build Linux App workflow copies the .deb it just built to flatpak/tflix.deb,
+# builds this, and bundles it as tflix-linux.<version>.<x64|arm64>.flatpak.
+#
+# The ID is stream.tflix.TFLIX, not the other apps' com.nunesnetwork.tflix:
+# Flathub only takes an ID whose domain you can prove you own. The desktop file,
+# icons and AppStream file are the .deb's / build/'s, renamed to that ID here.
+#
+# For Flathub, a copy of this goes in its own repo, with the three local
+# sources below fetched by URL + sha256 from the release and the repo, an
+# x-checker-data entry so its bot opens a PR for each new release, and without
+# the TFLIX_FLATPAK_SOURCE line (main.js then reports a Flathub install, which
+# the site doesn't offer file updates to).
+
+id: stream.tflix.TFLIX
+runtime: org.freedesktop.Platform
+runtime-version: '26.08'
+sdk: org.freedesktop.Sdk
+base: org.electronjs.Electron2.BaseApp
+base-version: '26.08'
+command: tflix
+separate-locales: false
+
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --socket=pulseaudio
+  # The desktop's cursor themes: the runtime has none, so without this
+  # Chromium falls back to its own tiny cursor. Flatpak shows the host's
+  # icon folders at these paths
+  - --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons
+  # Installed from a .flatpak file, not Flathub: the site then offers this
+  # file's updates (see PACKAGE in main.js)
+  - --env=TFLIX_FLATPAK_SOURCE=file
+
+modules:
+  - name: tflix
+    buildsystem: simple
+    sources:
+      - type: file
+        path: tflix.deb
+      - type: file
+        path: tflix.sh
+      - type: file
+        path: ../build/tflix.desktop
+      - type: file
+        path: ../build/com.nunesnetwork.tflix.appdata.xml
+    build-commands:
+      # The app, from the .deb's /opt/TFLIX. No chrome-sandbox: a Flatpak
+      # can't be setuid; zypak (in the BaseApp) gives Chromium its sandbox
+      - ar x tflix.deb
+      - tar -xf data.tar.*
+      - mkdir -p "${FLATPAK_DEST}/tflix"
+      - cp -a opt/TFLIX/. "${FLATPAK_DEST}/tflix/"
+      - rm -rf "${FLATPAK_DEST}/tflix/chrome-sandbox" "${FLATPAK_DEST}/tflix/usr"
+      - install -Dm755 tflix.sh "${FLATPAK_DEST}/bin/tflix"
+      # Icons, renamed to the ID. Flatpak exports PNGs up to 512px only,
+      # so not the 1024px one
+      - |
+        for dir in usr/share/icons/hicolor/*/apps; do
+          size=$(basename "$(dirname "$dir")")
+          [ "$size" = 1024x1024 ] && continue
+          install -Dm644 "$dir/tflix.png" "${FLATPAK_DEST}/share/icons/hicolor/$size/apps/${FLATPAK_ID}.png"
+        done
+        [ -f "${FLATPAK_DEST}/share/icons/hicolor/256x256/apps/${FLATPAK_ID}.png" ]
+      # Desktop file: the AppImage's, run through the launcher, with the
+      # renamed icon. StartupWMClass stays tflix (the X11 window class); on
+      # Wayland the window is matched by the file's name, via CHROME_DESKTOP
+      - desktop-file-edit --set-key=Exec --set-value='tflix %U' --set-icon="${FLATPAK_ID}" tflix.desktop
+      - install -Dm644 tflix.desktop "${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop"
+      # AppStream: build/'s file with the Flatpak's ID and desktop file name
+      - sed -e "s|<id>com.nunesnetwork.tflix</id>|<id>${FLATPAK_ID}</id>|"
+        -e "s|>tflix.desktop</launchable>|>${FLATPAK_ID}.desktop</launchable>|"
+        com.nunesnetwork.tflix.appdata.xml > "${FLATPAK_ID}.metainfo.xml"
+      - grep -q "<id>${FLATPAK_ID}</id>" "${FLATPAK_ID}.metainfo.xml"
+      - install -Dm644 "${FLATPAK_ID}.metainfo.xml" "${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml"

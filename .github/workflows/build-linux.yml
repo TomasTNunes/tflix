@@ -1,9 +1,9 @@
 name: Build Linux App
 
-# Builds the desktop app (app/desktop) for Linux: an AppImage and a .deb, for
-# Intel/AMD (x64) and ARM64, each on its own kind of runner so the smoke test
-# runs natively. Runs only by hand, from the Actions tab (Run workflow). A
-# release tag can be given to attach the four files to that (already created)
+# Builds the desktop app (app/desktop) for Linux: an AppImage, a .deb and a
+# Flatpak, for Intel/AMD (x64) and ARM64, each on its own kind of runner so the
+# smoke test runs natively. Runs only by hand, from the Actions tab (Run workflow). A
+# release tag can be given to attach the six files to that (already created)
 # release, where the site's Get Apps finds them.
 
 on:
@@ -50,10 +50,10 @@ jobs:
         run: node scripts/make-icon.js && npx electron-builder --linux --${{ matrix.arch }} && node scripts/linux-names.js
 
       # The AppStream metadata (build/com.nunesnetwork.tflix.appdata.xml) as
-      # app stores and the AppImage catalog read it: inside the built AppImage,
-      # next to the desktop file it names, with its newest release at this
-      # version. Fails on validator errors (E:, indented in its output), only
-      # lists the rest.
+      # app stores and the AppImage catalog read it: inside the built AppImage
+      # and .deb, next to the desktop file it names, with its newest release
+      # at this version. Fails on validator errors (E:, indented in its
+      # output), only lists the rest.
       - name: Check AppStream metadata
         run: |
           sudo apt-get update -qq
@@ -65,21 +65,57 @@ jobs:
             echo "::error::the newest <release> in the AppStream file is $newest, but package.json is $version"
             exit 1
           fi
+          check() {
+            for f in usr/share/metainfo/com.nunesnetwork.tflix.appdata.xml usr/share/applications/tflix.desktop; do
+              [ -f "$1/$f" ] || { echo "::error::$f is missing from the $2"; exit 1; }
+            done
+            set +e
+            appstreamcli validate-tree --explain "$1" > appstream.log 2>&1
+            set -e
+            cat appstream.log
+            if grep -qE '^\s*E: ' appstream.log; then
+              echo "::error::appstreamcli found errors in the $2's AppStream metadata"
+              exit 1
+            fi
+            rm -rf "$1"
+          }
           appimage=$(ls dist/tflix-linux.*.AppImage)
           chmod +x "$appimage"
           (cd dist && "../$appimage" --appimage-extract >/dev/null)
-          for f in usr/share/metainfo/com.nunesnetwork.tflix.appdata.xml usr/share/applications/tflix.desktop; do
-            [ -f "dist/squashfs-root/$f" ] || { echo "::error::$f is missing from the AppImage"; exit 1; }
+          check dist/squashfs-root AppImage
+          dpkg-deb -x dist/tflix-linux.*.deb dist/deb-root
+          check dist/deb-root .deb
+
+      # The .deb, repackaged as a Flatpak (flatpak/stream.tflix.TFLIX.yml), in
+      # a .flatpak file. Its runtime comes from Flathub: the file names
+      # Flathub, so installing it fetches the runtime from there too. Its
+      # AppStream file is checked like the AppImage's. Branch stable, as on
+      # Flathub (flatpak-builder's default is master): moving to Flathub then
+      # replaces this install instead of adding a second branch of the app.
+      - name: Build Flatpak
+        run: |
+          sudo apt-get install -y -qq flatpak flatpak-builder
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          cp dist/tflix-linux.*.deb flatpak/tflix.deb
+          flatpak-builder --user --install-deps-from=flathub --disable-rofiles-fuse --force-clean \
+            --default-branch=stable --repo=flatpak/repo flatpak/build flatpak/stream.tflix.TFLIX.yml
+          version=$(node -p "require('./package.json').version")
+          flatpak build-bundle --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo \
+            flatpak/repo "dist/tflix-linux.$version.${{ matrix.arch }}.flatpak" stream.tflix.TFLIX stable
+          ls -l dist/*.flatpak
+          files=flatpak/build/files
+          for f in bin/tflix tflix/tflix share/applications/stream.tflix.TFLIX.desktop \
+                   share/icons/hicolor/256x256/apps/stream.tflix.TFLIX.png share/metainfo/stream.tflix.TFLIX.metainfo.xml; do
+            [ -f "$files/$f" ] || { echo "::error::$f is missing from the Flatpak"; exit 1; }
           done
           set +e
-          appstreamcli validate-tree --explain dist/squashfs-root > appstream.log 2>&1
+          appstreamcli validate-tree --explain "$files" > appstream.log 2>&1
           set -e
           cat appstream.log
           if grep -qE '^\s*E: ' appstream.log; then
-            echo "::error::appstreamcli found errors in the AppStream metadata"
+            echo "::error::appstreamcli found errors in the Flatpak's AppStream metadata"
             exit 1
           fi
-          rm -rf dist/squashfs-root
 
       # Starts each build in a virtual display for 20s. "Opened" means still
       # running at the end (timeout's exit code 124) with no sandbox error.
@@ -136,6 +172,38 @@ jobs:
             sudo apparmor_parser -r /etc/apparmor.d/tflix-appimage
           fi
           opened ./dist/tflix-linux.*.AppImage
+          echo "── Flatpak ──"
+          flatpak install --user -y --noninteractive dist/tflix-linux.*.flatpak
+          flatpak info --user stream.tflix.TFLIX | grep -E 'Ref:|Branch:|Origin:|Commit:'
+          # An update: a newer build of the same app (a new commit on top of
+          # this one) in a second file, installed over the first in the ways a
+          # user could. Reports which work, so the install steps name one.
+          ref="app/stream.tflix.TFLIX/$(flatpak --default-arch)/stable"
+          flatpak build-commit-from --force --src-ref="$ref" --subject='update test' flatpak/repo "$ref"
+          flatpak build-bundle --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo \
+            flatpak/repo update-test.flatpak stream.tflix.TFLIX stable
+          before=$(flatpak info --user -c stream.tflix.TFLIX)
+          updated=
+          for how in "install" "install --reinstall"; do
+            if flatpak $how --user -y --noninteractive update-test.flatpak; then
+              [ "$(flatpak info --user -c stream.tflix.TFLIX)" != "$before" ] && { updated=$how; break; }
+              echo "flatpak $how ran but kept the old commit"
+            else
+              echo "flatpak $how failed"
+            fi
+          done
+          if [ -n "$updated" ]; then
+            echo "::notice::a newer .flatpak installs over the old one with: flatpak $updated"
+          else
+            echo "::warning::neither command installed the newer .flatpak over the old one; trying uninstall + install"
+            flatpak uninstall --user -y --noninteractive stream.tflix.TFLIX
+            flatpak install --user -y --noninteractive update-test.flatpak
+          fi
+          inside=$(flatpak run --command=sh stream.tflix.TFLIX -c 'echo "$FLATPAK_ID $TFLIX_FLATPAK_SOURCE"')
+          echo "inside the Flatpak: $inside"
+          [ "$inside" = "stream.tflix.TFLIX file" ] || { echo "::error::the Flatpak doesn't say it's from a .flatpak file"; exit 1; }
+          dbus-run-session -- true 2>/dev/null && dbus=dbus-run-session || dbus=
+          opened $dbus flatpak run stream.tflix.TFLIX
 
       - name: Read version
         id: version
@@ -148,6 +216,7 @@ jobs:
           path: |
             app/desktop/dist/tflix-linux.*.AppImage
             app/desktop/dist/tflix-linux.*.deb
+            app/desktop/dist/tflix-linux.*.flatpak
           if-no-files-found: error
           compression-level: 0   # already compressed
 
@@ -156,4 +225,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.release_tag }}
-        run: gh release upload "$TAG" dist/tflix-linux.*.AppImage dist/tflix-linux.*.deb --clobber
+        run: gh release upload "$TAG" dist/tflix-linux.*.AppImage dist/tflix-linux.*.deb dist/tflix-linux.*.flatpak --clobber

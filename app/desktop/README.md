@@ -47,19 +47,20 @@ old version, keeps your desktop/Start-menu shortcuts, and **preserves your saved
 
 ## Linux
 
-Each release has four Linux files: a .deb and an AppImage, each for two kinds of processor.
-Pick the kind of file:
+Each release has six Linux files: a .deb, a Flatpak and an AppImage, each for two kinds of
+processor. Pick the kind of file:
 
 | File | For | What it is |
 |------|-----|------------|
 | `tflix-linux.<version>.<cpu>.deb` | Ubuntu, Debian, Linux Mint, Raspberry Pi OS | A package: installs TFLIX into your app menu |
+| `tflix-linux.<version>.<cpu>.flatpak` | Fedora, Pop!_OS, Steam Deck, any distro with Flatpak | A Flatpak app: installs TFLIX into your app menu, in Flatpak's sandbox |
 | `tflix-linux.<version>.<cpu>.AppImage` | Any other distro | A single file you run; nothing gets installed |
 
 …and the processor (`<cpu>`): **`x64`** for almost every PC and laptop (Intel or AMD), or
 **`arm64`** for a Raspberry Pi 4/5 (64-bit OS) or an ARM laptop. Not sure? Run `uname -m`:
 `x86_64` means x64, `aarch64` means arm64.
 
-All four are in **Get Apps** (the Linux card's **Download** lists them, with your processor first
+All six are in **Get Apps** (the Linux card's **Download** lists them, with your processor first
 when the browser says which it is) and in the
 [latest release](https://github.com/TomasTNunes/tflix/releases/latest).
 
@@ -73,6 +74,28 @@ sudo apt install ./tflix-linux.*.deb
 ```
 
 Then open **TFLIX** from your app menu.
+
+### Install the Flatpak
+
+Open the downloaded file (it opens in your software store) and click **Install**, or run this
+in the folder you saved it to:
+
+```bash
+flatpak install ./tflix-linux.*.flatpak
+```
+
+Then open **TFLIX** from your app menu. The first Flatpak app on a computer also downloads the
+shared Flatpak runtime from Flathub (a few hundred MB, once).
+
+No Flatpak on your system yet (Ubuntu, for example)? Install it once, then log out and back in
+so your app menu shows Flatpak apps:
+
+```bash
+sudo apt install flatpak
+```
+
+The Flatpak keeps its settings in `~/.var/app/stream.tflix.TFLIX/`, apart from the .deb's, so
+moving from the .deb to the Flatpak starts with fresh settings; sign in to bring back your list.
 
 ### Run the AppImage
 
@@ -118,15 +141,18 @@ sudo apparmor_parser -R /etc/apparmor.d/tflix-appimage && sudo rm /etc/apparmor.
 The app tells you when an update is out, just like on Windows: a pop-up when it opens and a
 yellow dot on the profile icon. Click **Update** (in the pop-up, or on the Linux card in **Get
 Apps**) and the list of Linux files opens with **yours highlighted**: the same kind of file you
-have (a .deb if you installed the .deb, an AppImage if you're running the AppImage), for the
-same processor. Click its **Update**.
+have (a .deb, a Flatpak or an AppImage, whichever you're running), for the same processor.
+Click its **Update**.
 
 - **.deb:** open the new file, or `sudo apt install ./tflix-linux.<version>.<cpu>.deb`. It upgrades
   the installed version in place. There's no need to uninstall.
+- **Flatpak:** `flatpak install ./tflix-linux.<version>.<cpu>.flatpak`, the same
+  command as the first time. It replaces the installed version. There's no need to uninstall.
 - **AppImage:** make the new file executable and run it, then delete the old one. If you made a
   shortcut to the old file, point it at the new one.
 
-Your settings (such as your chosen stream server) are kept either way, in `~/.config/tflix-app`.
+Your settings (such as your chosen stream server) are kept either way, in `~/.config/tflix-app`
+(the Flatpak's in `~/.var/app/stream.tflix.TFLIX/config/tflix-app`).
 
 ## Keyboard shortcuts
 
@@ -170,7 +196,7 @@ Linux packages have to be built on Linux. The easy way is GitHub Actions: the
 [Build Linux App](../../.github/workflows/build-linux.yml) workflow runs only by hand, from
 the **Actions** tab (**Run workflow**). It builds the x64 files on an Intel/AMD runner and the
 arm64 files on an ARM runner, starts each one for 20 seconds as a check, and saves them under
-the run's **Artifacts**. Given a **release tag** (e.g. `v1.3.0`), it also attaches all four
+the run's **Artifacts**. Given a **release tag** (e.g. `v1.3.0`), it also attaches all six
 files to that release, which must already exist.
 
 On your own Linux machine (or in WSL on Windows), with Node 22.12 or later:
@@ -187,14 +213,28 @@ For one processor only, run `npx electron-builder --linux --x64` (or `--arm64`) 
 `node scripts/make-icon.js`. In WSL, build from a copy in your Linux home folder, not under `/mnt/c`:
 the `node_modules` installed on Windows don't work on Linux.
 
+That doesn't build the Flatpak. It's made from the .deb, so after building the .deb for your
+processor, with `flatpak` and `flatpak-builder` installed:
+
+```bash
+flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+cp dist/tflix-linux.*.x64.deb flatpak/tflix.deb      # or .arm64.deb on ARM
+flatpak-builder --user --install-deps-from=flathub --force-clean --default-branch=stable --install flatpak/build flatpak/stream.tflix.TFLIX.yml
+flatpak run stream.tflix.TFLIX
+```
+
+The workflow builds it the same way, then bundles it into the `.flatpak` file.
+
 ## Project layout
 
 | File | Purpose |
 |------|---------|
 | `main.js` | Electron main process — window, menu, pop-up/ad blocking, loads the live site; on Linux, keeps the AppImage from running without the sandbox |
-| `preload-main.js` | Injects the version label (and, on Linux, whether it's the .deb or the AppImage) + back-navigation state restore into the site; stops ad scripts swallowing clicks inside the stream embeds |
+| `preload-main.js` | Injects the version label (and, on Linux, whether it's the .deb, the Flatpak or the AppImage) + back-navigation state restore into the site; stops ad scripts swallowing clicks inside the stream embeds |
+| `flatpak/stream.tflix.TFLIX.yml` | Flatpak manifest: repackages the .deb, with the desktop file, icons and AppStream file renamed to the Flatpak's ID |
+| `flatpak/tflix.sh` | The Flatpak's launcher: starts TFLIX through zypak, which gives Chromium its sandbox inside Flatpak |
 | `offline.html` | Shown instead of an empty window when the site doesn't load (no internet); Try again, or reloads by itself once back online |
-| `build/com.nunesnetwork.tflix.appdata.xml` | AppStream metadata in the AppImage (description, screenshot, license) for app stores and the AppImage catalog; its newest `<release>` must match `package.json`'s version |
+| `build/com.nunesnetwork.tflix.appdata.xml` | AppStream metadata in the AppImage and the Flatpak (description, screenshot, license) for app stores and the AppImage catalog; its newest `<release>` must match `package.json`'s version |
 | `build/tflix.desktop` | Copy of the AppImage's desktop file at `usr/share/applications/`, where AppStream looks for it; keep it like the one electron-builder generates |
 | `scripts/make-icon.js` | Builds `build/icon.ico` (Windows) and `build/icons/*.png` (Linux) from `../../assets/icons/*.png` |
 | `build/installer.nsh` | Windows installer extras (optional "remove my data" on uninstall) |

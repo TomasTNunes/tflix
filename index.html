@@ -1728,11 +1728,17 @@
           </div>
           <button class="app-howto-btn" type="button" aria-expanded="false" aria-controls="howto-linux"><span>How to install &amp; update</span><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
           <div class="app-howto" id="howto-linux" hidden>
-            <p><b>Download</b> lists the Linux files: a .deb or an AppImage, for <b>Intel/AMD (x64)</b> (most computers) or <b>ARM64</b> (a Raspberry Pi or an ARM laptop).</p>
+            <p><b>Download</b> lists the Linux files: a .deb, a Flatpak or an AppImage, for <b>Intel/AMD (x64)</b> (most computers) or <b>ARM64</b> (a Raspberry Pi or an ARM laptop).</p>
             <div class="app-howto-head">.deb (Ubuntu, Debian, Mint, Raspberry Pi OS)</div>
             <ol>
               <li>Download the .deb and open it, or run <b>sudo apt install ./tflix-linux.*.deb</b> in the folder you saved it to.</li>
               <li>Open TFLIX from your app menu.</li>
+            </ol>
+            <div class="app-howto-head">Flatpak (Fedora, Pop!_OS, Steam Deck, any distro with Flatpak)</div>
+            <ol>
+              <li>Download the .flatpak and open it in your software store, or run <b>flatpak install ./tflix-linux.*.flatpak</b> in the folder you saved it to.</li>
+              <li>Open TFLIX from your app menu.</li>
+              <li>No Flatpak yet (Ubuntu, for example)? Run <b>sudo apt install flatpak</b>, then log out and back in, once.</li>
             </ol>
             <div class="app-howto-head">AppImage (other distros)</div>
             <ol>
@@ -1741,7 +1747,7 @@
               <li>On Ubuntu 24.04 and later, the first time you open it, click <b>Allow and open TFLIX</b> and enter your password (or use the .deb instead).</li>
             </ol>
             <div class="app-howto-head">Updating</div>
-            <p>If a new version is out, a notice appears when you open the app and your profile icon gets a yellow dot. Click <b>Update</b> here: the Linux files open with yours (the same kind, for the same processor) highlighted, so click its <b>Update</b>. Open the new .deb to install it over the old version, or swap the old AppImage for the new one. There's no need to uninstall, and your settings are kept.</p>
+            <p>If a new version is out, a notice appears when you open the app and your profile icon gets a yellow dot. Click <b>Update</b> here: the Linux files open with yours (the same kind, for the same processor) highlighted, so click its <b>Update</b>. Open the new .deb to install it over the old version, install the new .flatpak with the same command, or swap the old AppImage for the new one. There's no need to uninstall, and your settings are kept.</p>
           </div>
         </div>
         <!-- No app to download: Apple devices add the website to the Home Screen
@@ -1779,6 +1785,13 @@
             </div>
             <div class="linux-opt">
               <div class="linux-opt-info">
+                <div class="linux-opt-name">Flatpak<span class="acct-badge ok linux-installed" hidden>Installed</span></div>
+                <div class="linux-opt-for">Fedora, Pop!_OS, Steam Deck, any distro with Flatpak</div>
+              </div>
+              <a class="btn btn-primary app-dl" data-app="linux-flatpak-x64" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
+            </div>
+            <div class="linux-opt">
+              <div class="linux-opt-info">
                 <div class="linux-opt-name">AppImage<span class="acct-badge ok linux-installed" hidden>Installed</span></div>
                 <div class="linux-opt-for">Any other distro</div>
               </div>
@@ -1795,6 +1808,13 @@
                 <div class="linux-opt-for">Raspberry Pi OS, Ubuntu, Debian</div>
               </div>
               <a class="btn btn-primary app-dl" data-app="linux-deb-arm64" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
+            </div>
+            <div class="linux-opt">
+              <div class="linux-opt-info">
+                <div class="linux-opt-name">Flatpak<span class="acct-badge ok linux-installed" hidden>Installed</span></div>
+                <div class="linux-opt-for">Any distro with Flatpak</div>
+              </div>
+              <a class="btn btn-primary app-dl" data-app="linux-flatpak-arm64" href="https://github.com/TomasTNunes/tflix/releases/latest" target="_blank" rel="noopener">Download</a>
             </div>
             <div class="linux-opt">
               <div class="linux-opt-info">
@@ -3754,23 +3774,28 @@ const RELEASES_TTL = 60 * 60 * 1000;
 const APP_ASSETS = {
   windows: /^tflix-windows\.setup\.(\d+(?:\.\d+)*)\.exe$/,
   'linux-deb-x64': /^tflix-linux\.(\d+(?:\.\d+)*)\.x64\.deb$/,
+  'linux-flatpak-x64': /^tflix-linux\.(\d+(?:\.\d+)*)\.x64\.flatpak$/,
   'linux-appimage-x64': /^tflix-linux\.(\d+(?:\.\d+)*)\.x64\.AppImage$/,
   'linux-deb-arm64': /^tflix-linux\.(\d+(?:\.\d+)*)\.arm64\.deb$/,
+  'linux-flatpak-arm64': /^tflix-linux\.(\d+(?:\.\d+)*)\.arm64\.flatpak$/,
   'linux-appimage-arm64': /^tflix-linux\.(\d+(?:\.\d+)*)\.arm64\.AppImage$/,
   android: /^tflix-android\.(\d+(?:\.\d+)*)\.apk$/,   // not the .debug. build
 };
 const APP_NAMES = { windows: 'Windows', linux: 'Linux', android: 'Android' };
 let appReleases = null;
 
-// The Linux app's own build, from its version label (data-pkg: deb or
-// appimage, data-arch: x64 or arm64, from app/desktop/main.js); a Linux
-// app without them is taken for the x64 .deb
+// The Linux app's own build, from its version label (data-pkg: deb,
+// appimage, flatpak or flathub, data-arch: x64 or arm64, from
+// app/desktop/main.js); a Linux app without them is taken for the x64 .deb
+const LINUX_KINDS = ['deb', 'appimage', 'flatpak', 'flathub'];
 function linuxBuild() {
   const l = $('tflix-version-label');
-  return { kind: l?.dataset.pkg === 'appimage' ? 'appimage' : 'deb', arch: l?.dataset.arch === 'arm64' ? 'arm64' : 'x64' };
+  return { kind: LINUX_KINDS.includes(l?.dataset.pkg) ? l.dataset.pkg : 'deb', arch: l?.dataset.arch === 'arm64' ? 'arm64' : 'x64' };
 }
 
-// The release asset this app updates from: Linux has one per kind and CPU
+// The release asset this app updates from: Linux has one per kind and CPU.
+// A Flathub install has none (no linux-flathub-* file exists): Flathub
+// updates it, so it gets no Update button, dot or pop-up.
 function appAsset() {
   if (inApp !== 'linux') return inApp;
   const { kind, arch } = linuxBuild();
@@ -4016,7 +4041,7 @@ $('signup-pop').addEventListener('animationend', closeSignupPop);   // the 20s c
 // In a browser every button reads Download. On the card of the app you're in,
 // it reads Update when a newer release exists (and downloads straight away),
 // or stays Download and asks first when you already have the latest.
-// Linux has four files, so its card's button, Download or Update, opens a
+// Linux has six files, so its card's button, Download or Update, opens a
 // chooser (#auth-linux) instead, where the Linux app's own file is
 // highlighted, as Installed or Update.
 const RELEASES_PAGE = 'https://github.com/TomasTNunes/tflix/releases/latest';
@@ -4053,7 +4078,7 @@ function paintAppButtons(best) {
     document.querySelector(`.app-dot[data-app="${app}"]`).hidden = !outdated;
   }
 
-  // Linux chooser: four files; this app's own is highlighted
+  // Linux chooser: six files; this app's own is highlighted
   document.querySelectorAll('#auth-linux .linux-opt').forEach(row => {
     const link = row.querySelector('.app-dl'), key = link.dataset.app;
     const mine = !!best[key] && key === myAsset, outdated = mine && myOutdated;
