@@ -3785,17 +3785,15 @@ const APP_NAMES = { windows: 'Windows', linux: 'Linux', android: 'Android' };
 let appReleases = null;
 
 // The Linux app's own build, from its version label (data-pkg: deb,
-// appimage, flatpak or flathub, data-arch: x64 or arm64, from
-// app/desktop/main.js); a Linux app without them is taken for the x64 .deb
-const LINUX_KINDS = ['deb', 'appimage', 'flatpak', 'flathub'];
+// appimage or flatpak, data-arch: x64 or arm64, from app/desktop/main.js);
+// a Linux app without them is taken for the x64 .deb
+const LINUX_KINDS = ['deb', 'appimage', 'flatpak'];
 function linuxBuild() {
   const l = $('tflix-version-label');
   return { kind: LINUX_KINDS.includes(l?.dataset.pkg) ? l.dataset.pkg : 'deb', arch: l?.dataset.arch === 'arm64' ? 'arm64' : 'x64' };
 }
 
-// The release asset this app updates from: Linux has one per kind and CPU.
-// A Flathub install has none (no linux-flathub-* file exists): Flathub
-// updates it, so it gets no Update button, dot or pop-up.
+// The release asset this app updates from: Linux has one per kind and CPU
 function appAsset() {
   if (inApp !== 'linux') return inApp;
   const { kind, arch } = linuxBuild();
@@ -3885,7 +3883,7 @@ const installedAppVersion = () => labelVersion() || appVersionGuess;
 // The site adds that as CSS (::after from data-build), so it reaches every
 // installed app without a new release, and the label's own text, which
 // labelVersion reads, stays "v1.3.1".
-const LINUX_KIND_NAMES = { deb: 'deb', appimage: 'AppImage', flatpak: 'Flatpak', flathub: 'Flathub' };
+const LINUX_KIND_NAMES = { deb: 'deb', appimage: 'AppImage', flatpak: 'Flatpak' };
 function appBuildName() {
   if (inApp !== 'linux') return APP_NAMES[inApp];
   const { kind, arch } = linuxBuild();

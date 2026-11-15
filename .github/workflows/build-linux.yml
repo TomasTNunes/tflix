@@ -89,9 +89,9 @@ jobs:
       # The .deb, repackaged as a Flatpak (flatpak/stream.tflix.TFLIX.yml), in
       # a .flatpak file. Its runtime comes from Flathub: the file names
       # Flathub, so installing it fetches the runtime from there too. Its
-      # AppStream file is checked like the AppImage's. Branch stable, as on
-      # Flathub (flatpak-builder's default is master): moving to Flathub then
-      # replaces this install instead of adding a second branch of the app.
+      # AppStream file is checked like the AppImage's. Branch stable, the
+      # usual one (flatpak-builder's default is master); keep it, or installs
+      # would get a second branch of the app instead of an update.
       - name: Build Flatpak
         run: |
           sudo apt-get install -y -qq flatpak flatpak-builder

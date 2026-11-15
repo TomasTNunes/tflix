@@ -2,13 +2,10 @@
 # The Build Linux App workflow copies the .deb it just built to flatpak/tflix.deb,
 # builds this, and bundles it as tflix-linux.<version>.<x64|arm64>.flatpak.
 #
-# The ID is stream.tflix.TFLIX, not the other apps' com.nunesnetwork.tflix:
-# Flathub only takes an ID whose domain you can prove you own. The desktop file,
-# icons and AppStream file are the .deb's, renamed to that ID here.
-#
-# Flathub's copy is flathub/stream.tflix.TFLIX.yml: the same build, with the
-# .deb downloaded from the release instead, and without the
-# TFLIX_FLATPAK_SOURCE line. Keep the two alike.
+# The ID is stream.tflix.TFLIX, not the other apps' com.nunesnetwork.tflix
+# (on tflix.stream's domain). Keep it: a new ID would be a separate app, apart
+# from existing installs and their data. The desktop file, icons and
+# AppStream file are the .deb's, renamed to that ID here.
 
 id: stream.tflix.TFLIX
 runtime: org.freedesktop.Platform
@@ -26,12 +23,12 @@ finish-args:
   - --socket=fallback-x11
   - --device=dri
   - --socket=pulseaudio
-  # The desktop's cursor themes: the runtime has none, so without this
-  # Chromium falls back to its own tiny cursor. Flatpak shows the host's
-  # icon folders at these paths
+  # The desktop's cursor themes. Chromium bundles its own libwayland, without
+  # the runtime's patches that find them, so without this it falls back to
+  # its own tiny cursor. Flatpak shows the host's icon folders at these paths
   - --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons
-  # Installed from a .flatpak file, not Flathub: the site then offers this
-  # file's updates (see PACKAGE in main.js)
+  # Marks an install from our .flatpak file. The app doesn't read it now
+  # (main.js takes any Flatpak for one); the smoke test checks it's set
   - --env=TFLIX_FLATPAK_SOURCE=file
 
 modules:
