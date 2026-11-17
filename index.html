@@ -575,21 +575,6 @@
       .card-watch .card-details, .card-watch .card-add { pointer-events: auto; }
     }
 
-    /* Digital release badge on card */
-    .card-dr-badge {
-      position: absolute; top: 8px; right: 8px;
-      font-size: 0.52rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
-      padding: 2px 6px; border-radius: 4px;
-      background: rgba(34,197,94,0.18); border: 1px solid rgba(74,209,126,0.4);
-      color: #4ade80;
-      display: flex; align-items: center; gap: 3px;
-    }
-    .card-dr-dot {
-      width: 5px; height: 5px; border-radius: 50%; background: #4ade80;
-      box-shadow: 0 0 5px #4ade80; flex-shrink: 0;
-      animation: drpulse 2s ease-in-out infinite;
-    }
-
     /* TOP 10 ranked cards */
     .scroller.top10 { gap: 0rem; }
     .rank-card { position: relative; flex: 0 0 auto; display: flex; align-items: flex-end; cursor: pointer; }
@@ -737,32 +722,35 @@
     .modal-genres { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
     .genre-chip { font-size: 0.74rem; font-weight: 600; padding: 0.3rem 0.8rem; border-radius: 99px; background: var(--card); border: 1px solid var(--line); color: var(--muted); }
 
-    /* ── Digital release badge (modal) ── */
-    #modal-digital-release {
+    /* ── Release date badges (modal): theatrical + digital ── */
+    #modal-release {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      margin-bottom: 1.1rem;
+    }
+    .dr-badge {
       display: inline-flex; align-items: center; gap: 0.5rem;
       padding: 0.38rem 0.9rem 0.38rem 0.7rem;
       border-radius: 8px; font-size: 0.78rem; font-weight: 700;
       letter-spacing: 0.04em; text-transform: uppercase;
-      margin-bottom: 1.1rem;
       transition: opacity .3s;
     }
-    #modal-digital-release.dr-loading { opacity: 0; }
-    #modal-digital-release.dr-none {
-      background: rgba(229,9,20,0.12); border: 1px solid rgba(229,9,20,0.35);
-      color: #ff6b6b;
+    .dr-badge.dr-loading { opacity: 0; }
+    .dr-badge.dr-none {
+      background: rgba(154,154,166,0.1); border: 1px solid rgba(154,154,166,0.3);
+      color: var(--muted);
     }
-    #modal-digital-release.dr-future {
+    .dr-badge.dr-future {
       background: rgba(234,179,8,0.12); border: 1px solid rgba(234,179,8,0.35);
       color: #fbbf24;
     }
-    #modal-digital-release.dr-available {
+    .dr-badge.dr-available {
       background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.35);
       color: #4ade80;
     }
     .dr-dot {
       width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
     }
-    .dr-none .dr-dot    { background: #ff6b6b; box-shadow: 0 0 7px #ff6b6b; }
+    .dr-none .dr-dot    { background: var(--muted); }
     .dr-future .dr-dot  { background: #fbbf24; box-shadow: 0 0 7px #fbbf24; }
     .dr-available .dr-dot { background: #4ade80; box-shadow: 0 0 7px #4ade80; animation: drpulse 2s ease-in-out infinite; }
     @keyframes drpulse { 0%,100%{opacity:1} 50%{opacity:.45} }
@@ -1033,10 +1021,11 @@
       font-family: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: border-color .15s;
     }
     .cal-today:hover { border-color: rgba(255,255,255,0.3); }
-    .cal-legend { display: flex; gap: 1rem; margin-bottom: 0.7rem; font-size: 0.76rem; color: var(--muted); }
+    .cal-legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; margin-bottom: 0.7rem; font-size: 0.76rem; color: var(--muted); }
     .cal-legend span { display: flex; align-items: center; gap: 0.4rem; }
     .cal-dot { width: 8px; height: 8px; border-radius: 50%; }
     .cal-dot.episode { background: var(--accent-h); }
+    .cal-dot.theatrical { background: #fb923c; }
     .cal-dot.digital { background: var(--green); }
     .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; transition: opacity .2s; }
     .cal-grid.loading { opacity: 0.5; }
@@ -1062,6 +1051,7 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .cal-chip.episode { background: rgba(229,9,20,0.22); color: #ffb3b6; }
+    .cal-chip.theatrical { background: rgba(249,115,22,0.2); color: #fdba74; }
     .cal-chip.digital { background: rgba(34,197,94,0.18); color: #86efac; }
     .cal-more { font-size: 0.64rem; color: var(--muted); }
     .cal-day { margin-top: 1.1rem; }
@@ -1081,6 +1071,7 @@
     .cal-item-sub { font-size: 0.78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .cal-badge { flex-shrink: 0; padding: 2px 8px; border-radius: 99px; font-size: 0.66rem; font-weight: 700; }
     .cal-badge.episode { background: rgba(229,9,20,0.18); color: #ff8a8a; }
+    .cal-badge.theatrical { background: rgba(249,115,22,0.16); color: #fb923c; }
     .cal-badge.digital { background: rgba(34,197,94,0.14); color: #4ade80; }
     @media (max-width: 560px) {
       .cal-month { min-width: 0; font-size: 1rem; }
@@ -1089,6 +1080,7 @@
       /* Too narrow for titles: each release becomes a dot */
       .cal-chip { width: 6px; height: 6px; padding: 0; border-radius: 50%; font-size: 0; }
       .cal-chip.episode { background: var(--accent-h); }
+      .cal-chip.theatrical { background: #fb923c; }
       .cal-chip.digital { background: var(--green); }
       .cal-more { display: none; }
     }
@@ -1507,7 +1499,10 @@
       <div class="modal-body">
         <div id="modal-meta" class="modal-meta"></div>
         <div id="modal-genres" class="modal-genres"></div>
-        <div id="modal-digital-release" class="dr-loading"></div>
+        <div id="modal-release">
+          <div id="modal-theatrical-release" class="dr-badge dr-loading"></div>
+          <div id="modal-digital-release" class="dr-badge dr-loading"></div>
+        </div>
         <div id="modal-overview" class="modal-overview"></div>
       </div>
       <div id="modal-cast" class="modal-cast" style="display:none">
@@ -1653,6 +1648,7 @@
       </div>
       <div class="cal-legend">
         <span><i class="cal-dot episode"></i>New episode</span>
+        <span><i class="cal-dot theatrical"></i>Theatrical release</span>
         <span><i class="cal-dot digital"></i>Digital release</span>
       </div>
       <div class="cal-grid" id="cal-grid"></div>
@@ -2244,25 +2240,33 @@ function playerUrl(item, season = 1, episode = 1, startAt = 0) {
 /* ─── DIGITAL RELEASE FETCH (shared) ─── */
 const DIGITAL_TYPE = 4;
 
-async function fetchDigitalData(movieId) {
-  if (digitalCache[movieId]) return digitalCache[movieId];
-  const data = await tmdb(`/movie/${movieId}/release_dates`);
-  // Find earliest type-4 (Digital) date across all regions
-  let found = null;
-  for (const entry of (data.results || [])) {
-    for (const rd of entry.release_dates) {
-      if (rd.type === DIGITAL_TYPE && rd.release_date) {
-        if (!found || rd.release_date < found) found = rd.release_date;
+// Earliest date of each release type across all regions, e.g. { 3: '2013-10-03T…', 5: … }.
+// Types: 1 premiere, 2 limited theatrical, 3 theatrical, 4 digital, 5 physical, 6 TV.
+// The promise is cached (dates or none) for the session, so each movie is fetched once.
+function fetchReleaseDates(movieId) {
+  if (!digitalCache[movieId]) {
+    digitalCache[movieId] = tmdb(`/movie/${movieId}/release_dates`).then(data => {
+      const earliest = {};
+      for (const entry of (data.results || [])) {
+        for (const rd of (entry.release_dates || [])) {
+          if (rd.release_date && (!earliest[rd.type] || rd.release_date < earliest[rd.type]))
+            earliest[rd.type] = rd.release_date;
+        }
       }
-    }
+      return earliest;
+    });
+    digitalCache[movieId].catch(() => { delete digitalCache[movieId]; });   // retry after a failed fetch
   }
-  digitalCache[movieId] = found || null;
   return digitalCache[movieId];
 }
 
+// Earliest Digital (type 4) date only: the digital row and the calendar use this
+async function fetchDigitalData(movieId) {
+  return (await fetchReleaseDates(movieId))[DIGITAL_TYPE] || null;
+}
+
 /* ─── CARD ─── */
-// drDate: optional ISO date string — if provided and in the past, shows green badge on card
-function makeCard(item, { drDate = null, watch = null } = {}) {
+function makeCard(item, { watch = null } = {}) {
   const type    = mediaOf(item);
   const isMovie = type === 'movie';
   const title   = item.title || item.name || 'Untitled';
@@ -2270,14 +2274,10 @@ function makeCard(item, { drDate = null, watch = null } = {}) {
   const imgSrc  = poster(item.poster_path);
   const m       = matchPct(item.vote_average);
 
-  // Show DR badge on card if a valid past digital date is supplied
-  const showDrBadge = drDate && new Date(drDate) <= new Date();
-
   const card = document.createElement('div');
   card.className = watch ? 'card card-watch' : 'card';
   card.innerHTML = `
     <span class="card-badge ${isMovie ? 'movie' : 'tv'}">${isMovie ? 'Film' : (watch ? `S${Number(watch.season)} E${Number(watch.episode)}` : 'Series')}</span>
-    ${showDrBadge ? `<span class="card-dr-badge"><span class="card-dr-dot"></span>Digital</span>` : ''}
     ${imgSrc
       ? `<img class="card-poster" src="${imgSrc}" alt="${esc(title)}" loading="lazy" onerror="this.parentNode.replaceChild(makePlaceholder('${esc(title).replace(/'/g,"")}'),this)">`
       : `<div class="card-poster-placeholder"><span style="font-size:2rem">🎬</span><span>${esc(title)}</span></div>`}
@@ -2685,12 +2685,12 @@ async function renderTitle(item) {
   loadSimilar(type, item.id, loadCollection(type, item.id));
 
   const tvSel = $('tv-selectors');
-  const drEl  = $('modal-digital-release');
+  const drEl  = $('modal-release');
   if (isMovie) {
     pickerGen++; tvFilling = false; tvLoad = null;
     tvSel.style.display = 'none';
-    drEl.style.display = 'inline-flex';
-    fetchDigitalReleaseBadge(item.id);
+    drEl.style.display = 'flex';
+    fetchReleaseBadges(item.id);
   } else {
     tvSel.style.display = 'block';
     drEl.style.display = 'none';
@@ -2799,33 +2799,46 @@ async function renderPerson(entry) {
   }
 }
 
-/* ─── DIGITAL RELEASE BADGE (modal) ─── */
-async function fetchDigitalReleaseBadge(movieId) {
-  const el = $('modal-digital-release');
-  el.className = 'dr-loading'; el.innerHTML = '';
+/* ─── RELEASE DATE BADGES (modal) ─── */
+// Theatrical: type 3, else type 2 (limited run). Premieres (type 1) don't count.
+// Home: type 4 (digital), else type 5 (physical), else type 6 (TV); the label names
+// which one it is. All dates are the earliest across every region.
+const RELEASE_BADGES = {
+  theatrical: [
+    { types: [3, 2], future: 'Theatrical Release', past: 'Theatrically Released' },
+  ],
+  home: [
+    { types: [DIGITAL_TYPE], future: 'Digital Release',  past: 'Digitally Released' },
+    { types: [5],            future: 'Physical Release', past: 'Physically Released' },
+    { types: [6],            future: 'TV Release',       past: 'Aired on TV' },
+  ],
+};
+
+function paintReleaseBadge(el, dates, options, noneText) {
+  for (const opt of options) {
+    const date = opt.types.map(t => dates[t]).find(Boolean);
+    if (!date) continue;
+    const future = new Date(date) > new Date();
+    el.className = `dr-badge ${future ? 'dr-future' : 'dr-available'}`;
+    el.innerHTML = `<span class="dr-dot"></span>${future ? opt.future : opt.past} · ${fmtShortDate(date)}`;
+    return;
+  }
+  el.className = 'dr-badge dr-none';
+  el.innerHTML = `<span class="dr-dot"></span>${noneText}`;
+}
+
+async function fetchReleaseBadges(movieId) {
+  const th = $('modal-theatrical-release');
+  const dg = $('modal-digital-release');
+  for (const el of [th, dg]) { el.style.display = ''; el.className = 'dr-badge dr-loading'; el.innerHTML = ''; }
   try {
-    const found = await fetchDigitalData(movieId);
-
-    if (!found) {
-      el.className = 'dr-none';
-      el.innerHTML = '<span class="dr-dot"></span>Not yet digitally released';
-      return;
-    }
-
-    const releaseDate = new Date(found);
-    const now = new Date();
-    const label = fmtShortDate(found);
-
-    if (releaseDate > now) {
-      el.className = 'dr-future';
-      el.innerHTML = `<span class="dr-dot"></span>Digital release · ${label}`;
-    } else {
-      el.className = 'dr-available';
-      // CHANGE 1: show the date even when already released
-      el.innerHTML = `<span class="dr-dot"></span>Digitally Released · ${label}`;
-    }
+    const dates = await fetchReleaseDates(movieId);
+    if (currentModalItem?.id !== movieId) return;   // the modal moved on to another title
+    paintReleaseBadge(th, dates, RELEASE_BADGES.theatrical, 'No Theatrical Release Date');
+    paintReleaseBadge(dg, dates, RELEASE_BADGES.home, 'No Digital Release Date');
   } catch {
-    el.className = ''; el.innerHTML = '';
+    if (currentModalItem?.id !== movieId) return;
+    for (const el of [th, dg]) el.style.display = 'none';
   }
 }
 
@@ -4139,7 +4152,7 @@ const AUTH_VIEWS = ['form', 'verify', 'merge', 'moved', 'account', 'calendar', '
 const AUTH_TEXT = {
   moved:       ['Welcome to tflix.stream', "TFLIX has a new address, so you'll need to sign in again. Your My List is saved in your account and comes right back."],
   account:     ['My Account', ''],
-  calendar:    ['Calendar', 'New episodes and digital releases for titles in My List.'],
+  calendar:    ['Calendar', 'New episodes, theatrical and digital releases for titles in My List.'],
   help:        ['Help', 'Answers to common questions about watching on TFLIX.'],
   apps:        ['Get the Apps', 'Watch TFLIX in its own app. The Android, Windows and Linux apps block the pop-ups and ad redirects (No Ads).'],
   'apps-again': ["You're up to date", ''],   // the line below is filled in by confirmRedownload
@@ -4427,7 +4440,7 @@ onAccountForm('delete', async fail => {
 
 /* ─── CALENDAR ───
    Month view of release dates for titles in My List: new episodes of saved
-   shows and digital releases of saved movies, all from TMDB. Show details,
+   shows and theatrical and digital releases of saved movies, all from TMDB. Show details,
    seasons and release dates stay cached for the session, so paging months
    only fetches seasons not seen yet. Weeks start on Monday. */
 let calMonth = null;      // 1st of the month on show
@@ -4485,9 +4498,14 @@ async function episodesBetween(entry, from, to) {
   return events;
 }
 
-async function digitalReleaseBetween(entry, from, to) {
-  const date = (await fetchDigitalData(entry.id) || '').slice(0, 10);
-  return date && date >= from && date <= to ? [{ date, kind: 'digital', entry, label: 'Digital release' }] : [];
+// Theatrical: type 3, else type 2 (limited run). Digital: type 4 only.
+async function movieReleasesBetween(entry, from, to) {
+  const dates = await fetchReleaseDates(entry.id);
+  return [
+    { date: dates[3] || dates[2], kind: 'theatrical', label: 'Theatrical release' },
+    { date: dates[DIGITAL_TYPE],  kind: 'digital',    label: 'Digital release' },
+  ].map(ev => ({ ...ev, date: (ev.date || '').slice(0, 10), entry }))
+   .filter(ev => ev.date && ev.date >= from && ev.date <= to);
 }
 
 // Opens on today's month with today selected
@@ -4505,7 +4523,7 @@ async function loadCalendar() {
   calEvents = {};
   renderCalendar(true);
   const found = await mapLimit(Object.values(myList), 6, e =>
-    e.media_type === 'tv' ? episodesBetween(e, from, to) : digitalReleaseBetween(e, from, to));
+    e.media_type === 'tv' ? episodesBetween(e, from, to) : movieReleasesBetween(e, from, to));
   if (token !== calToken) return;
   for (const ev of found.flat()) if (ev) (calEvents[ev.date] ||= []).push(ev);
   renderCalendar(false);
@@ -4533,6 +4551,8 @@ function renderCalendar(loading) {
   renderCalendarDay(loading);
 }
 
+const CAL_BADGE = { episode: 'Episode', theatrical: 'Theatrical', digital: 'Digital' };
+
 function renderCalendarDay(loading) {
   const evs = calEvents[calSelected] || [];
   const title = new Date(`${calSelected}T00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -4548,7 +4568,7 @@ function renderCalendarDay(loading) {
         <span class="cal-item-title">${esc(ev.entry.title || ev.entry.name)}</span>
         <span class="cal-item-sub">${esc(ev.label)}</span>
       </span>
-      <span class="cal-badge ${ev.kind}">${ev.kind === 'episode' ? 'Episode' : 'Digital'}</span>
+      <span class="cal-badge ${ev.kind}">${CAL_BADGE[ev.kind]}</span>
     </button>`;
   }).join('');
   $('cal-day').innerHTML = `<div class="cal-day-title">${title}</div>${body}`;

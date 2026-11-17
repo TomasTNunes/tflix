@@ -19,7 +19,7 @@ It lets users discover movies and TV shows and stream them directly within the w
 - 📡 Choose from multiple predefined streaming servers
 - ⏯️ **Continue Watching** picks up where you stopped, on the right episode
 - ➕ Save titles to **My List**, optionally synced across devices with a free account
-- 📅 **Calendar** of upcoming episodes and digital releases for titles in your list
+- 📅 **Calendar** of upcoming episodes, theatrical and digital releases for titles in your list
 - 🖥️ Use it as a native **Windows or Linux desktop app** or **Android app** (phone + TV) with no ads —
   download them from **Get Apps** in the profile menu
 - 🍎 On **iPhone, iPad and Mac**, add TFLIX to the Home Screen or Dock to open it like an app
