@@ -739,6 +739,10 @@
       background: rgba(154,154,166,0.1); border: 1px solid rgba(154,154,166,0.3);
       color: var(--muted);
     }
+    .dr-badge.dr-missing {
+      background: rgba(229,9,20,0.12); border: 1px solid rgba(229,9,20,0.35);
+      color: #ff6b6b;
+    }
     .dr-badge.dr-future {
       background: rgba(234,179,8,0.12); border: 1px solid rgba(234,179,8,0.35);
       color: #fbbf24;
@@ -751,6 +755,7 @@
       width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
     }
     .dr-none .dr-dot    { background: var(--muted); }
+    .dr-missing .dr-dot { background: #ff6b6b; box-shadow: 0 0 7px #ff6b6b; }
     .dr-future .dr-dot  { background: #fbbf24; box-shadow: 0 0 7px #fbbf24; }
     .dr-available .dr-dot { background: #4ade80; box-shadow: 0 0 7px #4ade80; animation: drpulse 2s ease-in-out infinite; }
     @keyframes drpulse { 0%,100%{opacity:1} 50%{opacity:.45} }
@@ -2814,7 +2819,8 @@ const RELEASE_BADGES = {
   ],
 };
 
-function paintReleaseBadge(el, dates, options, noneText) {
+// noneCls: dr-none (grey) or dr-missing (red) when no date exists
+function paintReleaseBadge(el, dates, options, noneText, noneCls) {
   for (const opt of options) {
     const date = opt.types.map(t => dates[t]).find(Boolean);
     if (!date) continue;
@@ -2823,7 +2829,7 @@ function paintReleaseBadge(el, dates, options, noneText) {
     el.innerHTML = `<span class="dr-dot"></span>${future ? opt.future : opt.past} · ${fmtShortDate(date)}`;
     return;
   }
-  el.className = 'dr-badge dr-none';
+  el.className = `dr-badge ${noneCls}`;
   el.innerHTML = `<span class="dr-dot"></span>${noneText}`;
 }
 
@@ -2834,8 +2840,8 @@ async function fetchReleaseBadges(movieId) {
   try {
     const dates = await fetchReleaseDates(movieId);
     if (currentModalItem?.id !== movieId) return;   // the modal moved on to another title
-    paintReleaseBadge(th, dates, RELEASE_BADGES.theatrical, 'No Theatrical Release Date');
-    paintReleaseBadge(dg, dates, RELEASE_BADGES.home, 'No Digital Release Date');
+    paintReleaseBadge(th, dates, RELEASE_BADGES.theatrical, 'No Theatrical Release Date', 'dr-none');
+    paintReleaseBadge(dg, dates, RELEASE_BADGES.home, 'No Digital Release Date', 'dr-missing');
   } catch {
     if (currentModalItem?.id !== movieId) return;
     for (const el of [th, dg]) el.style.display = 'none';
