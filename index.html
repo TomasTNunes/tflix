@@ -3201,7 +3201,9 @@ async function updateEpisodes(tvId, gen = pickerGen) {
       epSel.innerHTML = episodes.map(ep => {
         const date = fmtDate(ep.air_date);
         const dateStr = date ? `  &nbsp;·&nbsp;  ${date}` : '';
-        return `<option value="${ep.episode_number}">Ep ${ep.episode_number}${dateStr}</option>`;
+        // Left out when TMDB doesn't know it (often 0 or missing before an episode airs)
+        const timeStr = ep.runtime > 0 ? `  &nbsp;·&nbsp;  ${fmtRuntime(ep.runtime)}` : '';
+        return `<option value="${ep.episode_number}">Ep ${ep.episode_number}${dateStr}${timeStr}</option>`;
       }).join('');
     } else { throw new Error('no episodes'); }
   } catch {

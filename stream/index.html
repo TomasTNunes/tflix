@@ -952,7 +952,9 @@ async function populateEpisodes(setToState) {
     if (!eps.length) throw new Error('no eps');
     episodeSel.innerHTML = eps.map(ep => {
       const d = fmtDate(ep.air_date);
-      return `<option value="${ep.episode_number}">Ep ${ep.episode_number}${d ? ' · ' + d : ''}</option>`;
+      // Left out when TMDB doesn't know it (often 0 or missing before an episode airs)
+      const t = ep.runtime > 0 ? fmtRuntime(ep.runtime) : '';
+      return `<option value="${ep.episode_number}">Ep ${ep.episode_number}${d ? ' · ' + d : ''}${t ? ' · ' + t : ''}</option>`;
     }).join('');
   } catch {
     episodeSel.innerHTML = Array.from({ length: fallbackCount }, (_, i) =>
@@ -1061,6 +1063,10 @@ function fmtDate(d){
   const dt = new Date(d);
   if (isNaN(dt)) return '';
   return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function fmtRuntime(min){
+  const h = Math.floor(min / 60), m = min % 60;
+  return h ? (m ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
 }
 function toast(msg){
   const t = $('toast');
