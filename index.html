@@ -2126,7 +2126,7 @@ const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 30);
 window.addEventListener('scroll', onScroll, { passive: true });
 onScroll();
 
-$('logo').addEventListener('click', () => { resetSearch(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+$('logo').addEventListener('click', () => { clearSearchBox(); resetSearch(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
 function scrollToSection(anchor) {
   const target = document.querySelector(`[data-anchor="${anchor}"]`);
@@ -3296,9 +3296,15 @@ searchInput.addEventListener('focus', () => {
   clearBtn.classList.toggle('visible', searchInput.value.trim().length > 0);
 });
 
-clearBtn.addEventListener('click', () => {
+// Empties the box and drops a search still waiting on its debounce
+function clearSearchBox() {
+  clearTimeout(searchTimer);
   searchInput.value = '';
   clearBtn.classList.remove('visible');
+}
+
+clearBtn.addEventListener('click', () => {
+  clearSearchBox();
   resetSearch();
   searchInput.focus();
 });
