@@ -2679,6 +2679,7 @@ async function renderTitle(item) {
     ${m ? `<span class="match">${m}% Match</span>` : ''}
     <span>${year(date)}</span>
     <span>★ ${rating(item.vote_average)}</span>
+    ${isMovie ? '<span id="modal-runtime" style="display:none"></span>' : ''}
     ${item.original_language ? `<span class="chip">${esc(item.original_language.toUpperCase())}</span>` : ''}`;
 
   const genreNames = (item.genre_ids || []).map(id => genreMap[id]).filter(Boolean).slice(0, 4);
@@ -2696,6 +2697,7 @@ async function renderTitle(item) {
     tvSel.style.display = 'none';
     drEl.style.display = 'flex';
     fetchReleaseBadges(item.id);
+    loadRuntime(item.id);
   } else {
     tvSel.style.display = 'block';
     drEl.style.display = 'none';
@@ -2802,6 +2804,37 @@ async function renderPerson(entry) {
     if (personViewEntry === entry)
       el.innerHTML = '<div class="empty" style="padding-top:6rem"><h3>Couldn’t load this person</h3><p>Please try again.</p></div>';
   }
+}
+
+/* ─── RUNTIME (modal) ─── */
+// Full /movie details, cached: the runtime and the collection both come from it
+const movieDetailsCache = {};
+function fetchMovieDetails(id) {
+  if (!movieDetailsCache[id]) {
+    movieDetailsCache[id] = tmdb(`/movie/${id}`).then(m => {
+      if (!m || !m.id) throw new Error('movie not found');
+      return m;
+    });
+    movieDetailsCache[id].catch(() => { delete movieDetailsCache[id]; });   // retry after a failed fetch
+  }
+  return movieDetailsCache[id];
+}
+
+const fmtRuntime = min => {
+  const h = Math.floor(min / 60), m = min % 60;
+  return h ? (m ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
+};
+
+// Shown only when TMDB knows it (unreleased films often have 0)
+async function loadRuntime(movieId) {
+  try {
+    const m = await fetchMovieDetails(movieId);
+    if (currentModalItem?.id !== movieId) return;   // the modal moved on to another title
+    const el = $('modal-runtime');
+    if (!el || !(m.runtime > 0)) return;
+    el.textContent = fmtRuntime(m.runtime);
+    el.style.display = '';
+  } catch {}
 }
 
 /* ─── RELEASE DATE BADGES (modal) ─── */
@@ -2968,8 +3001,7 @@ async function loadCollection(type, id) {
   try {
     let cid = movieCollection[id];
     if (cid === undefined) {
-      const m = await tmdb(`/movie/${id}`);
-      if (!m || !m.id) throw new Error('movie not found');
+      const m = await fetchMovieDetails(id);
       cid = movieCollection[id] = m.belongs_to_collection?.id || 0;
     }
     if (!cid) return new Set();
