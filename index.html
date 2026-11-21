@@ -1971,7 +1971,7 @@ const CATEGORY_ROWS = [
   { title: 'Recently Digitally Released', endpoint: null,       media: 'movie', anchor: 'digital', isDigitalRow: true },
   { title: 'Top Rated This Year', endpoint: `/discover/movie?sort_by=vote_average.desc&vote_count.gte=500&primary_release_year=${CURRENT_YEAR}`, media: 'movie' },
   { title: 'Popular TV Shows',    endpoint: '/tv/popular',      media: 'tv',    anchor: 'tv' },
-  { title: 'Airing Today',        endpoint: '/tv/airing_today', media: 'tv',    anchor: 'airing' },
+  { title: 'Airing Today',        endpoint: '/tv/airing_today', media: 'tv',    anchor: 'airing', isAiringRow: true },
 ];
 
 /* ─── APP FLAG ───
@@ -2355,26 +2355,114 @@ function buildRow(cfg, { top10 = false } = {}) {
   return scroller;
 }
 
+// The first two pages of a row's endpoint, titles with a poster only
+async function fetchRowItems(cfg) {
+  const sep = cfg.endpoint.includes('?') ? '&' : '?';
+  const [p1, p2] = await Promise.all([
+    tmdb(cfg.endpoint),
+    tmdb(`${cfg.endpoint}${sep}page=2`),
+  ]);
+  return [...(p1.results || []), ...(p2.results || [])]
+    .filter(r => r.poster_path)
+    .map(r => ({ ...r, media_type: cfg.media || r.media_type }))
+    .slice(0, 25);
+}
+
 async function loadRow(cfg) {
   if (cfg.isDigitalRow) { await loadDigitalRow(cfg); return; }
+  if (cfg.isAiringRow)  { await loadAiringRow(cfg);  return; }
 
   const scroller = buildRow(cfg);
   try {
-    const sep = cfg.endpoint.includes('?') ? '&' : '?';
-    const [p1, p2] = await Promise.all([
-      tmdb(cfg.endpoint),
-      tmdb(`${cfg.endpoint}${sep}page=2`),
-    ]);
-    const items = [...(p1.results || []), ...(p2.results || [])]
-      .filter(r => r.poster_path)
-      .map(r => ({ ...r, media_type: cfg.media || r.media_type }))
-      .slice(0, 25);
+    const items = await fetchRowItems(cfg);
     scroller.innerHTML = '';
     if (!items.length) { scroller.closest('.row').remove(); return; }
     items.forEach(item => scroller.appendChild(makeCard(item)));
   } catch (e) {
     scroller.closest('.row').remove();
   }
+}
+
+/* ─── AIRING TODAY ROW ───
+   TMDB's airing-today list, led by the My List shows with an episode out
+   today (local date). Every card's badge names today's episode. My List
+   shows are looked up first so they join quickly, then the rest. Repainted
+   whenever My List changes; show details and seasons come from the
+   calendar's caches. */
+let airingRow = null;     // { scroller, items: TMDB's list }
+let airingMine = [];      // My List shows with an episode out today
+const airingEps = {};     // `${day}-${showId}` -> promise of that day's episodes
+let airingToken = 0;
+
+async function loadAiringRow(cfg) {
+  const scroller = buildRow(cfg);
+  let items = [];
+  try { items = await fetchRowItems(cfg); } catch {}
+  airingRow = { scroller, items };
+  paintAiringRow();     // TMDB's list straight away; badges and My List shows follow
+  refreshAiringRow();
+}
+
+function episodesOn(entry, day) {
+  const key = `${day}-${entry.id}`;
+  if (!airingEps[key]) {
+    airingEps[key] = (async () => {
+      let details = tvDetails[entry.id];
+      if (!details) { details = await tmdb(`/tv/${entry.id}`); tvDetails[entry.id] = details; }
+      // A show airing that day has it as its next or latest episode; only those need a season fetched
+      if (details.next_episode_to_air?.air_date !== day && details.last_episode_to_air?.air_date !== day) return [];
+      return episodesBetween(entry, day, day);
+    })();
+    airingEps[key].catch(() => { delete airingEps[key]; });   // retry on the next refresh
+  }
+  return airingEps[key];
+}
+
+// Settled lookups only, so painting never waits on one still in flight
+const airingSettled = {};   // `${day}-${showId}` -> episodes
+
+async function lookUpEpisodes(shows, day) {
+  await mapLimit(shows, 6, async e => { airingSettled[`${day}-${e.id}`] = await episodesOn(e, day); });
+}
+
+async function refreshAiringRow() {
+  if (!airingRow) return;
+  const token = ++airingToken;
+  const day = isoDay(new Date());
+  const listShows = Object.values(myList).filter(e => e.media_type === 'tv');
+  await lookUpEpisodes(listShows, day);
+  if (token !== airingToken) return;   // My List changed again meanwhile
+  airingMine = listShows.filter(e => airingSettled[`${day}-${e.id}`]?.length);
+  paintAiringRow();
+  await lookUpEpisodes(airingRow.items, day);
+  if (token !== airingToken) return;
+  paintAiringRow();
+}
+
+function episodeBadge(eps) {
+  if (!eps?.length) return 'Series';
+  return eps.length === 1 ? `S${eps[0].season} E${eps[0].episode}` : `${eps.length} Episodes`;
+}
+
+function paintAiringRow() {
+  const { scroller, items } = airingRow;
+  const day = isoDay(new Date());
+  // Reuse the cards already there so the row keeps its scroll position and focus
+  const old = new Map([...scroller.querySelectorAll('.card')].map(c => [c.dataset.key, c]));
+  const seen = new Set();
+  const cards = [...airingMine, ...items].filter(item => {
+    const key = listKey(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).map(item => {
+    const card = old.get(listKey(item)) || makeCard(item);
+    card.querySelector('.card-badge').textContent = episodeBadge(airingSettled[`${day}-${item.id}`]);
+    return card;
+  });
+  scroller.closest('.row').hidden = !cards.length;
+  const same = cards.length === scroller.children.length && cards.every((c, i) => scroller.children[i] === c);
+  if (!same) scroller.replaceChildren(...cards);
 }
 
 /* ─── RECENTLY ON DIGITAL ROW ─── */
@@ -3463,6 +3551,7 @@ $('merge-discard').addEventListener('click', () => {
 function setMyList(list) {
   myList = list;
   renderMyList();
+  refreshAiringRow();
 }
 
 function paintListBtn(btn) {
@@ -4529,7 +4618,7 @@ async function episodesBetween(entry, from, to) {
     if (!data) { data = await tmdb(`/tv/${entry.id}/season/${s.season_number}`); seasonCache[key] = data; }
     for (const ep of data.episodes || []) {
       if (!ep.air_date || ep.air_date < from || ep.air_date > to) continue;
-      events.push({ date: ep.air_date, kind: 'episode', entry,
+      events.push({ date: ep.air_date, kind: 'episode', entry, season: ep.season_number, episode: ep.episode_number,
         label: `S${pad2(ep.season_number)}E${pad2(ep.episode_number)}${ep.name ? ` · ${ep.name}` : ''}` });
     }
   }
