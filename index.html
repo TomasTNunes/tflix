@@ -1966,12 +1966,15 @@ const SERVERS = [
 ];
 
 const CURRENT_YEAR = new Date().getFullYear();
+// TMDB's airing-today list follows New York time unless told otherwise; the
+// viewer's own zone makes it the same day the row's episode badges look for
+const VIEWER_TZ = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch { return ''; } })();
 const CATEGORY_ROWS = [
   { title: 'Popular Movies',      endpoint: '/movie/popular',   media: 'movie', anchor: 'movies' },
   { title: 'Recently Digitally Released', endpoint: null,       media: 'movie', anchor: 'digital', isDigitalRow: true },
   { title: 'Top Rated This Year', endpoint: `/discover/movie?sort_by=vote_average.desc&vote_count.gte=500&primary_release_year=${CURRENT_YEAR}`, media: 'movie' },
   { title: 'Popular TV Shows',    endpoint: '/tv/popular',      media: 'tv',    anchor: 'tv' },
-  { title: 'Airing Today',        endpoint: '/tv/airing_today', media: 'tv',    anchor: 'airing', isAiringRow: true },
+  { title: 'Airing Today',        endpoint: `/tv/airing_today${VIEWER_TZ ? `?timezone=${encodeURIComponent(VIEWER_TZ)}` : ''}`, media: 'tv', anchor: 'airing', isAiringRow: true },
 ];
 
 /* ─── APP FLAG ───
@@ -2409,9 +2412,22 @@ function episodesOn(entry, day) {
     airingEps[key] = (async () => {
       let details = tvDetails[entry.id];
       if (!details) { details = await tmdb(`/tv/${entry.id}`); tvDetails[entry.id] = details; }
-      // A show airing that day has it as its next or latest episode; only those need a season fetched
-      if (details.next_episode_to_air?.air_date !== day && details.last_episode_to_air?.air_date !== day) return [];
-      return episodesBetween(entry, day, day);
+      const next = details.next_episode_to_air, last = details.last_episode_to_air;
+      // Nothing that day unless the latest episode is from it or the next one is due by then.
+      // TMDB's "next" can lag days behind (still naming one already out), so an overdue
+      // one still means a look.
+      if (last?.air_date !== day && !(next?.air_date && next.air_date <= day)) return [];
+      // The seasons those two belong to, rather than guessing from season dates
+      // (some shows list a later season dated years before the one still running)
+      const eps = [];
+      for (const sn of new Set([last?.season_number, next?.season_number].filter(n => n != null))) {
+        const sk = `${entry.id}-${sn}`;
+        let data = seasonCache[sk];
+        if (!data) { data = await tmdb(`/tv/${entry.id}/season/${sn}`); seasonCache[sk] = data; }
+        for (const ep of data.episodes || [])
+          if (ep.air_date === day) eps.push({ season: ep.season_number, episode: ep.episode_number });
+      }
+      return eps;
     })();
     airingEps[key].catch(() => { delete airingEps[key]; });   // retry on the next refresh
   }
@@ -4619,6 +4635,14 @@ async function episodesBetween(entry, from, to) {
     if (!s.air_date) return i === seasons.length - 1;   // announced, no date yet
     return s.air_date <= to && (!next || !next.air_date || next.air_date > from);
   });
+  // That trusts season premiere dates, which some shows get wrong (a later season
+  // dated years before the one still running). The seasons of the latest and next
+  // episodes run at least from their premiere to that episode, so they join when
+  // that overlaps the range. For most shows they're already in, so no extra fetch.
+  for (const ep of [details.last_episode_to_air, details.next_episode_to_air]) {
+    const s = seasons.find(x => x.season_number === ep?.season_number);
+    if (s && ep.air_date && !wanted.includes(s) && (s.air_date || ep.air_date) <= to && ep.air_date >= from) wanted.push(s);
+  }
   const events = [];
   for (const s of wanted) {
     const key = `${entry.id}-${s.season_number}`;
